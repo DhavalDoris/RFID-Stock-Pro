@@ -1,9 +1,15 @@
 package com.example.rfidstockpro.activitys
 
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.os.Bundle
+import android.view.View
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.viewpager2.widget.ViewPager2
+import com.example.rfidstockpro.R
+import com.example.rfidstockpro.adapter.AuthPagerAdapter
 import com.example.rfidstockpro.databinding.ActivityAuthBinding
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -19,21 +25,49 @@ class AuthActivity : AppCompatActivity() {
         val adapter = AuthPagerAdapter(this)
         binding.viewPager.adapter = adapter
 
+
         // Connect TabLayout with ViewPager2
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = if (position == 0) "Login" else "Sign up"
         }.attach()
+        setTabFont()
 
         // Animate Header when switching tabs
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                val translationY = if (position == 1) -150f else 0f
-                ObjectAnimator.ofFloat(binding.topLayout, "translationY", translationY).apply {
+                super.onPageSelected(position)  // -180f else 0f
+                val targetHeight  = if (position == 1)  -80f else 0f  // Adjusted height for sign-up tab
+                ObjectAnimator.ofFloat(binding.topLayout, "translationY", targetHeight).apply {
                     duration = 300
                     start()
                 }
+//                animateHeight(binding.topLayout, targetHeight)
             }
         })
+    }
+
+    private fun animateHeight(view: View, targetHeight: Int) {
+        val startHeight = view.height
+        val animator = ValueAnimator.ofInt(startHeight, targetHeight)
+        animator.duration = 300
+        animator.addUpdateListener { animation ->
+            val value = animation.animatedValue as Int
+            val layoutParams = view.layoutParams
+            layoutParams.height = value
+            view.layoutParams = layoutParams
+        }
+        animator.start()
+    }
+
+    private fun setTabFont() {
+        val tabLayout = binding.tabLayout
+        val font = ResourcesCompat.getFont(this, R.font.rethinksans_bold)
+
+        for (i in 0 until tabLayout.tabCount) {
+            val tab = tabLayout.getTabAt(i)
+            val textView =
+                (tab?.view?.getChildAt(1) as? TextView) // Default TabLayout uses TextView at index 1
+            textView?.typeface = font
+        }
     }
 }

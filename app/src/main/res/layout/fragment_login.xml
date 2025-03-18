@@ -6,44 +6,29 @@
     android:padding="16dp">
 
 
-    <androidx.cardview.widget.CardView
+    <androidx.appcompat.widget.AppCompatEditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
-        app:cardElevation="@dimen/_3sdp">
-
-        <androidx.appcompat.widget.AppCompatEditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="null"
-            android:drawableStart="@drawable/ic_email"
-            android:drawablePadding="@dimen/_5sdp"
-            android:fontFamily="@font/rethinksans_variablefont_wght"
-            android:hint="Email Address"
-            android:padding="12dp"
-            android:textSize="@dimen/_12ssp" />
+        android:background="@drawable/edittext_bg"
+        android:drawableStart="@drawable/ic_email"
+        android:drawablePadding="@dimen/_5sdp"
+        android:fontFamily="@font/rethinksans_variablefont_wght"
+        android:hint="Email Address"
+        android:padding="12dp"
+        android:textSize="@dimen/_12ssp" />
 
 
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
+    <androidx.appcompat.widget.AppCompatEditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_15sdp"
-        app:cardElevation="@dimen/_3sdp">
-
-        <androidx.appcompat.widget.AppCompatEditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="null"
-            android:drawableStart="@drawable/ic_password"
-            android:drawablePadding="@dimen/_5sdp"
-            android:fontFamily="@font/rethinksans_variablefont_wght"
-            android:hint="Password"
-            android:padding="12dp"
-            android:textSize="@dimen/_12ssp" />
-
-    </androidx.cardview.widget.CardView>
+        android:background="@drawable/edittext_bg"
+        android:drawableStart="@drawable/ic_password"
+        android:drawablePadding="@dimen/_5sdp"
+        android:fontFamily="@font/rethinksans_variablefont_wght"
+        android:hint="Password"
+        android:padding="12dp"
+        android:textSize="@dimen/_12ssp" />
 
 
     <androidx.appcompat.widget.AppCompatTextView

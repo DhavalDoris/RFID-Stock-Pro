@@ -2,4 +2,6 @@
     <string name="app_name">RFID Stock Pro</string>
     <string name="continue_txt">Continue</string>
     <string name="rfid_stock_pro">RFiD Stock Pro</string>
+    <string name="welcome">Welcome</string>
+    <string name="login_or_sign_up_to_access_your_account">Login or Sign up to access your account</string>
 </resources>

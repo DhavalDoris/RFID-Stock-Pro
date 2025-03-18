@@ -1,8 +1,10 @@
 package com.example.rfidstockpro
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import com.example.rfidstockpro.activitys.AuthActivity
 import com.example.rfidstockpro.databinding.ActivitySplashBinding
 
 class SplashActivity : AppCompatActivity() {
@@ -17,5 +19,14 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
+        initActions()
+
+    }
+
+    private fun initActions() {
+        binding.continueButton.setOnClickListener {
+            startActivity(Intent(this@SplashActivity, AuthActivity::class.java))
+        }
     }
 }
