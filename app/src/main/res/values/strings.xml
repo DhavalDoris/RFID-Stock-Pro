@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">RFID Stock Pro</string>
+    <string name="continue_txt">Continue</string>
+    <string name="rfid_stock_pro">RFiD Stock Pro</string>
+</resources>

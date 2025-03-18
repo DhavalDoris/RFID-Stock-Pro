@@ -1,0 +1,62 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Username"
+        android:background="null"
+        android:drawablePadding="@dimen/_5sdp"
+        android:drawableStart="@drawable/ic_user"
+        android:padding="12dp"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Company Name"
+        android:background="null"
+        android:drawablePadding="@dimen/_5sdp"
+        android:drawableStart="@drawable/ic_company"
+        android:padding="12dp"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email Address"
+        android:background="null"
+        android:drawablePadding="@dimen/_5sdp"
+        android:drawableStart="@drawable/ic_email"
+        android:padding="12dp"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Contact Number"
+        android:background="null"
+        android:drawablePadding="@dimen/_5sdp"
+        android:drawableStart="@drawable/ic_phone"
+        android:padding="12dp"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Password"
+        android:background="null"
+        android:drawablePadding="@dimen/_5sdp"
+        android:drawableStart="@drawable/ic_password"
+        android:padding="12dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Register"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/_15ssp"
+        android:fontFamily="@font/rethinksans_variablefont_wght"
+        android:background="@drawable/continue_btn_bg"
+        android:padding="12dp"/>
+</LinearLayout>
