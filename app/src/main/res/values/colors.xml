@@ -6,4 +6,10 @@
     <color name="gray">#939393</color>
     <color name="gray_line">#F1F1F1</color>
     <color name="main_bg_color">#F8F9FF</color>
+
+    <color name="staff_bg_color">#33FF998B</color>
+    <color name="buy_bg_color">#FFEEEB</color>
+    <color name="colorActive">#3ACCD1</color>
+    <color name="colorPending">#FA904F</color>
+    <color name="colorInactive">#F55050</color>
 </resources>

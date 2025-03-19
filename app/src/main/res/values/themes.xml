@@ -38,5 +38,29 @@
         <item name="android:padding">10dp</item>
     </style>
 
+    <style name="DashboardButtonStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">@dimen/_70sdp</item>
+        <item name="android:layout_marginVertical">@dimen/_10sdp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/buy_bg</item>
+    </style>
 
+    <style name="DashboardTextStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:fontFamily">@font/rethinksans_bold</item>
+        <item name="android:paddingLeft">@dimen/_10sdp</item>
+        <item name="android:textColor">#EB7375</item>
+        <item name="android:textSize">@dimen/_11ssp</item>
+    </style>
+
+    <style name="DashboardImageStyle">
+        <item name="android:layout_width">@dimen/_50sdp</item>
+        <item name="android:layout_height">@dimen/_50sdp</item>
+        <item name="android:layout_alignParentRight">true</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:layout_marginRight">@dimen/_10sdp</item>
+    </style>
 </resources>

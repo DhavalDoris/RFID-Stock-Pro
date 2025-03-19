@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".ui.activities.DashboardActivity">
+
+    <!-- Toolbar -->
+    <!-- Include the Toolbar -->
+    <include
+        android:id="@+id/commonToolbar"
+        layout="@layout/toolbar_common"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Welcome Message -->
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/_15sdp"
+        android:fontFamily="@font/rethinksans_variablefont_wght"
+        android:text="Welcome to "
+        android:paddingTop="@dimen/_1sdp"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/commonToolbar"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="@dimen/_15sdp"
+        />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tvUserName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/rethinksans_bold"
+        android:text="Harsh D. Parekh"
+        android:paddingTop="@dimen/_1sdp"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@id/tvWelcome"
+        app:layout_constraintTop_toTopOf="@id/tvWelcome" />
+
+    <!-- User Role Badge -->
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tvUserRole"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/role_bg"
+        android:fontFamily="@font/rethinksans_variablefont_wght"
+        android:paddingHorizontal="@dimen/_7sdp"
+        android:paddingVertical="@dimen/_2sdp"
+        android:layout_marginLeft="@dimen/_5sdp"
+        android:text="Staff"
+        android:textColor="#EB7375"
+        android:textSize="14sp"
+        app:layout_constraintStart_toEndOf="@id/tvUserName"
+        app:layout_constraintTop_toTopOf="@id/tvWelcome" />
+
+    <!-- Menu Grid -->
+    <LinearLayout
+        android:id="@+id/gridMenu"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvUserRole"
+        app:layout_constraintBottom_toTopOf="@id/revenueCard"
+        android:paddingHorizontal="@dimen/_10sdp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_75sdp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_weight="1"
+                style="@style/DashboardButtonStyle">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/DashboardTextStyle"
+                    android:text="Buy" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="@dimen/_50sdp"
+                    android:layout_height="@dimen/_50sdp"
+                    style="@style/DashboardImageStyle"
+                    app:srcCompat="@drawable/buy_cart" />
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="@dimen/_10sdp"
+                android:layout_height="wrap_content"/>
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_weight="1"
+                android:backgroundTint="#EFEBFA"
+                style="@style/DashboardButtonStyle">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/DashboardTextStyle"
+                    android:textColor="#7448DD"
+                    android:text="sell" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="@dimen/_50sdp"
+                    android:layout_height="@dimen/_50sdp"
+                    style="@style/DashboardImageStyle"
+                    app:srcCompat="@drawable/sell_icon" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_75sdp"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:gravity="center">
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_weight="1"
+                android:backgroundTint="#D7EBFF"
+                style="@style/DashboardButtonStyle">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/DashboardTextStyle"
+                    android:text="Product\nManagement"
+                    android:textColor="#4288CF"/>
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="@dimen/_50sdp"
+                    android:layout_height="@dimen/_50sdp"
+                    style="@style/DashboardImageStyle"
+                    app:srcCompat="@drawable/product_icon" />
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="@dimen/_10sdp"
+                android:layout_height="wrap_content"/>
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_weight="1"
+                android:backgroundTint="#D9F3F4"
+                style="@style/DashboardButtonStyle">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/DashboardTextStyle"
+                    android:textColor="#28A1AC"
+                    android:text="Orders" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="@dimen/_50sdp"
+                    android:layout_height="@dimen/_50sdp"
+                    style="@style/DashboardImageStyle"
+                    app:srcCompat="@drawable/orders_icon" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_75sdp"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:gravity="center">
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_weight="1"
+                android:backgroundTint="#E2F4D9"
+                style="@style/DashboardButtonStyle">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/DashboardTextStyle"
+                    android:text="Reports"
+                    android:textColor="#749F62"/>
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="@dimen/_50sdp"
+                    android:layout_height="@dimen/_50sdp"
+                    style="@style/DashboardImageStyle"
+                    app:srcCompat="@drawable/report_icon" />
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="@dimen/_10sdp"
+                android:layout_height="wrap_content"/>
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_70sdp"
+                android:layout_weight="1"
+                android:backgroundTint="#FBF2CD"
+                style="@style/DashboardButtonStyle">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/DashboardTextStyle"
+                    android:textColor="#CBA505"
+                    android:text="Import" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="@dimen/_50sdp"
+                    android:layout_height="@dimen/_50sdp"
+                    style="@style/DashboardImageStyle"
+                    app:srcCompat="@drawable/import_icon" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+
+
+    <!-- Revenue Graph -->
+     <androidx.cardview.widget.CardView
+         android:id="@+id/revenueCard"
+         android:layout_width="0dp"
+         android:layout_height="wrap_content"
+         app:layout_constraintBottom_toTopOf="@id/btnConnectScanner"
+         app:layout_constraintStart_toStartOf="parent"
+         app:layout_constraintEnd_toEndOf="parent"
+         android:layout_marginTop="16dp"
+         android:elevation="4dp"
+         app:cardCornerRadius="8dp">
+
+         <androidx.appcompat.widget.LinearLayoutCompat
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:orientation="vertical"
+             android:padding="16dp">
+
+             <androidx.appcompat.widget.AppCompatTextView
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:text="Revenue By Day"
+                 android:textSize="16sp"
+                 android:textStyle="bold" />
+
+             <!-- Line Chart Placeholder -->
+             <androidx.appcompat.widget.AppCompatImageView
+                 android:id="@+id/lineChart"
+                 android:layout_width="match_parent"
+                 android:layout_height="200dp"
+                 android:background="@color/gray_line"
+                 android:layout_marginTop="8dp"/>
+         </androidx.appcompat.widget.LinearLayoutCompat>
+     </androidx.cardview.widget.CardView>
+
+      <!-- Connect Scanner Button -->
+      <androidx.appcompat.widget.AppCompatButton
+          android:id="@+id/btnConnectScanner"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:text="Connect Scanner"
+          android:backgroundTint="@color/appMainColor"
+          android:textColor="@color/white"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintEnd_toEndOf="parent"
+          android:layout_marginTop="16dp"
+          app:layout_constraintBottom_toBottomOf="parent"
+          android:layout_marginBottom="16dp"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
