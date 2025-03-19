@@ -4,43 +4,61 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ImageView
+        android:id="@+id/bgImage"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_300sdp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/login_bg"
+        android:adjustViewBounds="true" />
+
     <RelativeLayout
         android:id="@+id/topLayout"
         android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:background="@drawable/login_bg"
+        android:layout_height="@dimen/_300sdp"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvWelcome"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/tvDescription"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="@dimen/_10sdp"
-            android:fontFamily="@font/rethinksans_bold"
-            android:text="@string/welcome"
-            android:textColor="@android:color/white"
-            android:textSize="24sp" />
-
-        <TextView
-            android:id="@+id/tvDescription"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerInParent="true"
-            android:layout_marginBottom="@dimen/_40sdp"
-            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:orientation="vertical"
             android:gravity="center"
-            android:text="@string/login_or_sign_up_to_access_your_account"
-            android:textColor="@android:color/white"
-            android:textSize="@dimen/_16ssp" />
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="@dimen/_20sdp">
+
+            <TextView
+                android:id="@+id/tvWelcome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/tvDescription"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:fontFamily="@font/rethinksans_bold"
+                android:text="@string/welcome"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/_24sdp" />
+
+            <TextView
+                android:id="@+id/tvDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerInParent="true"
+                android:layout_marginBottom="@dimen/_40sdp"
+                android:fontFamily="@font/rethinksans_variablefont_wght"
+                android:gravity="center"
+                android:text="@string/login_or_sign_up_to_access_your_account"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/_16ssp" />
+
+        </LinearLayout>
+
     </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="@dimen/_250sdp"
         android:background="@android:color/white"
         android:orientation="vertical">
 
@@ -48,14 +66,15 @@
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_45sdp"
-            android:background="@color/white"
-            app:tabGravity="fill"
             android:layout_marginHorizontal="@dimen/_15sdp"
+            android:background="@color/white"
+            app:tabBackground="@drawable/selector_tab_indicator"
+            app:tabGravity="fill"
+            app:tabIndicator="@android:color/transparent"
             app:tabIndicatorFullWidth="true"
             app:tabMode="fixed"
-            app:tabIndicator="@android:color/transparent"
-            app:tabBackground="@drawable/selector_tab_indicator"
             app:tabSelectedTextColor="@color/black"
+            app:tabTextAppearance="@style/TabTextStyle"
             app:tabTextColor="@color/gray" />
 
         <androidx.viewpager2.widget.ViewPager2

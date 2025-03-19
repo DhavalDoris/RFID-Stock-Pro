@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Top Layout Heights -->
+    <dimen name="_300sdp">300dp</dimen>  <!-- Default height for Login -->
+    <dimen name="_200sdp">200dp</dimen>  <!-- Height for Sign Up -->
+
+    <!-- Margin for content layout -->
+    <dimen name="_250sdp">250dp</dimen>  <!-- Default margin for Login -->
+    <dimen name="_150sdp">150dp</dimen>  <!-- Margin for Sign Up -->
+
+    <!-- Tab Layout Height -->
+    <dimen name="_45sdp">45dp</dimen>
+
+    <!-- Tab Layout Margins -->
+    <dimen name="_15sdp">15dp</dimen>
+
+    <!-- Text Size -->
+    <dimen name="_16ssp">16sp</dimen>
+</resources>

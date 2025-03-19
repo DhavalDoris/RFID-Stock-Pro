@@ -3,8 +3,8 @@ package com.example.rfidstockpro.adapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.example.rfidstockpro.fragments.LoginFragment
-import com.example.rfidstockpro.fragments.SignupFragment
+import com.example.rfidstockpro.ui.fragments.LoginFragment
+import com.example.rfidstockpro.ui.fragments.SignupFragment
 
 class AuthPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
     override fun getItemCount(): Int = 2

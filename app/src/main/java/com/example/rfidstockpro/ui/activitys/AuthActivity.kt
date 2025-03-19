@@ -1,9 +1,10 @@
-package com.example.rfidstockpro.activitys
+package com.example.rfidstockpro.ui.activitys
 
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
@@ -36,12 +37,22 @@ class AuthActivity : AppCompatActivity() {
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)  // -180f else 0f
-                val targetHeight  = if (position == 1)  -80f else 0f  // Adjusted height for sign-up tab
+               /* val targetHeight  = if (position == 1)  -80f else 0f  // Adjusted height for sign-up tab
                 ObjectAnimator.ofFloat(binding.topLayout, "translationY", targetHeight).apply {
                     duration = 300
                     start()
-                }
+                }*/
 //                animateHeight(binding.topLayout, targetHeight)
+
+                // Set height based on tab selection
+                val newTopHeight = if (position == 1) resources.getDimensionPixelSize(R.dimen._200sdp)
+                else resources.getDimensionPixelSize(R.dimen._300sdp)
+                animateHeight(binding.topLayout, newTopHeight)
+
+                // Set margin top based on tab selection
+                val newMarginTop = if (position == 1) resources.getDimensionPixelSize(R.dimen._150sdp)
+                else resources.getDimensionPixelSize(R.dimen._250sdp)
+                animateMarginTop(binding.viewPager.parent as View, newMarginTop)
             }
         })
     }
@@ -70,4 +81,18 @@ class AuthActivity : AppCompatActivity() {
             textView?.typeface = font
         }
     }
+
+    private fun animateMarginTop(view: View, targetMarginTop: Int) {
+        val params = view.layoutParams as ViewGroup.MarginLayoutParams
+        val startMargin = params.topMargin
+
+        val animator = ValueAnimator.ofInt(startMargin, targetMarginTop)
+        animator.duration = 300
+        animator.addUpdateListener { animation ->
+            params.topMargin = animation.animatedValue as Int
+            view.layoutParams = params
+        }
+        animator.start()
+    }
+
 }

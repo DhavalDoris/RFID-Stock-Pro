@@ -1,10 +1,9 @@
-package com.example.rfidstockpro
+package com.example.rfidstockpro.ui.activitys
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import com.example.rfidstockpro.activitys.AuthActivity
 import com.example.rfidstockpro.databinding.ActivitySplashBinding
 
 class SplashActivity : AppCompatActivity() {
