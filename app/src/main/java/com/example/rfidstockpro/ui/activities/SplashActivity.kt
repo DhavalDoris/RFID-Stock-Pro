@@ -1,4 +1,4 @@
-package com.example.rfidstockpro.ui.activitys
+package com.example.rfidstockpro.ui.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -26,6 +26,7 @@ class SplashActivity : AppCompatActivity() {
     private fun initActions() {
         binding.continueButton.setOnClickListener {
             startActivity(Intent(this@SplashActivity, AuthActivity::class.java))
+            finish()
         }
     }
 }

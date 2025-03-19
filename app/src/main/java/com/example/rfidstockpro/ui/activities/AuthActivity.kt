@@ -1,6 +1,5 @@
-package com.example.rfidstockpro.ui.activitys
+package com.example.rfidstockpro.ui.activities
 
-import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.View

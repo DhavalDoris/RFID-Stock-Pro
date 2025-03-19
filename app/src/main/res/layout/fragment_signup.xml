@@ -3,7 +3,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@color/main_bg_volor">
+    android:background="@color/main_bg_color">
 
     <LinearLayout
         android:id="@+id/llTop"
