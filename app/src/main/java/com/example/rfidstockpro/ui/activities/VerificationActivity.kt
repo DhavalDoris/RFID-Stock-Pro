@@ -1,5 +1,6 @@
 package com.example.rfidstockpro.ui.activities
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
@@ -13,10 +14,12 @@ import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.databinding.ActivityVerificationBinding
 import com.example.rfidstockpro.viewmodel.VerificationViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -28,9 +31,11 @@ class VerificationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         binding = ActivityVerificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        StatusBarUtils.setStatusBarColor(this)
         setupOtpInputs()
         setupListeners()
         applySpannableText()
@@ -61,14 +66,22 @@ class VerificationActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+
+        viewModel.otpError.observe(this) { message  ->
+            if (message  == "OTP Verified Successfully!") {
+                // Proceed to next screen on successful OTP verification
+                startActivity(Intent(this, DashboardActivity::class.java))
+                finish()
+            } else {
+                // Show error message
+                Snackbar.make(binding.root, message , Snackbar.LENGTH_SHORT).show()
+            }
+        }
+
         binding.btnConfirm.setOnClickListener {
             val otp =
                 "${binding.etOtp1.text}${binding.etOtp2.text}${binding.etOtp3.text}${binding.etOtp4.text}"
             viewModel.verifyOtp(otp)
-        }
-
-        viewModel.otpError.observe(this) { error ->
-            Snackbar.make(binding.root, error, Snackbar.LENGTH_SHORT).show()
         }
     }
 

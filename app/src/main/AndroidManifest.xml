@@ -13,25 +13,19 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.RFIDStockPro"
+        android:theme="@style/Base.Theme.RFIDStockPro"
         tools:targetApi="31">
         <activity
             android:name=".ui.activities.DemoActivity"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false" />
         <activity
             android:name=".ui.activities.SplashActivity"
+            android:theme="@style/Theme.MyApp.Splash"
             android:exported="true">
-           <!-- <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN" />
+                 <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
         </activity>
         <activity
             android:name=".ui.activities.VerificationActivity"
@@ -39,6 +33,15 @@
         <activity
             android:name=".ui.activities.AuthActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activities.DashboardActivity"
+            android:exported="false"
+            android:screenOrientation="portrait">
+           <!-- <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>-->
+        </activity>
 
 
     </application>

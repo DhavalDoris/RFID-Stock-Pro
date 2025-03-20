@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/main_bg_color"
     tools:context=".ui.activities.DashboardActivity">
 
     <!-- Toolbar -->
@@ -16,30 +16,90 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <RelativeLayout
+        android:id="@+id/rlRfidStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edittext_bg"
+        android:padding="@dimen/_6sdp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/commonToolbar">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivRFID"
+            style="@style/DashboardImageStyle"
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_35sdp"
+            android:layout_alignParentStart="true"
+            android:layout_marginLeft="@dimen/_5sdp"
+            app:srcCompat="@drawable/rfid_img" />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvRfidName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="-5dp"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:layout_toRightOf="@id/ivRFID"
+            android:fontFamily="@font/rethinksans_bold"
+            android:paddingTop="@dimen/_2sdp"
+            android:text="RFID"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_13ssp"
+            android:textStyle="bold" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvStaus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvRfidName"
+            android:layout_toRightOf="@id/ivRFID"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:text="connected"
+            android:textColor="@color/greenConnected"
+            android:textSize="@dimen/_10ssp" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Disconnect"
+            android:textColor="@color/gray"
+            android:paddingVertical="@dimen/_5sdp"
+            android:paddingHorizontal="@dimen/_10sdp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/_5sdp"
+            android:textStyle="bold"
+            android:textSize="@dimen/_8sdp"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:background="@drawable/bg_spinner" />
+
+    </RelativeLayout>
+
+
     <!-- Welcome Message -->
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tvWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/_15sdp"
+        android:layout_marginStart="@dimen/_20sdp"
+        android:layout_marginTop="@dimen/_15sdp"
         android:fontFamily="@font/rethinksans_variablefont_wght"
-        android:text="Welcome to "
         android:paddingTop="@dimen/_1sdp"
+        android:text="Welcome to "
         android:textColor="@color/black"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/commonToolbar"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="@dimen/_15sdp"
-        />
+        app:layout_constraintTop_toBottomOf="@id/rlRfidStatus" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tvUserName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/rethinksans_bold"
-        android:text="Harsh D. Parekh"
         android:paddingTop="@dimen/_1sdp"
+        android:text="Harsh D. Parekh"
         android:textColor="@color/black"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -51,252 +111,640 @@
         android:id="@+id/tvUserRole"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/_5sdp"
         android:background="@drawable/role_bg"
         android:fontFamily="@font/rethinksans_variablefont_wght"
         android:paddingHorizontal="@dimen/_7sdp"
         android:paddingVertical="@dimen/_2sdp"
-        android:layout_marginLeft="@dimen/_5sdp"
         android:text="Staff"
         android:textColor="#EB7375"
         android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@id/tvUserName"
         app:layout_constraintTop_toTopOf="@id/tvWelcome" />
 
-    <!-- Menu Grid -->
-    <LinearLayout
-        android:id="@+id/gridMenu"
+
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:orientation="vertical"
+        android:layout_marginTop="@dimen/_10sdp"
+        app:layout_constraintBottom_toTopOf="@id/footerView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvUserRole"
-        app:layout_constraintBottom_toTopOf="@id/revenueCard"
-        android:paddingHorizontal="@dimen/_10sdp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp">
+        app:layout_constraintTop_toBottomOf="@id/tvUserRole">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/_75sdp"
-            android:orientation="horizontal"
-            android:gravity="center">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <RelativeLayout
-                android:layout_width="0dp"
-                android:layout_height="@dimen/_70sdp"
-                android:layout_weight="1"
-                style="@style/DashboardButtonStyle">
+            <!-- Menu Grid -->
+            <LinearLayout
+                android:id="@+id/gridMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_5sdp"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/_10sdp"
+                app:layout_constraintBottom_toTopOf="@id/revenueCard"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvUserRole">
 
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/DashboardTextStyle"
-                    android:text="Buy" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_75sdp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
 
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="@dimen/_50sdp"
-                    android:layout_height="@dimen/_50sdp"
-                    style="@style/DashboardImageStyle"
-                    app:srcCompat="@drawable/buy_cart" />
+                    <RelativeLayout
+                        style="@style/DashboardButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/_70sdp"
+                        android:layout_weight="1">
 
-            </RelativeLayout>
+                        <androidx.appcompat.widget.AppCompatTextView
+                            style="@style/DashboardTextStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Buy" />
 
-            <View
-                android:layout_width="@dimen/_10sdp"
-                android:layout_height="wrap_content"/>
+                        <androidx.appcompat.widget.AppCompatImageView
+                            style="@style/DashboardImageStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/buy_cart" />
 
-            <RelativeLayout
-                android:layout_width="0dp"
-                android:layout_height="@dimen/_70sdp"
-                android:layout_weight="1"
-                android:backgroundTint="#EFEBFA"
-                style="@style/DashboardButtonStyle">
+                    </RelativeLayout>
 
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/DashboardTextStyle"
-                    android:textColor="#7448DD"
-                    android:text="sell" />
+                    <View
+                        android:layout_width="@dimen/_10sdp"
+                        android:layout_height="wrap_content" />
 
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="@dimen/_50sdp"
-                    android:layout_height="@dimen/_50sdp"
-                    style="@style/DashboardImageStyle"
-                    app:srcCompat="@drawable/sell_icon" />
+                    <RelativeLayout
+                        style="@style/DashboardButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/_70sdp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#EFEBFA">
 
-            </RelativeLayout>
+                        <androidx.appcompat.widget.AppCompatTextView
+                            style="@style/DashboardTextStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="sell"
+                            android:textColor="#7448DD" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            style="@style/DashboardImageStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/sell_icon" />
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_75sdp"
+                    android:layout_marginTop="@dimen/_5sdp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <RelativeLayout
+                        style="@style/DashboardButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/_70sdp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#D7EBFF">
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            style="@style/DashboardTextStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Product\nManagement"
+                            android:textColor="#4288CF" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            style="@style/DashboardImageStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/product_icon" />
+
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="@dimen/_10sdp"
+                        android:layout_height="wrap_content" />
+
+                    <RelativeLayout
+                        style="@style/DashboardButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/_70sdp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#D9F3F4">
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            style="@style/DashboardTextStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Orders"
+                            android:textColor="#28A1AC" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            style="@style/DashboardImageStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/orders_icon" />
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_75sdp"
+                    android:layout_marginTop="@dimen/_5sdp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <RelativeLayout
+                        style="@style/DashboardButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/_70sdp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#E2F4D9">
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            style="@style/DashboardTextStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Reports"
+                            android:textColor="#749F62" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            style="@style/DashboardImageStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/report_icon" />
+
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="@dimen/_10sdp"
+                        android:layout_height="wrap_content" />
+
+                    <RelativeLayout
+                        style="@style/DashboardButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/_70sdp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#FBF2CD">
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            style="@style/DashboardTextStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Import"
+                            android:textColor="#CBA505" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            style="@style/DashboardImageStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/import_icon" />
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Revenue Graph -->
+            <LinearLayout
+                android:id="@+id/revenueCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_15sdp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/edittext_bg"
+                app:layout_constraintBottom_toTopOf="@id/btnConnectScanner"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Title -->
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/_5sdp"
+                        android:fontFamily="@font/rethinksans_bold"
+                        android:text="Stock Check History"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="@dimen/_180sdp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_5sdp"
+                        android:padding="5dp"
+                        android:weightSum="10.2">
+
+                        <!-- From Date -->
+                        <EditText
+                            android:id="@+id/etFromDate"
+                            android:layout_width="0dp"
+                            android:layout_height="@dimen/_30sdp"
+                            android:layout_weight="5.6"
+                            android:background="@drawable/edittext_bg"
+                            android:drawableEnd="@drawable/calendar_icon"
+                            android:focusable="false"
+                            android:fontFamily="@font/rethinksans_variablefont_wght"
+                            android:gravity="center_vertical"
+                            android:hint="From date"
+                            android:paddingStart="@dimen/_8sdp"
+                            android:paddingEnd="@dimen/_6sdp"
+                            android:singleLine="true"
+                            android:textColor="@color/gray"
+                            android:textColorHint="@color/gray"
+                            android:textSize="@dimen/_12ssp" />
+
+                        <Space
+                            android:layout_width="@dimen/_5sdp"
+                            android:layout_height="wrap_content" />
+
+                        <!-- To Date -->
+                        <EditText
+                            android:id="@+id/etToDate"
+                            android:layout_width="0dp"
+                            android:layout_height="@dimen/_30sdp"
+                            android:layout_weight="4.6"
+                            android:background="@drawable/edittext_bg"
+                            android:drawableEnd="@drawable/calendar_icon"
+                            android:focusable="false"
+                            android:fontFamily="@font/rethinksans_variablefont_wght"
+                            android:gravity="center_vertical"
+                            android:hint="To date"
+                            android:paddingStart="@dimen/_8sdp"
+                            android:paddingEnd="@dimen/_8sdp"
+                            android:singleLine="true"
+                            android:textColor="@color/gray"
+                            android:textColorHint="@color/gray"
+                            android:textSize="@dimen/_12ssp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_2sdp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.9"
+                            android:orientation="vertical">
+
+                            <!-- Dropdown Filter -->
+                            <LinearLayout
+                                android:layout_width="@dimen/_91sdp"
+                                android:layout_height="@dimen/_27sdp"
+                                android:layout_marginLeft="@dimen/_4sdp"
+                                android:background="@drawable/bg_spinner"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp">
+
+                                <Spinner
+                                    android:id="@+id/spinnerTimeFilter"
+                                    android:layout_width="0dp"
+                                    android:layout_height="match_parent"
+                                    android:layout_weight="1"
+                                    android:background="@null"
+                                    android:dropDownHorizontalOffset="0dp"
+                                    android:dropDownVerticalOffset="30dp"
+                                    android:gravity="center"
+                                    android:paddingEnd="4dp"
+                                    android:popupBackground="@color/white" />
+
+                                <!-- Manually add dropdown icon -->
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_marginStart="-20dp"
+                                    android:src="@drawable/drop_down_arrow" />
+                            </LinearLayout>
+
+
+                            <!-- Legend -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_marginLeft="@dimen/_5sdp"
+                                android:layout_marginTop="@dimen/_10sdp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <View
+                                        android:layout_width="16dp"
+                                        android:layout_height="16dp"
+                                        android:background="@color/colorActive" />
+
+                                    <androidx.appcompat.widget.AppCompatTextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:fontFamily="@font/rethinksans_variablefont_wght"
+                                        android:text="Active         15"
+                                        android:textColor="@color/black"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="@dimen/_100sdp"
+                                    android:layout_height="@dimen/_3sdp"
+                                    android:layout_marginVertical="@dimen/_5sdp"
+                                    android:background="@drawable/dotted_line" />
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <View
+                                        android:layout_width="16dp"
+                                        android:layout_height="16dp"
+                                        android:background="@color/colorPending" />
+
+                                    <androidx.appcompat.widget.AppCompatTextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:fontFamily="@font/rethinksans_variablefont_wght"
+                                        android:text="Pending      10"
+                                        android:textColor="@color/black"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="@dimen/_100sdp"
+                                    android:layout_height="@dimen/_3sdp"
+                                    android:layout_marginVertical="@dimen/_5sdp"
+                                    android:background="@drawable/dotted_line" />
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <View
+                                        android:layout_width="16dp"
+                                        android:layout_height="16dp"
+                                        android:background="@color/colorInactive" />
+
+                                    <androidx.appcompat.widget.AppCompatTextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:fontFamily="@font/rethinksans_variablefont_wght"
+                                        android:text="Inactive      30"
+                                        android:textColor="@color/black"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="@dimen/_100sdp"
+                                    android:layout_height="@dimen/_3sdp"
+                                    android:layout_marginVertical="@dimen/_5sdp"
+                                    android:background="@drawable/dotted_line" />
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <View
+                                        android:layout_width="16dp"
+                                        android:layout_height="16dp"
+                                        android:background="@color/colorReturn" />
+
+                                    <androidx.appcompat.widget.AppCompatTextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:fontFamily="@font/rethinksans_variablefont_wght"
+                                        android:text="Return        30"
+                                        android:textColor="@color/black"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="@dimen/_100sdp"
+                                    android:layout_height="@dimen/_3sdp"
+                                    android:layout_marginVertical="@dimen/_5sdp"
+                                    android:background="@drawable/dotted_line" />
+
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <View
+                                        android:layout_width="16dp"
+                                        android:layout_height="16dp"
+                                        android:background="@color/colorSold" />
+
+                                    <androidx.appcompat.widget.AppCompatTextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:fontFamily="@font/rethinksans_variablefont_wght"
+                                        android:text="Sold            30"
+                                        android:textColor="@color/black"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center">
+
+                            <!-- Pie Chart -->
+                            <com.github.mikephil.charting.charts.PieChart
+                                android:id="@+id/pieChart"
+                                android:layout_width="@dimen/_130sdp"
+                                android:layout_height="@dimen/_130sdp" />
+
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/llOrder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_15sdp"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:layout_marginBottom="@dimen/_20sdp"
+                android:orientation="horizontal"
+                android:padding="2dp"
+                app:layout_constraintBottom_toTopOf="@id/revenueCard"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_55sdp"
+                    android:layout_weight="1"
+                    android:background="@drawable/edittext_bg">
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/ivOrder"
+                        style="@style/DashboardImageStyle"
+                        android:layout_width="@dimen/_35sdp"
+                        android:layout_height="@dimen/_35sdp"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginLeft="@dimen/_5sdp"
+                        android:layout_marginRight="@dimen/_5sdp"
+                        app:srcCompat="@drawable/order_icon" />
+
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/tvOrder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_12sdp"
+                        android:layout_toRightOf="@+id/ivOrder"
+                        android:fontFamily="@font/rethinksans_variablefont_wght"
+                        android:text="Order by Today"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/_10sdp" />
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tvOrder"
+                        android:layout_toRightOf="@+id/ivOrder"
+                        android:fontFamily="@font/rethinksans_bold"
+                        android:text="150"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/_14ssp"
+                        android:textStyle="bold" />
+
+
+                </RelativeLayout>
+
+                <Space
+                    android:layout_width="@dimen/_10sdp"
+                    android:layout_height="@dimen/_10sdp" />
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_55sdp"
+                    android:layout_weight="1"
+                    android:background="@drawable/edittext_bg">
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/ivReturn"
+                        style="@style/DashboardImageStyle"
+                        android:layout_width="@dimen/_35sdp"
+                        android:layout_height="@dimen/_35sdp"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginLeft="@dimen/_5sdp"
+                        android:layout_marginRight="@dimen/_5sdp"
+                        app:srcCompat="@drawable/return_icon" />
+
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/tvReturn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_10sdp"
+                        android:layout_toRightOf="@+id/ivReturn"
+                        android:fontFamily="@font/rethinksans_variablefont_wght"
+                        android:text="Return by Today"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/_10sdp" />
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tvReturn"
+                        android:layout_toRightOf="@+id/ivReturn"
+                        android:fontFamily="@font/rethinksans_bold"
+                        android:text="35"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/_14ssp"
+                        android:textStyle="bold" />
+
+
+                </RelativeLayout>
+
+            </LinearLayout>
 
         </LinearLayout>
 
-        <LinearLayout
+    </androidx.core.widget.NestedScrollView>
+
+
+    <!-- Connect Scanner Button -->
+
+    <LinearLayout
+        android:id="@+id/footerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/edittext_bg"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/btnConnectScanner"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/_75sdp"
-            android:orientation="horizontal"
-            android:layout_marginTop="@dimen/_5sdp"
-            android:gravity="center">
-
-            <RelativeLayout
-                android:layout_width="0dp"
-                android:layout_height="@dimen/_70sdp"
-                android:layout_weight="1"
-                android:backgroundTint="#D7EBFF"
-                style="@style/DashboardButtonStyle">
-
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/DashboardTextStyle"
-                    android:text="Product\nManagement"
-                    android:textColor="#4288CF"/>
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="@dimen/_50sdp"
-                    android:layout_height="@dimen/_50sdp"
-                    style="@style/DashboardImageStyle"
-                    app:srcCompat="@drawable/product_icon" />
-
-            </RelativeLayout>
-
-            <View
-                android:layout_width="@dimen/_10sdp"
-                android:layout_height="wrap_content"/>
-
-            <RelativeLayout
-                android:layout_width="0dp"
-                android:layout_height="@dimen/_70sdp"
-                android:layout_weight="1"
-                android:backgroundTint="#D9F3F4"
-                style="@style/DashboardButtonStyle">
-
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/DashboardTextStyle"
-                    android:textColor="#28A1AC"
-                    android:text="Orders" />
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="@dimen/_50sdp"
-                    android:layout_height="@dimen/_50sdp"
-                    style="@style/DashboardImageStyle"
-                    app:srcCompat="@drawable/orders_icon" />
-
-            </RelativeLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_75sdp"
-            android:orientation="horizontal"
-            android:layout_marginTop="@dimen/_5sdp"
-            android:gravity="center">
-
-            <RelativeLayout
-                android:layout_width="0dp"
-                android:layout_height="@dimen/_70sdp"
-                android:layout_weight="1"
-                android:backgroundTint="#E2F4D9"
-                style="@style/DashboardButtonStyle">
-
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/DashboardTextStyle"
-                    android:text="Reports"
-                    android:textColor="#749F62"/>
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="@dimen/_50sdp"
-                    android:layout_height="@dimen/_50sdp"
-                    style="@style/DashboardImageStyle"
-                    app:srcCompat="@drawable/report_icon" />
-
-            </RelativeLayout>
-
-            <View
-                android:layout_width="@dimen/_10sdp"
-                android:layout_height="wrap_content"/>
-
-            <RelativeLayout
-                android:layout_width="0dp"
-                android:layout_height="@dimen/_70sdp"
-                android:layout_weight="1"
-                android:backgroundTint="#FBF2CD"
-                style="@style/DashboardButtonStyle">
-
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/DashboardTextStyle"
-                    android:textColor="#CBA505"
-                    android:text="Import" />
-
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="@dimen/_50sdp"
-                    android:layout_height="@dimen/_50sdp"
-                    style="@style/DashboardImageStyle"
-                    app:srcCompat="@drawable/import_icon" />
-
-            </RelativeLayout>
-
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/_20sdp"
+            android:layout_marginTop="@dimen/_15sdp"
+            android:layout_marginBottom="@dimen/_15sdp"
+            android:background="@drawable/continue_btn_bg"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="Connect Scanner"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/_15ssp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
 
     </LinearLayout>
 
 
 
-
-    <!-- Revenue Graph -->
-     <androidx.cardview.widget.CardView
-         android:id="@+id/revenueCard"
-         android:layout_width="0dp"
-         android:layout_height="wrap_content"
-         app:layout_constraintBottom_toTopOf="@id/btnConnectScanner"
-         app:layout_constraintStart_toStartOf="parent"
-         app:layout_constraintEnd_toEndOf="parent"
-         android:layout_marginTop="16dp"
-         android:elevation="4dp"
-         app:cardCornerRadius="8dp">
-
-         <androidx.appcompat.widget.LinearLayoutCompat
-             android:layout_width="match_parent"
-             android:layout_height="wrap_content"
-             android:orientation="vertical"
-             android:padding="16dp">
-
-             <androidx.appcompat.widget.AppCompatTextView
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:text="Revenue By Day"
-                 android:textSize="16sp"
-                 android:textStyle="bold" />
-
-             <!-- Line Chart Placeholder -->
-             <androidx.appcompat.widget.AppCompatImageView
-                 android:id="@+id/lineChart"
-                 android:layout_width="match_parent"
-                 android:layout_height="200dp"
-                 android:background="@color/gray_line"
-                 android:layout_marginTop="8dp"/>
-         </androidx.appcompat.widget.LinearLayoutCompat>
-     </androidx.cardview.widget.CardView>
-
-      <!-- Connect Scanner Button -->
-      <androidx.appcompat.widget.AppCompatButton
-          android:id="@+id/btnConnectScanner"
-          android:layout_width="0dp"
-          android:layout_height="wrap_content"
-          android:text="Connect Scanner"
-          android:backgroundTint="@color/appMainColor"
-          android:textColor="@color/white"
-          app:layout_constraintStart_toStartOf="parent"
-          app:layout_constraintEnd_toEndOf="parent"
-          android:layout_marginTop="16dp"
-          app:layout_constraintBottom_toBottomOf="parent"
-          android:layout_marginBottom="16dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

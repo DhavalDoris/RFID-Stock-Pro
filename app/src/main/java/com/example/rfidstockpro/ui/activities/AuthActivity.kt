@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.viewpager2.widget.ViewPager2
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.adapter.AuthPagerAdapter
 import com.example.rfidstockpro.databinding.ActivityAuthBinding
 import com.google.android.material.tabs.TabLayoutMediator
@@ -19,8 +21,11 @@ class AuthActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        StatusBarUtils.setTransparentStatusBar(this)
 
         val adapter = AuthPagerAdapter(this)
         binding.viewPager.adapter = adapter

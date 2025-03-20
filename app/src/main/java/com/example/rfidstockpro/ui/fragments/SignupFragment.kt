@@ -1,6 +1,7 @@
 package com.example.rfidstockpro.ui.fragments
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
@@ -12,6 +13,8 @@ import androidx.fragment.app.viewModels
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.TextUtils
 import com.example.rfidstockpro.databinding.FragmentSignupBinding
+import com.example.rfidstockpro.ui.activities.DashboardActivity
+import com.example.rfidstockpro.ui.activities.VerificationActivity
 import com.example.rfidstockpro.viewmodel.AuthViewModel
 import com.google.android.material.snackbar.Snackbar
 
@@ -134,7 +137,8 @@ class SignupFragment : Fragment() {
                 )
             ) {
                 Toast.makeText(requireContext(), "Signup Successful", Toast.LENGTH_SHORT).show()
-                // TODO: Implement AWS Cognito Signup
+                startActivity(Intent(requireActivity(), VerificationActivity::class.java))
+                requireActivity().finish()
             }
         }
     }

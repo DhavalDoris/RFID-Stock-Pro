@@ -12,4 +12,7 @@
     <color name="colorActive">#3ACCD1</color>
     <color name="colorPending">#FA904F</color>
     <color name="colorInactive">#F55050</color>
+    <color name="colorReturn">#65A6FB</color>
+    <color name="colorSold">#BDBDBD</color>
+    <color name="greenConnected">#35B548</color>
 </resources>

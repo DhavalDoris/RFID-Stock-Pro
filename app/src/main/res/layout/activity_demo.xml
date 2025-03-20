@@ -8,11 +8,11 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/cardStockCheckHistory"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_400sdp"
+        android:layout_height="wrap_content"
         android:layout_margin="16dp"
+        app:cardBackgroundColor="@color/main_bg_color"
         app:cardCornerRadius="8dp"
-        app:cardElevation="4dp"
-        app:cardBackgroundColor="@color/main_bg_color">
+        app:cardElevation="4dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -24,176 +24,265 @@
             <androidx.appcompat.widget.AppCompatTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/_5sdp"
                 android:fontFamily="@font/rethinksans_bold"
                 android:text="Stock Check History"
+                android:textColor="@color/black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-
-            <!-- Date Filter -->
-            <!-- <LinearLayout
-                 android:layout_width="match_parent"
-                 android:layout_height="wrap_content"
-                 android:layout_marginTop="8dp"
-                 android:orientation="horizontal">
-
-                 <androidx.appcompat.widget.AppCompatEditText
-                     android:id="@+id/etFromDate"
-                     android:layout_width="0dp"
-                     android:layout_height="wrap_content"
-                     android:layout_weight="1"
-                     android:drawableEnd="@drawable/calendar_icon"
-                     android:hint="From date"
-                     android:padding="8dp" />
-
-                 <View
-                     android:layout_width="8dp"
-                     android:layout_height="20dp" />
-
-                 <androidx.appcompat.widget.AppCompatEditText
-                     android:id="@+id/etToDate"
-                     android:layout_width="0dp"
-                     android:layout_height="wrap_content"
-                     android:layout_weight="1"
-                     android:drawableEnd="@drawable/calendar_icon"
-                     android:hint="To date"
-                     android:padding="8dp" />
-             </LinearLayout>-->
-
 
             <LinearLayout
                 android:layout_width="@dimen/_180sdp"
                 android:layout_height="wrap_content"
                 android:padding="5dp"
-                android:weightSum="10">
+                android:weightSum="10.2">
 
                 <!-- From Date -->
                 <EditText
                     android:id="@+id/etFromDate"
                     android:layout_width="0dp"
                     android:layout_height="@dimen/_30sdp"
-                    android:layout_weight="5.7"
+                    android:layout_weight="5.6"
                     android:background="@drawable/edittext_bg"
-                    android:hint="From date"
-                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:drawableEnd="@drawable/calendar_icon"
                     android:focusable="false"
-                    android:singleLine="true"
-                    android:textColor="@color/gray"
-                    android:textSize="@dimen/_12ssp"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
                     android:gravity="center_vertical"
+                    android:hint="From date"
                     android:paddingStart="@dimen/_8sdp"
                     android:paddingEnd="@dimen/_6sdp"
-                    android:drawableEnd="@drawable/calendar_icon" />
+                    android:singleLine="true"
+                    android:textColor="@color/gray"
+                    android:textColorHint="@color/gray"
+                    android:textSize="@dimen/_12ssp" />
 
                 <Space
                     android:layout_width="@dimen/_5sdp"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content" />
 
                 <!-- To Date -->
                 <EditText
                     android:id="@+id/etToDate"
                     android:layout_width="0dp"
                     android:layout_height="@dimen/_30sdp"
-                    android:layout_weight="4.5"
+                    android:layout_weight="4.6"
                     android:background="@drawable/edittext_bg"
-                    android:hint="To date"
-                    android:singleLine="true"
+                    android:drawableEnd="@drawable/calendar_icon"
                     android:focusable="false"
                     android:fontFamily="@font/rethinksans_variablefont_wght"
-                    android:textColor="@color/gray"
-                    android:textSize="@dimen/_12ssp"
                     android:gravity="center_vertical"
+                    android:hint="To date"
                     android:paddingStart="@dimen/_8sdp"
                     android:paddingEnd="@dimen/_8sdp"
-                    android:drawableEnd="@drawable/calendar_icon" />
+                    android:singleLine="true"
+                    android:textColor="@color/gray"
+                    android:textColorHint="@color/gray"
+                    android:textSize="@dimen/_12ssp" />
 
             </LinearLayout>
 
-            <!-- Dropdown Filter -->
-            <Spinner
-                android:id="@+id/spinnerTimeFilter"
-                android:layout_width="match_parent"
-                android:layout_height="20dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_spinner" />
-
-            <!-- Pie Chart and Image Selector -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_200sdp"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
 
-                <!-- Legend -->
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.8"
                     android:orientation="vertical">
 
+                    <!-- Dropdown Filter -->
                     <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:layout_width="@dimen/_91sdp"
+                        android:layout_height="@dimen/_27sdp"
+                        android:layout_marginLeft="@dimen/_4sdp"
+                        android:background="@drawable/bg_spinner"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingEnd="8dp"
+                        android:paddingStart="8dp">
 
-                        <View
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:background="@color/colorActive" />
+                        <Spinner
+                            android:id="@+id/spinnerTimeFilter"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:gravity="center"
+                            android:popupBackground="@color/white"
+                            android:paddingEnd="4dp"
+                            android:dropDownVerticalOffset="30dp"
+                            android:dropDownHorizontalOffset="0dp"/>
 
-                        <androidx.appcompat.widget.AppCompatTextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="Active: 15" />
+                        <!-- Manually add dropdown icon -->
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="-20dp"
+                            android:src="@drawable/drop_down_arrow"/>
                     </LinearLayout>
 
+
+
+                    <!-- Legend -->
                     <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal">
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="@dimen/_5sdp"
+                        android:layout_marginTop="@dimen/_10sdp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-                        <View
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:background="@color/colorPending" />
-
-                        <androidx.appcompat.widget.AppCompatTextView
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="Pending: 10" />
-                    </LinearLayout>
+                            android:orientation="horizontal">
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal">
+                            <View
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:background="@color/colorActive" />
+
+                            <androidx.appcompat.widget.AppCompatTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:fontFamily="@font/rethinksans_variablefont_wght"
+                                android:text="Active       15"
+                                android:textColor="@color/black"
+                                android:textStyle="bold" />
+                        </LinearLayout>
 
                         <View
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:background="@color/colorInactive" />
+                            android:layout_width="@dimen/_80sdp"
+                            android:layout_height="@dimen/_3sdp"
+                            android:layout_marginVertical="@dimen/_5sdp"
+                            android:background="@drawable/dotted_line" />
 
-                        <androidx.appcompat.widget.AppCompatTextView
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="Inactive: 30" />
+                            android:orientation="horizontal">
+
+                            <View
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:background="@color/colorPending" />
+
+                            <androidx.appcompat.widget.AppCompatTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:fontFamily="@font/rethinksans_variablefont_wght"
+                                android:text="Pending    10"
+                                android:textColor="@color/black"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="@dimen/_80sdp"
+                            android:layout_height="@dimen/_3sdp"
+                            android:layout_marginVertical="@dimen/_5sdp"
+                            android:background="@drawable/dotted_line" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <View
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:background="@color/colorInactive" />
+
+                            <androidx.appcompat.widget.AppCompatTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:fontFamily="@font/rethinksans_variablefont_wght"
+                                android:text="Inactive    30"
+                                android:textColor="@color/black"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="@dimen/_80sdp"
+                            android:layout_height="@dimen/_3sdp"
+                            android:layout_marginVertical="@dimen/_5sdp"
+                            android:background="@drawable/dotted_line" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <View
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:background="@color/colorReturn" />
+
+                            <androidx.appcompat.widget.AppCompatTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:fontFamily="@font/rethinksans_variablefont_wght"
+                                android:text="Return      30"
+                                android:textColor="@color/black"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="@dimen/_80sdp"
+                            android:layout_height="@dimen/_3sdp"
+                            android:layout_marginVertical="@dimen/_5sdp"
+                            android:background="@drawable/dotted_line" />
+
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <View
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:background="@color/colorSold" />
+
+                            <androidx.appcompat.widget.AppCompatTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:fontFamily="@font/rethinksans_variablefont_wght"
+                                android:text="Sold          30"
+                                android:textColor="@color/black"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
                     </LinearLayout>
+
                 </LinearLayout>
 
-                <!-- Pie Chart -->
-                <com.github.mikephil.charting.charts.PieChart
-                    android:id="@+id/pieChart"
-                    android:layout_width="180dp"
-                    android:layout_height="180dp" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.2"
+                    android:gravity="center_vertical">
+
+                    <!-- Pie Chart -->
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/pieChart"
+                        android:layout_width="180dp"
+                        android:layout_height="180dp" />
+
+                </LinearLayout>
+
 
             </LinearLayout>
+
+
         </LinearLayout>
 
-    </androidx.cardview.widget.CardView>
 
+    </androidx.cardview.widget.CardView>
 
 </LinearLayout>

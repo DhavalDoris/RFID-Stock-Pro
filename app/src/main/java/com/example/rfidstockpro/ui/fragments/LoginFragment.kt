@@ -14,6 +14,7 @@ import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.TextUtils
 import com.example.rfidstockpro.databinding.FragmentLoginBinding
 import com.example.rfidstockpro.ui.activities.AuthActivity
+import com.example.rfidstockpro.ui.activities.DashboardActivity
 import com.example.rfidstockpro.ui.activities.VerificationActivity
 import com.example.rfidstockpro.viewmodel.AuthViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -86,7 +87,8 @@ class LoginFragment : Fragment() {
             }
             Toast.makeText(requireContext(), "Login Successful", Toast.LENGTH_SHORT).show()
             startActivity(Intent(requireActivity(), VerificationActivity::class.java))
-
+            requireActivity().finish()
+//            startActivity(Intent(requireActivity(), DashboardActivity::class.java))
         }
     }
 

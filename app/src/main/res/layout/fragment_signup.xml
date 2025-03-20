@@ -5,81 +5,88 @@
     android:padding="16dp"
     android:background="@color/main_bg_color">
 
-    <LinearLayout
-        android:id="@+id/llTop"
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nested"
+        android:layout_above="@+id/btnRegister"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-        <EditText
-            android:id="@+id/etUsername"
-            style="@style/AppEditText"
+        <LinearLayout
+            android:id="@+id/llTop"
             android:layout_width="match_parent"
-            android:background="@drawable/edittext_bg"
-            android:drawableStart="@drawable/ic_user"
-            android:drawablePadding="@dimen/_5sdp"
-            android:layout_marginTop="@dimen/_5sdp"
-            android:hint="Username"
-            android:padding="12dp" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-       <EditText
-           android:id="@+id/etCompanyName"
-            style="@style/AppEditText"
-            android:layout_width="match_parent"
-            android:layout_marginTop="@dimen/_15sdp"
-            android:background="@drawable/edittext_bg"
-            android:drawableStart="@drawable/ic_company"
-            android:drawablePadding="@dimen/_5sdp"
-            android:hint="Company Name"
-            android:padding="12dp" />
+            <EditText
+                android:id="@+id/etUsername"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:background="@drawable/edittext_bg"
+                android:drawableStart="@drawable/ic_user"
+                android:drawablePadding="@dimen/_5sdp"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:hint="Username"
+                android:padding="12dp" />
 
-        <EditText
-            android:id="@+id/etEmail"
-            style="@style/AppEditText"
-            android:layout_width="match_parent"
-            android:layout_marginTop="@dimen/_15sdp"
-            android:drawableStart="@drawable/ic_email"
-            android:drawablePadding="@dimen/_5sdp"
-            android:hint="Email Address"
-            android:padding="12dp" />
+            <EditText
+                android:id="@+id/etCompanyName"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:background="@drawable/edittext_bg"
+                android:drawableStart="@drawable/ic_company"
+                android:drawablePadding="@dimen/_5sdp"
+                android:hint="Company Name"
+                android:padding="12dp" />
 
-        <EditText
-            android:id="@+id/etContactNumber"
-            style="@style/AppEditText"
-            android:layout_width="match_parent"
-            android:layout_marginTop="@dimen/_15sdp"
-            android:drawableStart="@drawable/ic_phone"
-            android:drawablePadding="@dimen/_5sdp"
-            android:hint="Contact Number"
-            android:inputType="number"
-            android:padding="12dp" />
+            <EditText
+                android:id="@+id/etEmail"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:drawableStart="@drawable/ic_email"
+                android:drawablePadding="@dimen/_5sdp"
+                android:hint="Email Address"
+                android:padding="12dp" />
 
-        <EditText
-            android:id="@+id/etPassword"
-            style="@style/AppEditText"
-            android:layout_width="match_parent"
-            android:layout_marginTop="@dimen/_15sdp"
-            android:drawableStart="@drawable/ic_password"
-            android:drawablePadding="@dimen/_5sdp"
-            android:hint="Password"
-            android:inputType="textPassword"
-            android:drawableEnd="@drawable/eye_visible_image"
-            android:padding="12dp" />
+            <EditText
+                android:id="@+id/etContactNumber"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:drawableStart="@drawable/ic_phone"
+                android:drawablePadding="@dimen/_5sdp"
+                android:hint="Contact Number"
+                android:inputType="number"
+                android:padding="12dp" />
 
-        <EditText
-            android:id="@+id/etConfirmPassword"
-            style="@style/AppEditText"
-            android:layout_width="match_parent"
-            android:layout_marginTop="@dimen/_15sdp"
-            android:drawableStart="@drawable/ic_password"
-            android:drawablePadding="@dimen/_5sdp"
-            android:drawableEnd="@drawable/eye_visible_image"
-            android:hint="Confirm Password"
-            android:inputType="textPassword"
-            android:padding="12dp" />
+            <EditText
+                android:id="@+id/etPassword"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:drawableStart="@drawable/ic_password"
+                android:drawablePadding="@dimen/_5sdp"
+                android:hint="Password"
+                android:inputType="textPassword"
+                android:drawableEnd="@drawable/eye_visible_image"
+                android:padding="12dp" />
 
-    </LinearLayout>
+            <EditText
+                android:id="@+id/etConfirmPassword"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:drawableStart="@drawable/ic_password"
+                android:drawablePadding="@dimen/_5sdp"
+                android:drawableEnd="@drawable/eye_visible_image"
+                android:hint="Confirm Password"
+                android:inputType="textPassword"
+                android:padding="12dp"
+                android:imeOptions="actionDone"/>
+        </LinearLayout>
 
+    </androidx.core.widget.NestedScrollView>
 
     <TextView
         android:id="@+id/btnRegister"
@@ -91,6 +98,7 @@
         android:gravity="center"
         android:padding="12dp"
         android:text="Register"
+        android:foreground="?android:attr/selectableItemBackground"
         android:layout_above="@+id/tvTerms"
         android:textColor="@android:color/white"
         android:textSize="@dimen/_15ssp"

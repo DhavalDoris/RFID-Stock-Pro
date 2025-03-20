@@ -136,6 +136,7 @@
         android:fontFamily="@font/rethinksans_variablefont_wght"
         android:gravity="center"
         android:text="Confirm"
+        android:foreground="?android:attr/selectableItemBackground"
         android:textColor="@android:color/white"
         android:textSize="@dimen/_15ssp"
         app:layout_constraintEnd_toEndOf="parent"
