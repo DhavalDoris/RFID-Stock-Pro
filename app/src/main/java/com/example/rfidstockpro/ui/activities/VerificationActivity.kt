@@ -83,6 +83,7 @@ class VerificationActivity : AppCompatActivity() {
                 "${binding.etOtp1.text}${binding.etOtp2.text}${binding.etOtp3.text}${binding.etOtp4.text}"
             viewModel.verifyOtp(otp)
         }
+
     }
 
     private fun applySpannableText() {
@@ -132,7 +133,7 @@ class VerificationActivity : AppCompatActivity() {
 
         // Set the formatted text to the TextView
         binding.tvResendOtp.text = spannable
-// Enable clickable spans in TextView
+        // Enable clickable spans in TextView
         binding.tvResendOtp.movementMethod = LinkMovementMethod.getInstance()
         binding.tvResendOtp.highlightColor = Color.TRANSPARENT // Remove highlight when clicked
     }
