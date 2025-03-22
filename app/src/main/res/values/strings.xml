@@ -12,5 +12,50 @@
         <item>Yearly</item>
     </string-array>
 
+    <string name="connecting">Connecting....</string>
+
+    <string name="close">Close</string>
+    <string name="ok">OK</string>
+
+    <string name="Connect">Connect Scanner</string>
+    <string name="disConnect">Disconnect</string>
+    <string name="disConnectForSecond">Disconnect\n(Disconnect after %ds)</string>
+    <string name="disConnectForMinute">Disconnect\n(Disconnect after %dMin)</string>
+
+
+    <string name="scanning">Scanning...</string>
+    <string name="select_device">Select a device</string>
+    <string name="none_paired">No Matching</string>
+    <string name="none_found">Not found</string>
+    <string name="title_paired_devices">Matched</string>
+    <string name="title_other_devices">Other Devices</string>
+    <string name="button_scan">Scan</string>
+    <string name="title_activity_uhfmain">UHF</string>
+
+    <string name="clear_historical_records">Empty historical records</string>
+
+    <string name="invalid_bluetooth_address">Invalid Bluetooth address</string>
+
+    <string name="paired">paired</string>
+    <string name="ble_not_supported">Bluetooth Low Energy not supported</string>
+
+    <string name="history_connected_device">Historically connected devices</string>
+    <string name="no_history">No history</string>
+
+    <string name="scan">Scan</string>
+    <string name="cancel">Cancel</string>
+    <string name="title_stop_read_card">Please stop reading cards!</string>
+
+    <string name="permission_cancel">Exit application</string>
+    <string name="permission">Permission</string>
+    <string name="open_location_msg">The application requires enable location, otherwise Otherwise, the Bluetooth function cannot be used normally.</string>
+    <string name="open_location">Enable Location</string>
+
+    <string name="permission_enable">Enable Permissions</string>
+    <string name="permission_external_storage">The application requires storage permissions, otherwise it cannot be used normally.</string>
+
+    <string name="connect_success">Successful connection</string>
+    <string name="permission_location">The application requires location permissions, otherwise it cannot be used normally.</string>
+    <string name="permission_bluetooth">The application requires Bluetooth permissions, otherwise it cannot be used normally.</string>
 
 </resources>

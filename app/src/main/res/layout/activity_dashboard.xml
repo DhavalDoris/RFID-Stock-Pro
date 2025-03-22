@@ -22,6 +22,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/edittext_bg"
         android:padding="@dimen/_6sdp"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/commonToolbar">
 
@@ -61,17 +62,18 @@
             android:textSize="@dimen/_10ssp" />
 
         <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/btnDisconnect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Disconnect"
             android:textColor="@color/gray"
-            android:paddingVertical="@dimen/_5sdp"
-            android:paddingHorizontal="@dimen/_10sdp"
+            android:paddingVertical="@dimen/_7sdp"
+            android:paddingHorizontal="@dimen/_11sdp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="@dimen/_5sdp"
             android:textStyle="bold"
-            android:textSize="@dimen/_8sdp"
+            android:textSize="@dimen/_10sdp"
             android:fontFamily="@font/rethinksans_variablefont_wght"
             android:background="@drawable/bg_spinner" />
 
@@ -744,7 +746,5 @@
 
 
     </LinearLayout>
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

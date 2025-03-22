@@ -69,5 +69,6 @@ dependencies {
 
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
-
+    implementation(files("libs/DeviceAPI_ver20250209_release.aar"))
+    implementation("no.nordicsemi.android:dfu:2.4.1")
 }
