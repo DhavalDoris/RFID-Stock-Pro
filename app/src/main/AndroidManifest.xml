@@ -58,6 +58,7 @@
         <activity
             android:name=".ui.activities.DashboardActivity"
             android:exported="true"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -84,6 +85,9 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
+
+
+
     </application>
 
 </manifest>

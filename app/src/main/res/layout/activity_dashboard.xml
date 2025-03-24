@@ -40,8 +40,8 @@
             android:id="@+id/tvRfidName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="-5dp"
             android:layout_marginTop="@dimen/_2sdp"
+            android:layout_marginBottom="-5dp"
             android:layout_toRightOf="@id/ivRFID"
             android:fontFamily="@font/rethinksans_bold"
             android:paddingTop="@dimen/_2sdp"
@@ -65,17 +65,17 @@
             android:id="@+id/btnDisconnect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Disconnect"
-            android:textColor="@color/gray"
-            android:paddingVertical="@dimen/_7sdp"
-            android:paddingHorizontal="@dimen/_11sdp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="@dimen/_5sdp"
-            android:textStyle="bold"
-            android:textSize="@dimen/_10sdp"
+            android:background="@drawable/bg_spinner"
             android:fontFamily="@font/rethinksans_variablefont_wght"
-            android:background="@drawable/bg_spinner" />
+            android:paddingHorizontal="@dimen/_11sdp"
+            android:paddingVertical="@dimen/_7sdp"
+            android:text="Disconnect"
+            android:textColor="@color/gray"
+            android:textSize="@dimen/_10sdp"
+            android:textStyle="bold" />
 
     </RelativeLayout>
 
@@ -160,6 +160,7 @@
                     android:orientation="horizontal">
 
                     <RelativeLayout
+                        android:id="@+id/rlBuy"
                         style="@style/DashboardButtonStyle"
                         android:layout_width="0dp"
                         android:layout_height="@dimen/_70sdp"
@@ -722,8 +723,8 @@
         android:id="@+id/footerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:background="@drawable/edittext_bg"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -744,7 +745,15 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/realtabcontent"
+        android:visibility="visible"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/commonToolbar" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

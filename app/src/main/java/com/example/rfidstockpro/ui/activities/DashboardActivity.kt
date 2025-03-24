@@ -19,6 +19,7 @@ import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
@@ -26,6 +27,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.AnimationUtils
 import com.example.rfidstockpro.Utils.StatusBarUtils
@@ -33,6 +36,7 @@ import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
 import com.example.rfidstockpro.databinding.ActivityDashboardBinding
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
+import com.example.rfidstockpro.ui.fragments.UHFReadTagFragment
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
 import com.example.rfidstockpro.viewmodel.DashboardViewModel.Companion.SHOW_HISTORY_CONNECTED_LIST
 import com.github.mikephil.charting.charts.PieChart
@@ -40,10 +44,31 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.rscja.deviceapi.RFIDWithUHFBLE
+import com.rscja.deviceapi.entity.UHFTAGInfo
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback
 
+
 class DashboardActivity : AppCompatActivity() {
+
+    @kotlin.jvm.JvmField
+    var tagList: List<UHFTAGInfo>? = null
+
+    @kotlin.jvm.JvmField
+    var isShowDuplicateTags: Boolean = true
+
+    @kotlin.jvm.JvmField
+    var selectEPC: String? = null
+
+    @kotlin.jvm.JvmField
+    var isScanning: Boolean = false
+
+    @kotlin.jvm.JvmField
+    var isKeyDownUP: Boolean = false
+
+
+    var tvToolbarTitle: TextView? = null // Declare as public
+
     private var mDevice: BluetoothDevice? = null
     private lateinit var binding: ActivityDashboardBinding
     private lateinit var pieChart: PieChart
@@ -52,15 +77,31 @@ class DashboardActivity : AppCompatActivity() {
     private val REQUEST_SELECT_DEVICE: Int = 1
     private val PERMISSION_REQUEST_CODE = 100
     var mBtAdapter: BluetoothAdapter? = null
-    var uhf: RFIDWithUHFBLE = RFIDWithUHFBLE.getInstance()
+
+    @kotlin.jvm.JvmField
+    public var uhf: RFIDWithUHFBLE = RFIDWithUHFBLE.getInstance()
     private val timeFilterOptions = listOf("Weekly", "Monthly", "Yearly")
     private var isConnected = false
+
+
 //    var btStatus: BTStatus = BTStatus()
+
+
+//    private val connectStatusList: List<IConnectStatus> = java.util.ArrayList()
 
 
     private val connectStatusList: MutableList<IConnectStatus> =
         java.util.ArrayList<IConnectStatus>()
 //    private var timerTask: DisconnectTimerTask? = null
+
+
+    fun addConnectStatusNotice(iConnectStatus: IConnectStatus?) {
+        connectStatusList.add(iConnectStatus!!)
+    }
+
+    fun removeConnectStatusNotice(iConnectStatus: IConnectStatus?) {
+        connectStatusList.remove(iConnectStatus)
+    }
 
     interface IConnectStatus {
         fun getStatus(connectionStatus: ConnectionStatus?)
@@ -173,12 +214,42 @@ class DashboardActivity : AppCompatActivity() {
         uhf.init(applicationContext)
         StatusBarUtils.setStatusBarColor(this)
 
+//        fm = supportFragmentManager
+//        mTabHost = findViewById(android.R.id.tabhost) as FragmentTabHost
+//        mTabHost!!.setup(this, fm!!, R.id.realtabcontent)
+//        mTabHost!!.addTab(mTabHost!!.newTabSpec(getString(R.string.title_inventory)).setIndicator(getString(R.string.title_inventory)), UHFReadTagFragment:: class.java, null)
+
 
         setupPieChart()
         checkPermissions()
         observeViewModel()
         setupUI()
         setupSpinner()
+        initClick()
+//        binding.realtabcontent.visibility = View.GONE
+
+        val toolbarView = findViewById<View>(R.id.commonToolbar)
+        tvToolbarTitle = toolbarView.findViewById(R.id.tvToolbarTitle)
+    }
+
+    fun updateToolbarTitle(title: String) {
+        tvToolbarTitle!!.text = title
+    }
+
+    private fun initClick() {
+        binding.rlBuy.setOnClickListener {
+            setFragment(UHFReadTagFragment())
+//            binding.realtabcontent.visibility = View.VISIBLE
+        }
+    }
+
+    protected fun setFragment(fragment: Fragment?) {
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction: FragmentTransaction =
+            fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.realtabcontent, fragment!!)
+        fragmentTransaction.addToBackStack(null) // Adds the fragment to back stack
+        fragmentTransaction.commit()
     }
 
     /*  public infix fun formatConnectButton(disconnectTime: Long) {
@@ -652,7 +723,6 @@ class DashboardActivity : AppCompatActivity() {
       }*/
 
 
-
     override fun onResume() {
         super.onResume()
         dashboardViewModel.checkBluetoothConnection()
@@ -711,9 +781,9 @@ class DashboardActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_REQUEST_CODE) {
             for (i in permissions.indices) {
-                Log.e(TAG, "onRequestPermissionsResult: out if "  )
+                Log.e(TAG, "onRequestPermissionsResult: out if ")
                 if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                    Log.e(TAG, "onRequestPermissionsResult: if "  )
+                    Log.e(TAG, "onRequestPermissionsResult: if ")
                     showPermissionDialog()
                     return
                 }
@@ -722,7 +792,7 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun showPermissionDialog() {
-        Log.e(TAG, "showPermissionDialog:  "  )
+        Log.e(TAG, "showPermissionDialog:  ")
         AlertDialog.Builder(this)
             .setTitle("Permission Required")
             .setMessage("This app requires Bluetooth and Location permissions to function properly.")
@@ -889,7 +959,8 @@ class DashboardActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     val deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE)
                     if (!deviceAddress.isNullOrEmpty()) {
-                        mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress)
+                        mDevice =
+                            BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress)
                         binding.tvRfidName.text = mDevice?.name ?: "Unknown Device"
                         binding.tvStaus.text = "Connecting..."
 //                        binding.rlRfidStatus.visibility = View.VISIBLE
@@ -920,7 +991,7 @@ class DashboardActivity : AppCompatActivity() {
                 override fun getStatus(connectionStatus: ConnectionStatus, device: Any?) {
                     runOnUiThread {
                         if (connectionStatus == ConnectionStatus.CONNECTED) {
-                            Log.e("ConetionTAG", "getStatus: "  + "IF" )
+                            Log.e("ConetionTAG", "getStatus: " + "IF")
 //                            showToast(this@DashboardActivity, getString(R.string.connect_success))
                             binding.tvStaus.text = "Connected"
 //                            binding.footerView.visibility = View.GONE
@@ -929,7 +1000,7 @@ class DashboardActivity : AppCompatActivity() {
                             AnimationUtils.fadeOutView(binding.footerView);
 
                         } else {
-                            Log.e("ConetionTAG", "getStatus: "  + "ELSE" )
+                            Log.e("ConetionTAG", "getStatus: " + "ELSE")
 //                            showToast(this@DashboardActivity, getString(R.string.disConnect))
                             binding.tvStaus.text = "Disconnected"
 //                            binding.footerView.visibility = View.VISIBLE
@@ -948,4 +1019,15 @@ class DashboardActivity : AppCompatActivity() {
         dashboardViewModel.disconnect(true)
         super.onDestroy()
     }
+
+    override fun onBackPressed() {
+        val fragmentManager = supportFragmentManager
+        if (fragmentManager.backStackEntryCount > 0) {
+            fragmentManager.popBackStack() // Removes the top fragment
+            updateToolbarTitle("Dashboard");
+        } else {
+            super.onBackPressed() // Exits the activity and goes back to MainActivity
+        }
+    }
+
 }

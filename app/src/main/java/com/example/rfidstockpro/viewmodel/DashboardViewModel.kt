@@ -54,6 +54,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     companion object {
+
+
         const val SHOW_HISTORY_CONNECTED_LIST: String = "showHistoryConnectedList"
         private const val RUNNING_DISCONNECT_TIMER = 10
         private var timeCountCur: Long = 0

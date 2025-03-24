@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="appMainColor">#486BF6</color>
@@ -15,4 +20,14 @@
     <color name="colorReturn">#65A6FB</color>
     <color name="colorSold">#BDBDBD</color>
     <color name="greenConnected">#35B548</color>
+
+    <color name="lightblue3">#99BBFF</color>
+
+    <color name="gray3">#ededed</color>
+    <color name="blue2">#2398bc</color>
+    <color name="blue1">#2095ac</color>
+    <color name="black1">#313a4d</color>
+
+    <color name="white_e0">#e0e0e0</color>
+
 </resources>

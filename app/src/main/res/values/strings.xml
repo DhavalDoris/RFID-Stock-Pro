@@ -58,4 +58,35 @@
     <string name="permission_location">The application requires location permissions, otherwise it cannot be used normally.</string>
     <string name="permission_bluetooth">The application requires Bluetooth permissions, otherwise it cannot be used normally.</string>
 
+    <string name="uhf_msg_inventory_stop_fail">Stop failure</string>
+
+    <string name="uhf_title_filter">filter</string>
+    <string name="tvPtr">Ptr：</string>
+    <string name="tvLen_Data">Len：</string>
+    <string name="tvData_Read">Data：</string>
+    <string name="uhf_msg_r2000_tip"></string>
+    <string name="setup">Setup</string>
+
+    <string name="tv_phase">Phase</string>
+    <string name="workTime">WorkTime</string>
+    <string name="second">s</string>
+    <string name="tvAll">All：</string>
+    <string name="tvTagCount">Count</string>
+
+    <string name="rbInventorySingle">Single</string>
+    <string name="rbInventoryLoop">Auto</string>
+    <string name="title_stop_Inventory">Stop</string>
+    <string name="title_stop">Stop</string>
+    <string name="btClear">Clear</string>
+
+    <string name="msg_copy_clipboard">TAG has been copied to clipboard</string>
+
+    <string name="uhf_msg_set_filter_fail">Set the filter failure</string>
+    <string name="uhf_msg_set_filter_fail2">Set the filter failure(length error)</string>
+    <string name="uhf_msg_set_filter_succ">Set the filter success</string>
+
+    <string name="msg_disable_succ">Disable success</string>
+    <string name="msg_disable_fail">Disable fail</string>
+
+    <string name="title_inventory">Inventory</string>
 </resources>
