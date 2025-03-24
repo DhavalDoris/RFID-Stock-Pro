@@ -1,7 +1,6 @@
 package com.example.rfidstockpro.ui.activities
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -10,18 +9,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
-import android.os.Handler
-import android.os.Looper
-import android.os.Message
-import android.os.SystemClock
 import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.TextUtils
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.util.Log
@@ -31,17 +23,18 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.lifecycle.ViewModelProvider
 import com.example.rfidstockpro.R
-import com.example.rfidstockpro.Utils.SPUtils
+import com.example.rfidstockpro.Utils.AnimationUtils
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
 import com.example.rfidstockpro.databinding.ActivityDashboardBinding
-import com.example.rfidstockpro.tools.FileUtils
+import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
+import com.example.rfidstockpro.viewmodel.DashboardViewModel.Companion.SHOW_HISTORY_CONNECTED_LIST
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
@@ -49,34 +42,31 @@ import com.github.mikephil.charting.data.PieEntry
 import com.rscja.deviceapi.RFIDWithUHFBLE
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback
-import java.util.Timer
-import java.util.TimerTask
 
 class DashboardActivity : AppCompatActivity() {
-
+    private var mDevice: BluetoothDevice? = null
     private lateinit var binding: ActivityDashboardBinding
     private lateinit var pieChart: PieChart
-    private lateinit var viewModel: DashboardViewModel
     private val dashboardViewModel: DashboardViewModel by viewModels()
-    private val timeFilterOptions = listOf("Weekly", "Monthly", "Yearly")
-
     private val REQUEST_ENABLE_BT: Int = 2
     private val REQUEST_SELECT_DEVICE: Int = 1
-
+    private val PERMISSION_REQUEST_CODE = 100
     var mBtAdapter: BluetoothAdapter? = null
-
-    var btStatus: BTStatus = BTStatus()
+    var uhf: RFIDWithUHFBLE = RFIDWithUHFBLE.getInstance()
+    private val timeFilterOptions = listOf("Weekly", "Monthly", "Yearly")
+    private var isConnected = false
+//    var btStatus: BTStatus = BTStatus()
 
 
     private val connectStatusList: MutableList<IConnectStatus> =
         java.util.ArrayList<IConnectStatus>()
-    private var timerTask: DisconnectTimerTask? = null
+//    private var timerTask: DisconnectTimerTask? = null
 
     interface IConnectStatus {
         fun getStatus(connectionStatus: ConnectionStatus?)
     }
 
-    companion object {
+    /*companion object {
 
         private val mDisconnectTimer = Timer()
 
@@ -169,64 +159,67 @@ class DashboardActivity : AppCompatActivity() {
         private fun shouldShowDisconnected(): Boolean {
             return mIsActiveDisconnect || mReConnectCount == 0
         }
-    }
+    }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        dashboardActivity = this // Assign activity instance
 
-        viewModel = ViewModelProvider(this).get(DashboardViewModel::class.java)
+//        dashboardActivity = this // Assign activity instance
+
+//        viewModel = ViewModelProvider(this).get(DashboardViewModel::class.java)
         mBtAdapter = BluetoothAdapter.getDefaultAdapter()
         uhf.init(applicationContext)
         StatusBarUtils.setStatusBarColor(this)
-        checkPermission()
-        setupUI()
+
+
         setupPieChart()
+        checkPermissions()
         observeViewModel()
+        setupUI()
         setupSpinner()
     }
 
-    public infix fun formatConnectButton(disconnectTime: Long) {
-        if (uhf.connectStatus == ConnectionStatus.CONNECTED) {
-            if (!isScanning && System.currentTimeMillis() - lastTouchTime > 1000 * 30 && Companion.timerTask != null) {
-                val minute = disconnectTime / 1000 / 60
-                if (minute > 0) {
-                    binding.btnConnectScanner.setText(
-                        getString(
-                            R.string.disConnectForMinute,
-                            minute
-                        )
-                    )
-                } else {
-                    binding.btnConnectScanner.setText(
-                        getString(
-                            R.string.disConnectForSecond,
-                            disconnectTime / 1000
-                        )
-                    )
-                }
-            } else {
-//                binding.btnConnectScanner.setText(R.string.disConnect)
-                binding.footerView.visibility = View.GONE
-            }
-        } else {
-            binding.btnConnectScanner.setText(R.string.Connect)
-        }
-    }
+    /*  public infix fun formatConnectButton(disconnectTime: Long) {
+          if (uhf.connectStatus == ConnectionStatus.CONNECTED) {
+              if (!isScanning && System.currentTimeMillis() - lastTouchTime > 1000 * 30 && Companion.timerTask != null) {
+                  val minute = disconnectTime / 1000 / 60
+                  if (minute > 0) {
+                      binding.btnConnectScanner.setText(
+                          getString(
+                              R.string.disConnectForMinute,
+                              minute
+                          )
+                      )
+                  } else {
+                      binding.btnConnectScanner.setText(
+                          getString(
+                              R.string.disConnectForSecond,
+                              disconnectTime / 1000
+                          )
+                      )
+                  }
+              } else {
+  //                binding.btnConnectScanner.setText(R.string.disConnect)
+                  binding.footerView.visibility = View.GONE
+              }
+          } else {
+              binding.btnConnectScanner.setText(R.string.Connect)
+          }
+      }*/
 
     private fun setupUI() {
-        binding.btnConnectScanner.setOnClickListener @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) {
+        /*binding.btnConnectScanner.setOnClickListener @androidx.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) {
 
             // Connect
-          /*  if (uhf.connectStatus == ConnectionStatus.CONNECTING) {
+          *//*  if (uhf.connectStatus == ConnectionStatus.CONNECTING) {
                 showToast(dashboardActivity!!, R.string.connecting.toString())
             } else if (uhf.connectStatus == ConnectionStatus.CONNECTED) {
                 disconnect(true)
             } else {
                 showBluetoothDevice(true)
-            }*/
+            }*//*
 
              // search
              if (isScanning) {
@@ -237,15 +230,28 @@ class DashboardActivity : AppCompatActivity() {
                  showBluetoothDevice(false)
              }
         }
-
-        binding.btnDisconnect.setOnClickListener {
+*/
+        /*binding.btnDisconnect.setOnClickListener {
             disconnect(true)
             binding.footerView.visibility = View.VISIBLE
+        }*/
+
+
+        binding.btnConnectScanner.setOnClickListener {
+            if (dashboardViewModel.isConnected.value == true) {
+                dashboardViewModel.disconnect(true)
+            } else {
+                showBluetoothDevice()
+            }
+        }
+
+        binding.btnDisconnect.setOnClickListener {
+            dashboardViewModel.disconnect(true)
         }
 
     }
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    /*@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun showBluetoothDevice(isHistory: Boolean) {
         if (mBtAdapter == null) {
             showToast(dashboardActivity!!, "Bluetooth is not available")
@@ -261,10 +267,26 @@ class DashboardActivity : AppCompatActivity() {
             startActivityForResult(newIntent, REQUEST_SELECT_DEVICE)
             cancelDisconnectTimer()
         }
+    }*/
+
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private fun showBluetoothDevice() {
+        if (mBtAdapter == null) {
+            return
+        }
+        if (!mBtAdapter!!.isEnabled) {
+            val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            startActivityForResult(enableIntent, REQUEST_ENABLE_BT)
+        } else {
+            val newIntent = Intent(this@DashboardActivity, DeviceListActivity::class.java)
+            newIntent.putExtra(SHOW_HISTORY_CONNECTED_LIST, false)
+            startActivityForResult(newIntent, REQUEST_SELECT_DEVICE)
+            dashboardViewModel.cancelDisconnectTimer()
+        }
     }
 
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         Log.i(TAG, "onActivityResult requestCode=$requestCode resultCode=$resultCode data=$data")
 
@@ -287,9 +309,9 @@ class DashboardActivity : AppCompatActivity() {
                         dashboardActivity!!.binding.rlRfidStatus.visibility = View.VISIBLE
                         binding.tvRfidName.text =  mDevice?.name
                         binding.tvStaus.text = "Connecting..."
-                        /* binding.btnConnectScanner.setText(
+                        *//* binding.btnConnectScanner.setText(
                             "connecting"
-                        )*/
+                        )*//*
                         connect(it)
                     }
                 }
@@ -336,70 +358,70 @@ class DashboardActivity : AppCompatActivity() {
                 }
             }
         }
-    }
+    }*/
 
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        Log.v(
-            TAG,
-            "onRequestPermissionsResult requestCode=$requestCode permissions=${permissions.contentToString()} grantResults=${grantResults.contentToString()}"
-        )
+    /*  override fun onRequestPermissionsResult(
+          requestCode: Int,
+          permissions: Array<out String>,
+          grantResults: IntArray
+      ) {
+          super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+          Log.v(
+              TAG,
+              "onRequestPermissionsResult requestCode=$requestCode permissions=${permissions.contentToString()} grantResults=${grantResults.contentToString()}"
+          )
 
-        when (requestCode) {
-            PERMISSION_REQUEST_EXTERNAL_STORAGE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // checkLocationPermission()
-                    // BleApplication.getApplication().createDir()
-                } else {
-                    showPermissionAlertDialog(getString(R.string.permission_external_storage)) { _, _ ->
-                        checkReadWritePermission()
-                    }
-                }
-            }
+          when (requestCode) {
+              PERMISSION_REQUEST_EXTERNAL_STORAGE -> {
+                  if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                      // checkLocationPermission()
+                      // BleApplication.getApplication().createDir()
+                  } else {
+                      showPermissionAlertDialog(getString(R.string.permission_external_storage)) { _, _ ->
+                          checkReadWritePermission()
+                      }
+                  }
+              }
 
-            PERMISSION_REQUEST_ACCESS_FINE_LOCATION -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    checkBluetoothPermission()
-                } else {
-                    showPermissionAlertDialog(getString(R.string.permission_location)) { _, _ ->
-                        checkLocationPermission()
-                    }
-                }
-            }
+              PERMISSION_REQUEST_ACCESS_FINE_LOCATION -> {
+                  if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                      checkBluetoothPermission()
+                  } else {
+                      showPermissionAlertDialog(getString(R.string.permission_location)) { _, _ ->
+                          checkLocationPermission()
+                      }
+                  }
+              }
 
-            PERMISSION_REQUEST_BLUETOOTH -> {
-                if (grantResults.isEmpty() || grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    showPermissionAlertDialog(getString(R.string.permission_bluetooth)) { _, _ ->
-                        checkBluetoothPermission()
-                    }
-                } else {
-                    checkReadWritePermission()
-                }
-            }
+              PERMISSION_REQUEST_BLUETOOTH -> {
+                  if (grantResults.isEmpty() || grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                      showPermissionAlertDialog(getString(R.string.permission_bluetooth)) { _, _ ->
+                          checkBluetoothPermission()
+                      }
+                  } else {
+                      checkReadWritePermission()
+                  }
+              }
 
-            PERMISSION_REQUEST_BLUETOOTH_CONNECT -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                    startActivityForResult(enableIntent, REQUEST_ENABLE_BT)
-                } else {
-                    showPermissionAlertDialog(getString(R.string.permission_bluetooth)) { _, _ ->
-                        requestPermissions(
-                            arrayOf(Manifest.permission.BLUETOOTH),
-                            PERMISSION_REQUEST_BLUETOOTH_CONNECT
-                        )
-                    }
-                }
-            }
-        }
-    }
+              PERMISSION_REQUEST_BLUETOOTH_CONNECT -> {
+                  if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                      val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                      startActivityForResult(enableIntent, REQUEST_ENABLE_BT)
+                  } else {
+                      showPermissionAlertDialog(getString(R.string.permission_bluetooth)) { _, _ ->
+                          requestPermissions(
+                              arrayOf(Manifest.permission.BLUETOOTH),
+                              PERMISSION_REQUEST_BLUETOOTH_CONNECT
+                          )
+                      }
+                  }
+              }
+          }
+      }*/
 
 
-    private fun checkReadWritePermission() {
+    /*private fun checkReadWritePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
@@ -421,7 +443,7 @@ class DashboardActivity : AppCompatActivity() {
                 )
             }
         }
-    }
+    }*/
 
     private fun isLocationEnabled(): Boolean {
         try {
@@ -434,14 +456,14 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    fun connect(deviceAddress: String) {
-        if (uhf.connectStatus == ConnectionStatus.CONNECTING) {
-            showToast(this@DashboardActivity, R.string.connecting.toString())
-        } else {
-            showToast(this@DashboardActivity, getString(R.string.Connect) + " " + deviceAddress)
-            uhf.connect(deviceAddress, btStatus)
-        }
-    }
+    /* fun connect(deviceAddress: String) {
+         if (uhf.connectStatus == ConnectionStatus.CONNECTING) {
+             showToast(this@DashboardActivity, R.string.connecting.toString())
+         } else {
+             showToast(this@DashboardActivity, getString(R.string.Connect) + " " + deviceAddress)
+             uhf.connect(deviceAddress, btStatus)
+         }
+     }*/
 
     private fun showPermissionAlertDialog(msg: String?, listener: DialogInterface.OnClickListener) {
         if (msg == null) return
@@ -457,7 +479,7 @@ class DashboardActivity : AppCompatActivity() {
     }
 
 
-    class BTStatus : ConnectionStatusCallback<Any?> {
+    /*class BTStatus : ConnectionStatusCallback<Any?> {
         override fun getStatus(connectionStatus: ConnectionStatus, device1: Any?) {
             dashboardActivity!!.runOnUiThread(Runnable {
                 @SuppressLint("MissingPermission")
@@ -507,11 +529,11 @@ class DashboardActivity : AppCompatActivity() {
 
                         dashboardActivity!!.binding.rlRfidStatus.visibility = View.GONE
                         dashboardActivity!!.binding.footerView.visibility = View.VISIBLE
-                        /* dashboardActivity!!.binding.tvRfidName.setText( String.format(
+                        *//* dashboardActivity!!.binding.tvRfidName.setText( String.format(
                              "%s(%s)\ndisconnected",
                              remoteBTName,
                              remoteBTAdd
-                         ))*/
+                         ))*//*
                     } else {
                         //  if (shouldShowDisconnected())
 //                        tvAddress.setText("disconnected")
@@ -542,10 +564,10 @@ class DashboardActivity : AppCompatActivity() {
             timerTask = DisconnectTimerTask()
             mDisconnectTimer.schedule(timerTask, 0, period)
         }
-    }
+    }*/
 
 
-    fun saveConnectedDevice(address: String, name: String?) {
+    /*fun saveConnectedDevice(address: String, name: String?) {
         val list: MutableList<Array<String?>> = FileUtils.readXmlList()
         var oldItem: Array<String?>? = null
         for (i in list.indices) {
@@ -567,9 +589,9 @@ class DashboardActivity : AppCompatActivity() {
         }
         list.add(0, strArr)
         FileUtils.saveXmlList(list)
-    }
+    }*/
 
-    private fun reConnect(deviceAddress: String) {
+    /*private fun reConnect(deviceAddress: String) {
         Log.i(
             TAG,
             "自动重连" + deviceAddress + " " + (!mIsActiveDisconnect && mReConnectCount > 0)
@@ -578,9 +600,9 @@ class DashboardActivity : AppCompatActivity() {
             connect(deviceAddress)
             mReConnectCount--
         }
-    }
+    }*/
 
-    private fun checkPermission() {
+    /*private fun checkPermission() {
         if (!isLocationEnabled()) {
             val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivityForResult(
@@ -597,9 +619,9 @@ class DashboardActivity : AppCompatActivity() {
         } else if (checkSelfPermission(Manifest.permission.BLUETOOTH) !== PackageManager.PERMISSION_GRANTED) {
             checkBluetoothPermission()
         }
-    }
+    }*/
 
-    private fun checkLocationPermission(): Boolean {
+    /*private fun checkLocationPermission(): Boolean {
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !== PackageManager.PERMISSION_GRANTED) {
             requestPermissions(
                 arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
@@ -608,26 +630,112 @@ class DashboardActivity : AppCompatActivity() {
             return false
         }
         return true
+    }*/
+
+
+    /*  private fun checkBluetoothPermission() {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+              requestPermissions(
+                  arrayOf<String>(
+                      Manifest.permission.BLUETOOTH_SCAN,
+                      Manifest.permission.BLUETOOTH_ADVERTISE,
+                      Manifest.permission.BLUETOOTH_CONNECT
+                  ),
+                  PERMISSION_REQUEST_BLUETOOTH
+              )
+          } else {
+              requestPermissions(
+                  arrayOf<String>(Manifest.permission.BLUETOOTH),
+                  PERMISSION_REQUEST_BLUETOOTH
+              )
+          }
+      }*/
+
+
+
+    override fun onResume() {
+        super.onResume()
+        dashboardViewModel.checkBluetoothConnection()
     }
 
+    private fun checkPermissions() {
+        val permissions = mutableListOf<String>()
 
-    private fun checkBluetoothPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            requestPermissions(
-                arrayOf<String>(
-                    Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_ADVERTISE,
+            if (ContextCompat.checkSelfPermission(
+                    this,
                     Manifest.permission.BLUETOOTH_CONNECT
-                ),
-                PERMISSION_REQUEST_BLUETOOTH
-            )
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+            }
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_SCAN
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                permissions.add(Manifest.permission.BLUETOOTH_SCAN)
+            }
         } else {
-            requestPermissions(
-                arrayOf<String>(Manifest.permission.BLUETOOTH),
-                PERMISSION_REQUEST_BLUETOOTH
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                permissions.add(Manifest.permission.BLUETOOTH)
+            }
+        }
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        if (permissions.isNotEmpty()) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissions.toTypedArray(),
+                PERMISSION_REQUEST_CODE
             )
         }
     }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            for (i in permissions.indices) {
+                Log.e(TAG, "onRequestPermissionsResult: out if "  )
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                    Log.e(TAG, "onRequestPermissionsResult: if "  )
+                    showPermissionDialog()
+                    return
+                }
+            }
+        }
+    }
+
+    private fun showPermissionDialog() {
+        Log.e(TAG, "showPermissionDialog:  "  )
+        AlertDialog.Builder(this)
+            .setTitle("Permission Required")
+            .setMessage("This app requires Bluetooth and Location permissions to function properly.")
+            .setPositiveButton("Grant") { _, _ ->
+                checkPermissions()
+            }
+            .setNegativeButton("Exit") { _, _ ->
+                finish()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
 
     private fun setupPieChart() {
 
@@ -693,24 +801,6 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
-        /*viewModel.stockData.observe(this) { data ->
-            val dataSet = PieDataSet(data, "")
-            dataSet.colors = listOf(
-                Color.parseColor("#20C4B3"), // Active (Teal)
-                Color.parseColor("#F1875F"), // Pending (Orange)
-                Color.parseColor("#E6504B")  // Inactive (Red)
-            )
-//            dataSet.valueTextSize = 14f
-//            dataSet.valueTextColor = Color.WHITE
-
-            val pieData = PieData(dataSet)
-            pieChart.data = pieData
-            pieChart.invalidate() // Refresh
-
-
-
-        }*/
-
         val entries = ArrayList<PieEntry>()
         entries.add(PieEntry(15f))  // Active
         entries.add(PieEntry(10f))  // Pending
@@ -744,13 +834,25 @@ class DashboardActivity : AppCompatActivity() {
             sliceSpace = 2f // **Add white space between slices**
         }
 
-
         val data = PieData(dataSet).apply {
             setDrawValues(false) // **Ensure no values are shown**
         }
 
         pieChart.data = data
         pieChart.invalidate() // Refresh chart
+
+        dashboardViewModel.connectButtonText.observe(this) { text ->
+            binding.btnConnectScanner.text = text
+        }
+
+        dashboardViewModel.rfidStatusText.observe(this) { text ->
+//            binding.tvStaus.text = text
+        }
+
+        dashboardViewModel.footerVisibility.observe(this) { isVisible ->
+//            binding.footerView.visibility = if (isVisible) View.VISIBLE else View.GONE
+//            binding.rlRfidStatus.visibility = if (!isVisible) View.GONE else View.VISIBLE
+        }
     }
 
     private fun setupSpinner() {
@@ -777,8 +879,73 @@ class DashboardActivity : AppCompatActivity() {
             }
     }
 
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.i(TAG, "onActivityResult: requestCode=$requestCode resultCode=$resultCode data=$data")
+
+        when (requestCode) {
+            REQUEST_SELECT_DEVICE -> {
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    val deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE)
+                    if (!deviceAddress.isNullOrEmpty()) {
+                        mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress)
+                        binding.tvRfidName.text = mDevice?.name ?: "Unknown Device"
+                        binding.tvStaus.text = "Connecting..."
+//                        binding.rlRfidStatus.visibility = View.VISIBLE
+                        AnimationUtils.fadeInView(binding.rlRfidStatus);
+                        connectToDevice(deviceAddress)
+                    }
+                }
+            }
+
+            REQUEST_ENABLE_BT -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    showBluetoothDevice()
+//                    showToast(dashboardActivity!!, "Bluetooth has turned on")
+                } else {
+//                    showToast(dashboardActivity!!, "Problem in BT Turning ON")
+                }
+            }
+        }
+    }
+
+
+    private fun connectToDevice(deviceAddress: String) {
+        if (uhf.connectStatus == ConnectionStatus.CONNECTING) {
+            showToast(this, getString(R.string.connecting))
+        } else {
+//            showToast(this, "Connecting to $deviceAddress")
+            uhf.connect(deviceAddress, object : ConnectionStatusCallback<Any?> {
+                override fun getStatus(connectionStatus: ConnectionStatus, device: Any?) {
+                    runOnUiThread {
+                        if (connectionStatus == ConnectionStatus.CONNECTED) {
+                            Log.e("ConetionTAG", "getStatus: "  + "IF" )
+//                            showToast(this@DashboardActivity, getString(R.string.connect_success))
+                            binding.tvStaus.text = "Connected"
+//                            binding.footerView.visibility = View.GONE
+//                            binding.rlRfidStatus.visibility = View.VISIBLE
+                            AnimationUtils.fadeInView(binding.rlRfidStatus);
+                            AnimationUtils.fadeOutView(binding.footerView);
+
+                        } else {
+                            Log.e("ConetionTAG", "getStatus: "  + "ELSE" )
+//                            showToast(this@DashboardActivity, getString(R.string.disConnect))
+                            binding.tvStaus.text = "Disconnected"
+//                            binding.footerView.visibility = View.VISIBLE
+//                            binding.rlRfidStatus.visibility = View.GONE
+                            AnimationUtils.fadeInView(binding.footerView);
+                            AnimationUtils.fadeOutView(binding.rlRfidStatus);
+                        }
+                    }
+                }
+            })
+        }
+    }
+
     override fun onDestroy() {
-        dashboardActivity = null // Prevent memory leaks
+//        dashboardActivity = null // Prevent memory leaks
+        dashboardViewModel.disconnect(true)
         super.onDestroy()
     }
 }

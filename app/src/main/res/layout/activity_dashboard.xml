@@ -57,7 +57,7 @@
             android:layout_below="@+id/tvRfidName"
             android:layout_toRightOf="@id/ivRFID"
             android:fontFamily="@font/rethinksans_variablefont_wght"
-            android:text="connected"
+            android:text=""
             android:textColor="@color/greenConnected"
             android:textSize="@dimen/_10ssp" />
 

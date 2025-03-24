@@ -19,7 +19,8 @@ package com.example.rfidstockpro.ui.activities;
 
 
 
-import static com.example.rfidstockpro.ui.activities.DashboardActivity.SHOW_HISTORY_CONNECTED_LIST;
+
+import static com.example.rfidstockpro.viewmodel.DashboardViewModel.SHOW_HISTORY_CONNECTED_LIST;
 
 import android.Manifest;
 import android.app.Activity;
@@ -67,7 +68,7 @@ public class DeviceListActivity extends AppCompatActivity {
 
     // private BluetoothAdapter mBtAdapter;
     private TextView mEmptyList;
-    public static final String TAG = "DeviceListActivity";
+    public static final String TAG = "DeviceListActivityKT";
 
     private TextView tvTitle;
 
