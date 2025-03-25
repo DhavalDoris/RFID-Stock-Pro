@@ -1,3 +1,4 @@
+/*
 package com.example.rfidstockpro.ui.fragments;
 
 import android.content.ClipData;
@@ -440,9 +441,11 @@ public class UHFReadTagFragment extends Fragment {
         adapter.notifyDataSetChanged();
     }
 
-    /**
+    */
+/**
      * 停止识别
-     */
+     *//*
+
     private void stop() {
         Log.i(TAG, "stop mContext.isScanning=false");
         handler.removeMessages(FLAG_TIME_OVER);
@@ -554,7 +557,8 @@ public class UHFReadTagFragment extends Fragment {
         tv_total.setText(String.valueOf(++total));
         adapter.notifyDataSetChanged();
 
-        /*boolean[] exists = new boolean[1];
+        */
+/*boolean[] exists = new boolean[1];
         int index = CheckUtils.getInsertIndex(tagList, uhftagInfo, exists);
         if (exists[0]) {
             tagList.get(index).setRssi(uhftagInfo.getRssi());
@@ -569,7 +573,8 @@ public class UHFReadTagFragment extends Fragment {
             tv_count.setText(String.valueOf(tagList.size()));
             tv_total.setText(String.valueOf(++total));
         }
-        adapter.notifyDataSetChanged();*/
+        adapter.notifyDataSetChanged();*//*
+
     }
 
     private String generateTagString(UHFTAGInfo uhftagInfo) {
@@ -699,3 +704,4 @@ public class UHFReadTagFragment extends Fragment {
     }
 
 }
+*/

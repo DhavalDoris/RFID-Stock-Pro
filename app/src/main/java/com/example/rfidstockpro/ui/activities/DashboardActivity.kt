@@ -36,7 +36,7 @@ import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
 import com.example.rfidstockpro.databinding.ActivityDashboardBinding
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
-import com.example.rfidstockpro.ui.fragments.UHFReadTagFragment
+import com.example.rfidstockpro.ui.fragments.UHFReadFragment
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
 import com.example.rfidstockpro.viewmodel.DashboardViewModel.Companion.SHOW_HISTORY_CONNECTED_LIST
 import com.github.mikephil.charting.charts.PieChart
@@ -49,7 +49,7 @@ import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback
 
 
-class DashboardActivity : AppCompatActivity() {
+class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
 
     @kotlin.jvm.JvmField
     var tagList: List<UHFTAGInfo>? = null
@@ -78,11 +78,16 @@ class DashboardActivity : AppCompatActivity() {
     private val PERMISSION_REQUEST_CODE = 100
     var mBtAdapter: BluetoothAdapter? = null
 
-    @kotlin.jvm.JvmField
-    public var uhf: RFIDWithUHFBLE = RFIDWithUHFBLE.getInstance()
+    //    @kotlin.jvm.JvmField
+//    public var uhf: RFIDWithUHFBLE = RFIDWithUHFBLE.getInstance()
     private val timeFilterOptions = listOf("Weekly", "Monthly", "Yearly")
     private var isConnected = false
 
+    override fun provideUHFDevice(): RFIDWithUHFBLE {
+        return uhfDevice
+    }
+
+    private lateinit var uhfDevice: RFIDWithUHFBLE
 
 //    var btStatus: BTStatus = BTStatus()
 
@@ -211,7 +216,8 @@ class DashboardActivity : AppCompatActivity() {
 
 //        viewModel = ViewModelProvider(this).get(DashboardViewModel::class.java)
         mBtAdapter = BluetoothAdapter.getDefaultAdapter()
-        uhf.init(applicationContext)
+        uhfDevice = RFIDWithUHFBLE.getInstance()
+        uhfDevice.init(applicationContext)
         StatusBarUtils.setStatusBarColor(this)
 
 //        fm = supportFragmentManager
@@ -238,7 +244,7 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun initClick() {
         binding.rlBuy.setOnClickListener {
-            setFragment(UHFReadTagFragment())
+            setFragment(UHFReadFragment())
 //            binding.realtabcontent.visibility = View.VISIBLE
         }
     }
@@ -983,11 +989,11 @@ class DashboardActivity : AppCompatActivity() {
 
 
     private fun connectToDevice(deviceAddress: String) {
-        if (uhf.connectStatus == ConnectionStatus.CONNECTING) {
+        if (uhfDevice.connectStatus == ConnectionStatus.CONNECTING) {
             showToast(this, getString(R.string.connecting))
         } else {
 //            showToast(this, "Connecting to $deviceAddress")
-            uhf.connect(deviceAddress, object : ConnectionStatusCallback<Any?> {
+            uhfDevice.connect(deviceAddress, object : ConnectionStatusCallback<Any?> {
                 override fun getStatus(connectionStatus: ConnectionStatus, device: Any?) {
                     runOnUiThread {
                         if (connectionStatus == ConnectionStatus.CONNECTED) {
