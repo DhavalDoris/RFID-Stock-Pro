@@ -18,6 +18,9 @@ import java.util.TimerTask
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val _toolbarTitle = MutableLiveData<String>()
+    val toolbarTitle: LiveData<String> = _toolbarTitle
+
     private val _stockData = MutableLiveData<List<PieEntry>>()
     val stockData: LiveData<List<PieEntry>> get() = _stockData
 
@@ -69,6 +72,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                 }
             }
         }
+    }
+
+    fun setToolbarTitle(title: String) {
+        _toolbarTitle.value = title
     }
 
     fun checkBluetoothConnection() {

@@ -15,6 +15,7 @@ import com.example.rfidstockpro.viewmodel.UHFReadViewModel
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.example.rfidstockpro.repository.UHFRepository
 import com.example.rfidstockpro.factores.UHFViewModelFactory
+import com.example.rfidstockpro.ui.activities.DashboardActivity
 import com.rscja.deviceapi.RFIDWithUHFBLE
 
 class UHFReadFragment : Fragment() {
@@ -49,9 +50,7 @@ class UHFReadFragment : Fragment() {
             UHFViewModelFactory(uhfRepository)
         )[UHFReadViewModel::class.java]
 
-//        val uhfRepository = UHFRepository(dashboardActivity.uhf)
-//        viewModel = ViewModelProvider(this, UHFViewModelFactory(uhfRepository))[UHFReadViewModel::class.java]
-
+        (activity as? DashboardActivity)?.updateToolbarTitle("RFID Tags")
         setupUI()
         observeViewModel()
     }
