@@ -3,12 +3,10 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
 
         <RelativeLayout
             android:id="@+id/rlCountView"
@@ -262,7 +260,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/buttons"
+            android:layout_above="@+id/footerButtonll"
             android:layout_below="@+id/rlCountView"
             android:orientation="vertical">
 
@@ -350,77 +348,114 @@
 
         </LinearLayout>
 
+
         <LinearLayout
-            android:id="@+id/buttons"
+            android:id="@+id/footerButtonll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginHorizontal="@dimen/_5sdp"
-            android:layout_marginBottom="@dimen/_10sdp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:background="@drawable/edittext_bg"
+            android:layout_alignParentBottom="true">
 
-            <Button
-                android:id="@+id/btnSingleInventory"
-                android:layout_width="0dp"
+
+            <LinearLayout
+                android:id="@+id/buttons"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/_2sdp"
-                android:layout_weight="1"
-                android:text="@string/rbInventorySingle"
-                android:visibility="gone" />
+                android:layout_above="@+id/btCancel"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginHorizontal="@dimen/_7sdp"
+                android:gravity="center_vertical"
+                android:elevation="@dimen/_8sdp"
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/btnInventory"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/_2sdp"
-                android:layout_weight="1"
-                android:text="@string/rbInventoryLoop"
-                android:visibility="gone" />
+                <Button
+                    android:id="@+id/btnSingleInventory"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/_2sdp"
+                    android:layout_weight="1"
+                    android:text="@string/rbInventorySingle"
+                    android:visibility="gone" />
 
-            <Button
+                <!--  <Button
+                      android:id="@+id/btnInventory"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_margin="@dimen/_2sdp"
+                      android:layout_weight="1"
+                      android:text="@string/rbInventoryLoop"
+                      android:visibility="gone" />-->
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/btStartScan"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_40sdp"
+                    android:layout_margin="@dimen/_2sdp"
+                    android:layout_weight="1"
+                    android:background="@drawable/continue_btn_bg"
+                    android:backgroundTint="@color/appMainColor"
+                    android:enabled="false"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:gravity="center"
+                    android:text="Start Scan"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_11ssp"
+                    android:textStyle="bold" />
+
+                <Space
+                    android:layout_width="@dimen/_1sdp"
+                    android:layout_height="@dimen/_10sdp" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/btStop"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_40sdp"
+                    android:layout_margin="@dimen/_2sdp"
+                    android:layout_weight="1"
+                    android:background="@drawable/continue_btn_bg"
+                    android:backgroundTint="@color/appMainColor"
+                    android:enabled="false"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:gravity="center"
+                    android:text="Stop Scan"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_11ssp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btClear"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/_2sdp"
+                    android:layout_weight="1"
+                    android:text="@string/btClear"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/btCancel"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/_45sdp"
-                android:layout_margin="@dimen/_2sdp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:enabled="false"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_40sdp"
+                android:layout_marginHorizontal="@dimen/_9sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:background="@drawable/bg_spinner"
+                android:backgroundTint="#E9E9E9"
                 android:fontFamily="@font/rethinksans_variablefont_wght"
+                android:gravity="center"
                 android:text="Cancel"
                 android:textAllCaps="false"
+                android:textColor="#939393"
                 android:textSize="@dimen/_11ssp"
                 android:textStyle="bold" />
 
-            <Space
-                android:layout_width="@dimen/_5sdp"
-                android:layout_height="@dimen/_10sdp" />
-
-            <Button
-                android:id="@+id/btStop"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/_45sdp"
-                android:layout_margin="@dimen/_2sdp"
-                android:layout_weight="1"
-                android:backgroundTint="@color/appMainColor"
-                android:enabled="false"
-                android:fontFamily="@font/rethinksans_variablefont_wght"
-                android:text="Stop Scan"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/_11ssp"
-                android:textStyle="bold" />
-
-
-            <Button
-                android:id="@+id/btClear"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/_2sdp"
-                android:layout_weight="1"
-                android:text="@string/btClear"
-                android:visibility="gone" />
         </LinearLayout>
+
+
 
     </RelativeLayout>
 </FrameLayout>

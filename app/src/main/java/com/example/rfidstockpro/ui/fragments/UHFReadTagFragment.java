@@ -29,10 +29,9 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
-
 import com.example.rfidstockpro.R;
 import com.example.rfidstockpro.Utils.Utils;
-import com.example.rfidstockpro.tools.CheckUtils;
+import com.example.rfidstockpro.Utils.ViewUtils;
 import com.example.rfidstockpro.tools.NumberTool;
 import com.example.rfidstockpro.ui.activities.DashboardActivity;
 import com.rscja.deviceapi.RFIDWithUHFBLE;
@@ -53,11 +52,11 @@ public class UHFReadTagFragment extends Fragment {
 
     int lastIndex = -1;
     private ListView LvTags;
-    private Button btnInventory, btnSingleInventory, btStop, btClear;
+    private Button  btnSingleInventory, btClear;
     private TextView tv_count, tv_total, tv_time;
     EditText etTime;
     private CheckBox cbPhase;
-
+    private TextView btStop, btStartScan, btCancel;
 
     private boolean isExit = false;
     private long total = 0;
@@ -95,7 +94,9 @@ public class UHFReadTagFragment extends Fragment {
                         //停止成功
                         btClear.setEnabled(true);
                         btStop.setEnabled(false);
-                        btnInventory.setEnabled(true);
+                        ViewUtils.setViewAlpha(btStop, 0.3f);
+                        btStartScan.setEnabled(true);
+                        ViewUtils.setViewAlpha(btStartScan, 1f);
                         btnSingleInventory.setEnabled(true);
                     } else {
                         //停止失败
@@ -108,7 +109,9 @@ public class UHFReadTagFragment extends Fragment {
                         //开始读取标签成功
 //                        btClear.setEnabled(false);
                         btStop.setEnabled(true);
-                        btnInventory.setEnabled(false);
+                        ViewUtils.setViewAlpha(btStop, 1f);
+                        btStartScan.setEnabled(false);
+                        ViewUtils.setViewAlpha(btStartScan, 0.3f);
                         btnSingleInventory.setEnabled(false);
                     } else {
                         //开始读取标签失败
@@ -178,22 +181,28 @@ public class UHFReadTagFragment extends Fragment {
         mContext.addConnectStatusNotice(mConnectStatus);
         LvTags = (ListView) getView().findViewById(R.id.LvTags);
         btnSingleInventory = (Button) getView().findViewById(R.id.btnSingleInventory);
-        btnInventory = (Button) getView().findViewById(R.id.btnInventory);
-        btStop = (Button) getView().findViewById(R.id.btStop);
+        btStartScan = (TextView) getView().findViewById(R.id.btStartScan);
+        btStop = (TextView) getView().findViewById(R.id.btStop);
         btClear = (Button) getView().findViewById(R.id.btClear);
         tv_count = (TextView) getView().findViewById(R.id.tv_count);
         tv_total = (TextView) getView().findViewById(R.id.tv_total);
         tv_time = (TextView) getView().findViewById(R.id.tv_time);
         etTime = (EditText) getView().findViewById(R.id.etTime);
+        btCancel = (TextView) getView().findViewById(R.id.btCancel);
         cbPhase = getView().findViewById(R.id.cbPhase);
 
         btnSingleInventory.setOnClickListener(v -> singleInventory());
-        btnInventory.setOnClickListener(v -> startInventory());
+        btStartScan.setOnClickListener(v -> startInventory());
         btStop.setOnClickListener(v -> stop());
         btClear.setOnClickListener(v -> clearData());
+        btCancel.setOnClickListener(v -> goBack());
         tv_count.setText(String.valueOf(tagList.size()));
         tv_total.setText(String.valueOf(total));
         tv_time.setText(useTime + "s");
+
+        ViewUtils.setViewAlpha(btStop, 0.3f);
+        ViewUtils.setViewAlpha(btStartScan, 1f);
+        btStartScan.setEnabled(true);
 
         mContext.tagList = tagList;
 
@@ -245,6 +254,7 @@ public class UHFReadTagFragment extends Fragment {
                 selectIndex = position;
                 adapter.notifyDataSetInvalidated();
                 mContext.selectEPC = tagList.get(position).getEPC();
+                Toast.makeText(view.getContext(), "clicked", Toast.LENGTH_SHORT).show();
             }
         });
         LvTags.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -258,6 +268,14 @@ public class UHFReadTagFragment extends Fragment {
             }
         });
 //        clearData();
+    }
+
+    private void goBack() {
+        Log.e("GoBackTAG", "goBack: "  );
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager().popBackStack();
+        }
+
     }
 
     private CheckBox cbFilter;
@@ -398,11 +416,13 @@ public class UHFReadTagFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (mContext.uhf.getConnectStatus() == ConnectionStatus.CONNECTED) {
-            btnInventory.setEnabled(true);
+            btStartScan.setEnabled(true);
+            ViewUtils.setViewAlpha(btStartScan, 1f);
             btnSingleInventory.setEnabled(true);
             cbFilter.setEnabled(true);
         } else {
-            btnInventory.setEnabled(false);
+            btStartScan.setEnabled(false);
+            ViewUtils.setViewAlpha(btStartScan, 0.3f);
             btnSingleInventory.setEnabled(false);
             cbFilter.setChecked(false);
             cbFilter.setEnabled(false);
@@ -505,7 +525,6 @@ public class UHFReadTagFragment extends Fragment {
     }
 
 
-
     private void addTagToList(UHFTAGInfo uhftagInfo) {
         // Log.i(TAG, "addTagToList: " + uhftagInfo.getEPC() + " " + uhftagInfo.getTid() + " " + uhftagInfo.getUser() + " " + uhftagInfo.getReserved());
         if (uhftagInfo.getReserved() == null) uhftagInfo.setReserved("");
@@ -583,7 +602,8 @@ public class UHFReadTagFragment extends Fragment {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    btnInventory.setEnabled(true);
+                    btStartScan.setEnabled(true);
+                    ViewUtils.setViewAlpha(btStartScan, 1f);
                     btnSingleInventory.setEnabled(true);
                 }
 
@@ -592,7 +612,9 @@ public class UHFReadTagFragment extends Fragment {
                 stop();
                 btClear.setEnabled(true);
                 btStop.setEnabled(false);
-                btnInventory.setEnabled(false);
+                ViewUtils.setViewAlpha(btStop, 0.3f);
+                btStartScan.setEnabled(false);
+                ViewUtils.setViewAlpha(btStartScan, 0.3f);
                 btnSingleInventory.setEnabled(false);
 
                 cbFilter.setChecked(false);
@@ -674,10 +696,6 @@ public class UHFReadTagFragment extends Fragment {
             return convertView;
         }
 
-
-
     }
-
-
 
 }
