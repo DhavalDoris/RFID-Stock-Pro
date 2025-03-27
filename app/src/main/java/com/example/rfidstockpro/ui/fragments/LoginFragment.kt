@@ -12,10 +12,12 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.TextUtils
 import com.example.rfidstockpro.Utils.observeOnce
 import com.example.rfidstockpro.aws.AwsManager
+import com.example.rfidstockpro.aws.AwsManager.fetchAllUsers
 import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.databinding.FragmentLoginBinding
 import com.example.rfidstockpro.viewmodel.AuthViewModel
@@ -59,13 +61,19 @@ class LoginFragment : Fragment() {
     }
 
     private fun setupReadUserButton() {
-        binding!!.btnReadUser.setOnClickListener {
+        /*binding!!.btnReadUser.setOnClickListener {
             Log.e("AWS_TAG", "setupReadUserButton: " )
             val email = binding!!.etEmail.text.toString().trim()
             if (email.isNotEmpty()) {
                 showUserDataDialog(email)
             } else {
                 Toast.makeText(requireContext(), "Enter email", Toast.LENGTH_SHORT).show()
+            }
+        }*/
+
+        binding!!.btnReadUser.setOnClickListener {
+            lifecycleScope.launch {
+                fetchAllUsers()
             }
         }
     }

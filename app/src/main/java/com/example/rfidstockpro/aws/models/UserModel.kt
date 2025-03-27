@@ -1,16 +1,24 @@
 package com.example.rfidstockpro.aws.models
 
-import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.*
-import com.example.rfidstockpro.aws.AwsManager.TABLE_NAME
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 
-@DynamoDBTable(tableName = TABLE_NAME) // Replace with your DynamoDB table name
 data class UserModel(
-  /*  @DynamoDBHashKey(attributeName = "id") // Primary key
-    var id: String = "",*/
-
-    @DynamoDBHashKey(attributeName = "email")
     var email: String = "",
+    var password: String = ""
+) {
+    companion object {
+        fun fromMap(item: Map<String, AttributeValue>): UserModel {
+            return UserModel(
+                email = item["email"]?.s() ?: "",
+                password = item["password"]?.s() ?: ""
+            )
+        }
 
-    @DynamoDBAttribute(attributeName = "password")
-    var password: String = "" // Store only if necessary
-)
+        fun toMap(user: UserModel): Map<String, AttributeValue> {
+            return mapOf(
+                "email" to AttributeValue.builder().s(user.email).build(),
+                "password" to AttributeValue.builder().s(user.password).build()
+            )
+        }
+    }
+}

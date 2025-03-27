@@ -1,6 +1,5 @@
 package com.example.rfidstockpro.aws
 
-//import com.amazonaws.auth.AWSStaticCredentialsProvider
 import android.content.Context
 import android.util.Log
 import com.amazonaws.auth.BasicAWSCredentials
@@ -18,7 +17,7 @@ import com.example.rfidstockpro.aws.models.UserModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import kotlinx.coroutines.withContext
 
 
 object AwsManager {
@@ -102,6 +101,7 @@ object AwsManager {
 
     fun getUserByEmail(email: String): UserModel? {
         return try {
+            dynamoDBMapper.load(UserModel::class.java)
             dynamoDBMapper.load(UserModel::class.java, email)
         } catch (e: Exception) {
             Log.e("AWS_TAG", "Error fetching user: ${e.message}", e)
@@ -109,39 +109,42 @@ object AwsManager {
         }
     }
 
-    /*fun saveUser(user: UserModel): Boolean {
+    suspend fun fetchAllUsers() = withContext(Dispatchers.IO) {
+        try {
 
-        return try {
-            val existingUser = getUserByEmail(user.email)  // Check if user exists
-            if (existingUser != null) {
-                Log.e("AWS_TAG", "User already exists with email: ${user.email}")
-                return false
+            val scanRequest = com.amazonaws.services.dynamodbv2.model.ScanRequest()
+                .withTableName(AwsManager.TABLE_NAME)
+
+
+            val scanResponse = AwsManager.dynamoDBClient.scan(scanRequest)
+
+            for (item in scanResponse.items) {
+                val email = item["email"]?.s ?: "Unknown"
+                val password = item["password"]?.s ?: "Unknown"
+                Log.d("AWS_TAG", "User: Email=$email, Password=$password")
             }
 
-            val item = mapOf(
-                "email" to com.amazonaws.services.dynamodbv2.model.AttributeValue()
-                    .withS(user.email),
-                "password" to com.amazonaws.services.dynamodbv2.model.AttributeValue()
-                    .withS(user.password)
-            )
-
-            val request = com.amazonaws.services.dynamodbv2.model.PutItemRequest()
-                .withTableName(TABLE_NAME)
-                .withItem(item)
-
-            dynamoDBClient.putItem(request)
-            true
+            if (scanResponse.items.isEmpty()) {
+                Log.d("AWS_TAG", "No users found in the table")
+            } else {
+                Log.d("AWS_TAG", "ELSE")
+            }
         } catch (e: Exception) {
-            Log.e("AWS_TAG", "Error saving user: ${e.message}", e)
-            false
+            Log.e("AWS_TAG", "Error fetching users: ${e.message}", e)
         }
-    }*/
+    }
 
     fun saveUser(user: UserModel): Boolean {
         return try {
             val updateItemRequest = com.amazonaws.services.dynamodbv2.model.UpdateItemRequest()
                 .withTableName(TABLE_NAME)
-                .withKey(mapOf("email" to com.amazonaws.services.dynamodbv2.model.AttributeValue(user.email)))
+                .withKey(
+                    mapOf(
+                        "email" to com.amazonaws.services.dynamodbv2.model.AttributeValue(
+                            user.email
+                        )
+                    )
+                )
                 .withAttributeUpdates(
                     mapOf(
                         "password" to com.amazonaws.services.dynamodbv2.model.AttributeValueUpdate()
@@ -160,7 +163,6 @@ object AwsManager {
     }
 
 
-
     fun deleteUser(email: String): Boolean {
         return try {
             val user = getUserByEmail(email)
@@ -176,6 +178,5 @@ object AwsManager {
             false
         }
     }
-
 
 }
