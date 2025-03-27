@@ -32,6 +32,7 @@ import com.example.rfidstockpro.Utils.AnimationUtils
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
+import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.databinding.ActivityDashboardBinding
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.ui.fragments.UHFReadFragment

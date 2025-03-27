@@ -28,6 +28,7 @@
         android:required="true" />
 
     <application
+        android:name=".RFIDApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -44,10 +45,10 @@
             android:name=".ui.activities.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.MyApp.Splash">
-            <!-- <intent-filter>
+             <intent-filter>
                  <action android:name="android.intent.action.MAIN" />
                  <category android:name="android.intent.category.LAUNCHER" />
-             </intent-filter>-->
+             </intent-filter>
         </activity>
         <activity
             android:name=".ui.activities.VerificationActivity"
@@ -60,10 +61,10 @@
             android:exported="true"
             android:theme="@style/AppTheme"
             android:screenOrientation="portrait">
-            <intent-filter>
+            <!--<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            </intent-filter>-->
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -74,7 +75,7 @@
         <activity
             android:name=".ui.activities.DeviceListActivity"
             android:theme="@style/AlertNoActionBar"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait"/>
 
         <service
             android:name=".services.DfuService"

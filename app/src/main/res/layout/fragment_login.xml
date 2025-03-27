@@ -2,9 +2,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/main_bg_color"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/main_bg_color">
+    android:padding="16dp">
 
     <LinearLayout
         android:id="@+id/llTop"
@@ -15,11 +15,11 @@
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/etEmail"
-            android:layout_width="match_parent"
             style="@style/AppEditText"
+            android:layout_width="match_parent"
+            android:layout_marginTop="@dimen/_5sdp"
             android:background="@drawable/edittext_bg"
             android:drawableStart="@drawable/ic_email"
-            android:layout_marginTop="@dimen/_5sdp"
             android:fontFamily="@font/rethinksans_variablefont_wght"
             android:hint="Email Address"
             android:padding="12dp"
@@ -27,16 +27,16 @@
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/etPassword"
+            style="@style/AppEditText"
             android:layout_width="match_parent"
             android:layout_marginTop="@dimen/_15sdp"
             android:background="@drawable/edittext_bg"
             android:drawableStart="@drawable/ic_password"
             android:drawableEnd="@drawable/eye_visible_image"
-            style="@style/AppEditText"
-            android:inputType="textPassword"
-            android:imeOptions="actionDone"
             android:fontFamily="@font/rethinksans_variablefont_wght"
             android:hint="Password"
+            android:imeOptions="actionDone"
+            android:inputType="textPassword"
             android:padding="12dp"
             android:textSize="@dimen/_12ssp" />
 
@@ -50,6 +50,20 @@
             android:textColor="@color/appMainColor"
             android:textSize="@dimen/_11ssp" />
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btnLogin">
+
+        <TextView
+            android:id="@+id/btnReadUser"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Read" />
 
     </LinearLayout>
 
@@ -57,29 +71,29 @@
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@id/tvTerms"
         android:layout_marginTop="@dimen/_15sdp"
+        android:layout_marginBottom="@dimen/_15sdp"
         android:background="@drawable/continue_btn_bg"
         android:fontFamily="@font/rethinksans_variablefont_wght"
-        android:gravity="center"
         android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center"
         android:padding="12dp"
         android:text="Login"
-        android:layout_above="@id/tvTerms"
         android:textColor="@android:color/white"
-        android:textSize="@dimen/_15ssp"
-        android:layout_marginBottom="@dimen/_15sdp"/>
+        android:textSize="@dimen/_15ssp" />
 
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tvTerms"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
         android:layout_alignParentBottom="true"
+        android:layout_gravity="right"
         android:layout_marginTop="@dimen/_7sdp"
+        android:layout_marginBottom="@dimen/_20sdp"
         android:fontFamily="@font/rethinksans_variablefont_wght"
         android:gravity="center|bottom"
-        android:layout_marginBottom="@dimen/_20sdp"
         android:paddingHorizontal="@dimen/_20ssp"
         android:textSize="@dimen/_10ssp" />
 

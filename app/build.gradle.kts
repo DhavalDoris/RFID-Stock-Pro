@@ -37,6 +37,14 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    packagingOptions {
+        excludes.add("META-INF/DEPENDENCIES")
+        excludes.add("META-INF/LICENSE")
+        excludes.add("META-INF/NOTICE")
+        excludes.add("META-INF/INDEX.LIST")
+        excludes.add("META-INF/io.netty.versions.properties")
+    }
+
 }
 
 dependencies {
@@ -64,7 +72,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
 
-
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
@@ -73,5 +80,38 @@ dependencies {
     implementation(files("libs/DeviceAPI_ver20250209_release.aar"))
     implementation("no.nordicsemi.android:dfu:2.4.1")
 
+    // AWS Core SDK (Required for all AWS services)
+//    implementation("com.amazonaws:aws-android-sdk-core:2.79.0")
+
+    // AWS DynamoDB (For CRUD Operations)
+    implementation("com.amazonaws:aws-android-sdk-ddb-mapper:2.79.0")
+    implementation("com.amazonaws:aws-android-sdk-ddb:2.79.0") // Ensure DynamoDB SDK is included
+    implementation("com.amazonaws:aws-android-sdk-s3:2.79.0") // Optional for S3 storage
+
+    implementation("software.amazon.awssdk:dynamodb:2.25.26")
+    implementation ("software.amazon.awssdk:core:2.20.40")
+
+//    implementation("com.amazonaws:aws-java-sdk-core:1.12.782")
+
+    // AWS Cognito (For Authentication & User Management)
+//    implementation("com.amazonaws:aws-android-sdk-cognitoidentityprovider:2.46.0")
+//    implementation("com.amazonaws:aws-android-sdk-auth-userpools:2.46.0")
+
+    // AWS DynamoDB (For CRUD Operations)
+//    implementation("com.amazonaws:aws-android-sdk-dynamodb:2.46.0")
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-android-sdk-ddb
+//    implementation("com.amazonaws:aws-android-sdk-ddb:2.79.0")
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-dynamodb
+//    implementation("com.amazonaws:aws-java-sdk-dynamodb:1.12.782")
+
+//    AWS S3 (For Uploading Images/Videos)
+//    implementation("com.amazonaws:aws-android-sdk-s3:2.46.0")
+
+//    implementation ("com.amplifyframework:core:2.0.0")
+//    implementation ("com.amplifyframework:aws-api:2.0.0")
+//    implementation ("com.amplifyframework:aws-datastore:2.0.0")
+
+//    implementation ("com.amazonaws:aws-android-sdk-core:2.73.0")
+//    implementation ("com.amazonaws:aws-android-sdk-ddb:2.73.0")
 
 }
