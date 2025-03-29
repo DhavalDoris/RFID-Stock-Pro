@@ -45,6 +45,9 @@ import com.github.mikephil.charting.data.PieEntry
 import com.rscja.deviceapi.RFIDWithUHFBLE
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
@@ -87,10 +90,26 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         setupUI()
         setupSpinner()
         initClick()
+        CreateTables()
 
         val toolbarView = findViewById<View>(R.id.commonToolbar)
         tvToolbarTitle = toolbarView.findViewById(R.id.tvToolbarTitle)
     }
+
+    private fun CreateTables() {
+        CoroutineScope(Dispatchers.Main).launch {
+            AwsManager.ensureTableExists { status ->
+                when (status) {
+                    "creating" -> Log.e("AWS_TAG", "Creating Table...")
+                    "created", "exists" -> {
+                        Log.e("AWS_TAG", "Table Ready! Adding User...")
+                    }
+                    else -> Log.e("AWS_TAG", "Error: $status")
+                }
+            }
+        }
+    }
+
 
     fun updateToolbarTitle(title: String) {
         tvToolbarTitle!!.text = title

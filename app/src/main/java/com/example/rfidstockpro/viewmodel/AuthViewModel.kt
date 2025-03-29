@@ -24,7 +24,6 @@ class AuthViewModel : ViewModel() {
     private val _userData = MutableLiveData<UserModel?>()
     val userData: LiveData<UserModel?> get() = _userData
 
-    //----
 
     private val _emailError = MutableLiveData<String?>()
     val emailError: LiveData<String?> = _emailError
@@ -38,28 +37,50 @@ class AuthViewModel : ViewModel() {
     private val _signupError = MutableLiveData<String>()
     val signupError: LiveData<String> get() = _signupError
 
+    private val _loginResult = MutableLiveData<String>()
+    val loginResult: LiveData<String> get() = _loginResult
 
+
+    /** ✅ Validate Login Inputs */
     fun validateLogin(email: String, password: String): Boolean {
-        /*  val isEmailValid = validateEmail(email)
-          val isPasswordValid = validatePassword(password)
-          return isEmailValid && isPasswordValid*/
-
         if (email.isEmpty()) {
             _emailError.postValue("Email is required")
             return false
         }
-
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             _emailError.postValue("Enter a valid email address")
             return false
         }
-
         if (password.isEmpty()) {
             _passwordError.postValue("Password is required")
             return false
         }
         return true
     }
+
+
+    fun loginUser(email: String, password: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val user = AwsManager.getUserByEmail(email)
+
+                withContext(Dispatchers.Main) {
+                    if (user == null) {
+                        _loginResult.value = "User not found. Please sign up."
+                    } else if (user.password == password) {
+                        _loginResult.value = "Login successful"
+                    } else {
+                        _loginResult.value = "Invalid password. Try again."
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _loginResult.value = "Login error: ${e.message}"
+                }
+            }
+        }
+    }
+
 
     fun validateSignup(
         username: String, companyName: String, email: String, contactNumber: String,
@@ -180,6 +201,8 @@ class AuthViewModel : ViewModel() {
             }
         }
     }
+
+
 
 
     fun deleteUserByEmail(email: String) {

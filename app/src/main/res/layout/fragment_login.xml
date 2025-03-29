@@ -65,6 +65,14 @@
             android:gravity="center"
             android:text="Read" />
 
+        <TextView
+            android:id="@+id/btnSelectMedia"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="upload" />
+
     </LinearLayout>
 
     <androidx.appcompat.widget.AppCompatTextView

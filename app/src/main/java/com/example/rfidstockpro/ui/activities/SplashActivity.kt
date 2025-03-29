@@ -9,6 +9,14 @@ import com.example.rfidstockpro.databinding.ActivitySplashBinding
 class SplashActivity : AppCompatActivity() {
 
 
+   /* companion object{
+        init {
+            System.loadLibrary("native-lib")
+        }
+    }
+    private external fun getEncryptedKey(): String?
+*/
+
     private lateinit var binding: ActivitySplashBinding
 
 
@@ -17,7 +25,6 @@ class SplashActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
 
         initActions()
 
