@@ -16,7 +16,7 @@ data class UserModel(
     var password: String = "",
     var otp: Int? = null,
     var permissions: List<Permission> = emptyList(),
-    var role: Int = 1, // 0 = Admin, 1 = Owner, 2 = Manager, 3 = Staff
+    var role: Int = 0, // 0 = Admin, 1 = Owner, 2 = Manager, 3 = Staff
     var status: String = "pending" // "pending", "active", "inactive"
 ) {
     companion object {
@@ -38,6 +38,7 @@ data class UserModel(
                 status = item["status"]?.s() ?: "pending"
             )
         }
+
 
         fun toMap(user: UserModel): Map<String, AttributeValue?> {
             return mapOf(

@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.Spanned
 import android.text.TextPaint
 import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
@@ -27,7 +26,8 @@ import com.google.android.material.snackbar.Snackbar
 class VerificationActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityVerificationBinding
-    private val viewModel: VerificationViewModel by viewModels()
+    private val verificationViewModel: VerificationViewModel by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,10 +35,17 @@ class VerificationActivity : AppCompatActivity() {
         binding = ActivityVerificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
         StatusBarUtils.setStatusBarColor(this)
         setupOtpInputs()
         setupListeners()
         applySpannableText()
+        Init()
+    }
+
+    private fun Init() {
+        val email = intent.getStringExtra("email")
+        updateEmailText(email!!)
     }
 
     private fun setupOtpInputs() {
@@ -67,21 +74,23 @@ class VerificationActivity : AppCompatActivity() {
 
     private fun setupListeners() {
 
-        viewModel.otpError.observe(this) { message  ->
-            if (message  == "OTP Verified Successfully!") {
+        verificationViewModel.otpError.observe(this) { message ->
+            if (message == "OTP Verified Successfully!") {
                 // Proceed to next screen on successful OTP verification
-                startActivity(Intent(this, DashboardActivity::class.java))
+                Toast.makeText(this, "Account Created - Login Now", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, AuthActivity::class.java))
                 finish()
+
             } else {
                 // Show error message
-                Snackbar.make(binding.root, message , Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
             }
         }
 
         binding.btnConfirm.setOnClickListener {
             val otp =
                 "${binding.etOtp1.text}${binding.etOtp2.text}${binding.etOtp3.text}${binding.etOtp4.text}"
-            viewModel.verifyOtp(otp)
+            verificationViewModel.verifyOtp(otp)
         }
 
     }
@@ -136,5 +145,32 @@ class VerificationActivity : AppCompatActivity() {
         // Enable clickable spans in TextView
         binding.tvResendOtp.movementMethod = LinkMovementMethod.getInstance()
         binding.tvResendOtp.highlightColor = Color.TRANSPARENT // Remove highlight when clicked
+    }
+
+
+    private fun updateEmailText(email: String) {
+        val fullText = "We sent a code to $email"
+        val spannable = SpannableString(fullText)
+
+        val startIndex = fullText.indexOf(email)
+        val endIndex = startIndex + email.length
+
+        // Set email in BLACK color
+        spannable.setSpan(
+            ForegroundColorSpan(Color.BLACK), // Black color
+            startIndex,
+            endIndex,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
+        // Set default text color to gray (optional)
+        spannable.setSpan(
+            ForegroundColorSpan(Color.GRAY), // Gray color
+            0,
+            startIndex,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
+        binding.tvEmail.text = spannable
     }
 }

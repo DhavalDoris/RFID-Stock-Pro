@@ -88,7 +88,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="We sent a code to contact@gmail.com"
+        android:text=""
         android:textColor="@android:color/darker_gray"
         android:textSize="@dimen/_14ssp"
         android:fontFamily="@font/rethinksans_variablefont_wght"

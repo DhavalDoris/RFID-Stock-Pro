@@ -27,7 +27,6 @@ class SplashActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         initActions()
-
     }
 
     private fun initActions() {

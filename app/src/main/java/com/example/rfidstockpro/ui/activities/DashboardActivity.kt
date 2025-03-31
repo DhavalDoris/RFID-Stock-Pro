@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -77,12 +78,10 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
         mBtAdapter = BluetoothAdapter.getDefaultAdapter()
         uhfDevice = RFIDWithUHFBLE.getInstance()
         uhfDevice.init(applicationContext)
         StatusBarUtils.setStatusBarColor(this)
-
 
         setupPieChart()
         checkPermissions()
@@ -90,22 +89,34 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         setupUI()
         setupSpinner()
         initClick()
-        CreateTables()
+        loadUserData()
 
         val toolbarView = findViewById<View>(R.id.commonToolbar)
         tvToolbarTitle = toolbarView.findViewById(R.id.tvToolbarTitle)
     }
 
-    private fun CreateTables() {
-        CoroutineScope(Dispatchers.Main).launch {
-            AwsManager.ensureTableExists { status ->
-                when (status) {
-                    "creating" -> Log.e("AWS_TAG", "Creating Table...")
-                    "created", "exists" -> {
-                        Log.e("AWS_TAG", "Table Ready! Adding User...")
-                    }
-                    else -> Log.e("AWS_TAG", "Error: $status")
-                }
+    private fun loadUserData() {
+        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        val userName = sharedPreferences.getString("USER_NAME", "Guest")
+        val userRole = sharedPreferences.getInt("USER_ROLE", 1)
+
+        binding.tvUserName.text = userName
+        binding.tvUserRole.text = userRole.toString()
+        when (userRole) {
+            1 -> { // Owner
+                binding.tvUserRole.text = "Owner"
+//                binding.tvUserRole.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.owner_background))
+//                binding.tvUserRole.setTextColor(ContextCompat.getColor(this, R.color.owner_text))
+            }
+            2 -> { // Manager
+                binding.tvUserRole.text = "Manager"
+//                binding.tvUserRole.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.manager_background))
+//                binding.tvUserRole.setTextColor(ContextCompat.getColor(this, R.color.manager_text))
+            }
+            3 -> { // Staff
+                binding.tvUserRole.text = "Staff"
+//                binding.tvUserRole.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.staff_bg_color))
+//                binding.tvUserRole.setTextColor(ContextCompat.getColor(this, R.color.staff_text_color))
             }
         }
     }
@@ -131,7 +142,6 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
     }
 
     private fun setupUI() {
-
         binding.btnConnectScanner.setOnClickListener {
             if (dashboardViewModel.isConnected.value == true) {
                 dashboardViewModel.disconnect(true)

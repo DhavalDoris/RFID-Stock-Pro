@@ -99,13 +99,13 @@ dependencies {
 //     implementation("com.amazonaws:aws-android-sdk-core:2.79.0")
 
     // AWS DynamoDB (For CRUD Operations)
-    implementation("com.amazonaws:aws-android-sdk-ddb-mapper:2.79.0")
-    implementation("com.amazonaws:aws-android-sdk-ddb:2.79.0") // Ensure DynamoDB SDK is included
-    implementation("com.amazonaws:aws-android-sdk-s3:2.79.0") // Optional for S3 storage
+//    implementation("com.amazonaws:aws-android-sdk-ddb-mapper:2.79.0")
+//    implementation("com.amazonaws:aws-android-sdk-ddb:2.79.0") // Ensure DynamoDB SDK is included
+//    implementation("com.amazonaws:aws-android-sdk-s3:2.79.0") // Optional for S3 storage
 
     implementation("software.amazon.awssdk:dynamodb:2.25.26")
     implementation ("software.amazon.awssdk:core:2.20.40")
-//    implementation("software.amazon.awssdk:s3:2.25.26")
+//  implementation("software.amazon.awssdk:s3:2.25.26")
     implementation("software.amazon.awssdk:s3:2.25.26") {
         exclude(group = "org.apache.httpcomponents", module = "httpclient")
         exclude(group = "org.apache.httpcomponents.client5", module = "httpclient5")

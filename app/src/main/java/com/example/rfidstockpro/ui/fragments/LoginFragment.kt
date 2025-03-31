@@ -16,32 +16,27 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferState
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.TextUtils
 import com.example.rfidstockpro.Utils.observeOnce
 import com.example.rfidstockpro.aws.AwsManager
-import com.example.rfidstockpro.aws.AwsManager.BUCKET_NAME
-import com.example.rfidstockpro.aws.AwsManager.awsS3Client
 import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.databinding.FragmentLoginBinding
-import com.example.rfidstockpro.ui.activities.DeviceListActivity
+import com.example.rfidstockpro.ui.activities.DashboardActivity
 import com.example.rfidstockpro.viewmodel.AuthViewModel
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.io.File
 import java.util.UUID
 
 
 class LoginFragment : Fragment() {
 
-    private lateinit var progressDialog: ProgressDialog
     private var binding: FragmentLoginBinding? = null
     private val authViewModel: AuthViewModel by viewModels()
     private var isPasswordVisible = false
@@ -51,7 +46,6 @@ class LoginFragment : Fragment() {
     private val pickImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let { selectedImageUri ->
-//            imageView.setImageURI(selectedImageUri)  // Show image in ImageView
                 selectedFile = uriToFile(selectedImageUri)  // Convert URI to File
             }
         }
@@ -65,12 +59,15 @@ class LoginFragment : Fragment() {
             Toast.makeText(requireContext(), result, Toast.LENGTH_SHORT).show()
             if (result == "Login successful") {
                 navigateToDashboard()
+            } else if (result == "Account is not active") {
+                binding!!.etEmail.error = "Your account is not active. Contact support."
             }
         }
     }
 
     private fun navigateToDashboard() {
-        startActivity(Intent(requireActivity(), DeviceListActivity::class.java))
+        startActivity(Intent(requireActivity(), DashboardActivity::class.java))
+//        startActivity(Intent(requireActivity(), DeviceListActivity::class.java))
     }
 
     override fun onCreateView(
@@ -96,9 +93,10 @@ class LoginFragment : Fragment() {
 
 
             // Upload file
-//            selectedFile?.let { file ->
-//                uploadToS3(file)
-//            } ?: Toast.makeText(requireContext(), "Select an image first!", Toast.LENGTH_SHORT).show()
+            selectedFile?.let { file ->
+                uploadToS3(file)
+            } ?: Toast.makeText(requireContext(), "Select an image first!", Toast.LENGTH_SHORT)
+                .show()
 
             // Download file
             /* AwsManager.getAllImageUrls { imageUrls ->
@@ -121,46 +119,43 @@ class LoginFragment : Fragment() {
 
     private fun uploadToS3(file: File) {
         val progressDialog = ProgressDialog(requireActivity()).apply {
-            setMessage("Uploading... 0%")
+            setMessage("Uploading... Please wait")
             setCancelable(false)
             show()
         }
 
-        val transferUtility = TransferUtility.builder()
-            .context(requireContext())
-            .s3Client(awsS3Client)
-            .build()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val key = "rfid-uploads/${UUID.randomUUID()}_${file.name}"
 
-        val key = "rfid-uploads/${UUID.randomUUID()}_${file.name}"
+                val putRequest = PutObjectRequest.builder()
+                    .bucket(AwsManager.BUCKET_NAME)
+                    .key(key)
+                    .build()
 
-        val uploadObserver = transferUtility.upload(AwsManager.BUCKET_NAME, key, file)
+                AwsManager.s3Client.putObject(putRequest, RequestBody.fromFile(file))
 
-        uploadObserver.setTransferListener(object : TransferListener {
-            override fun onStateChanged(id: Int, state: TransferState?) {
-                if (state == TransferState.COMPLETED) {
+                withContext(Dispatchers.Main) {
                     progressDialog.dismiss()
-                    val imageUrl = "https://$BUCKET_NAME.s3.amazonaws.com/$key"
-                    Log.e("AWS_TAG", "onStateChanged: ->> " + imageUrl)
-                    Toast.makeText(requireContext(), "Upload Complete!", Toast.LENGTH_SHORT).show()
-                } else if (state == TransferState.FAILED) {
+                    val imageUrl = "https://${AwsManager.BUCKET_NAME}.s3.amazonaws.com/$key"
+                    Log.e("AWS_TAG", "Upload Success: $imageUrl")
+                    Toast.makeText(requireContext(), "Upload Successful!", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
                     progressDialog.dismiss()
-                    Toast.makeText(requireContext(), "Upload Failed!", Toast.LENGTH_SHORT).show()
+                    Log.e("AWS_TAG", "Upload Failed: ${e.message}")
+                    Toast.makeText(
+                        requireContext(),
+                        "Upload Failed: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
                 }
             }
-
-            override fun onProgressChanged(id: Int, bytesCurrent: Long, bytesTotal: Long) {
-                val progress = if (bytesTotal > 0) (bytesCurrent * 100 / bytesTotal).toInt() else 0
-                progressDialog.setMessage("Uploading... $progress%")
-            }
-
-            override fun onError(id: Int, ex: Exception?) {
-                progressDialog.dismiss()
-                Toast.makeText(requireContext(), "Upload Error: ${ex?.message}", Toast.LENGTH_SHORT)
-                    .show()
-            }
-        })
+        }
     }
-
 
     private fun uriToFile(uri: Uri): File {
         val inputStream = requireActivity().contentResolver.openInputStream(uri)
@@ -235,39 +230,9 @@ class LoginFragment : Fragment() {
             val email = binding!!.etEmail.text.toString().trim()
             val password = binding!!.etPassword.text.toString().trim()
 
-            /*if (!authViewModel.validateLogin(email, password)) {
-                return@setOnClickListener // Stop execution if validation fails
-            }*/
             if (authViewModel.validateLogin(email, password)) {
-                authViewModel.loginUser(email, password)
+                authViewModel.loginUser(email, password, requireActivity())
             }
-
-            /*  CoroutineScope(Dispatchers.Main).launch {
-                  // Check if the email exists in DynamoDB
-
-              }*/
-
-//            val userId = UUID.randomUUID().toString() // Generate unique ID
-//            val user = UserModel(email, password) // Email as userId
-//
-//            CoroutineScope(Dispatchers.Main).launch {
-//                AwsManager.ensureTableExists { status ->
-//                    when (status) {
-//                        "creating" -> Log.e("AWS_TAG", "Creating Table...")
-//                        "created", "exists" -> {
-//                            Log.e("AWS_TAG", "Table Ready! Adding User...")
-//                            authViewModel.createUser(user)
-//                        }
-//
-//                        else -> Log.e("AWS_TAG", "Error: $status")
-//                    }
-//                }
-//            }
-
-//          Toast.makeText(requireContext(), "Login Successful", Toast.LENGTH_SHORT).show()
-//          startActivity(Intent(requireActivity(), VerificationActivity::class.java))
-//          requireActivity().finish()
-//          startActivity(Intent(requireActivity(), DashboardActivity::class.java))
         }
     }
 

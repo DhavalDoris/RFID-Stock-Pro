@@ -119,7 +119,7 @@
         android:paddingHorizontal="@dimen/_7sdp"
         android:paddingVertical="@dimen/_2sdp"
         android:text="Staff"
-        android:textColor="#EB7375"
+        android:textColor="@color/staff_text_color"
         android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@id/tvUserName"
         app:layout_constraintTop_toTopOf="@id/tvWelcome" />

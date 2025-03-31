@@ -91,7 +91,6 @@
         android:textColor="@android:color/white"
         android:textSize="@dimen/_15ssp" />
 
-
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tvTerms"
         android:layout_width="match_parent"
@@ -99,7 +98,7 @@
         android:layout_alignParentBottom="true"
         android:layout_gravity="right"
         android:layout_marginTop="@dimen/_7sdp"
-        android:layout_marginBottom="@dimen/_20sdp"
+        android:layout_marginBottom="@dimen/_30sdp"
         android:fontFamily="@font/rethinksans_variablefont_wght"
         android:gravity="center|bottom"
         android:paddingHorizontal="@dimen/_20ssp"

@@ -1,4 +1,5 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -7,9 +8,10 @@
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nested"
-        android:layout_above="@+id/btnRegister"
+        android:layout_above="@+id/btnSignup"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:id="@+id/llTop"
@@ -89,7 +91,7 @@
     </androidx.core.widget.NestedScrollView>
 
     <TextView
-        android:id="@+id/btnRegister"
+        android:id="@+id/btnSignup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_15sdp"
@@ -104,7 +106,6 @@
         android:textSize="@dimen/_15ssp"
         android:layout_marginBottom="@dimen/_15sdp"/>
 
-
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tvTerms"
         android:layout_width="match_parent"
@@ -114,7 +115,7 @@
         android:layout_marginTop="@dimen/_7sdp"
         android:fontFamily="@font/rethinksans_variablefont_wght"
         android:gravity="center|bottom"
-        android:layout_marginBottom="@dimen/_20sdp"
+        android:layout_marginBottom="@dimen/_30sdp"
         android:paddingHorizontal="@dimen/_20ssp"
         android:textSize="@dimen/_10ssp" />
 

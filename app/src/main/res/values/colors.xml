@@ -29,5 +29,15 @@
     <color name="black1">#313a4d</color>
 
     <color name="white_e0">#e0e0e0</color>
+    <color name="staff_text_color">#EB7375</color>
 
+
+    <color name="owner_background">#FFEB3B</color>  <!-- Yellow -->
+    <color name="owner_text">#000000</color>       <!-- Black -->
+
+    <color name="manager_background">#03A9F4</color>  <!-- Blue -->
+    <color name="manager_text">#FFFFFF</color>       <!-- White -->
+
+    <color name="staff_background">#4CAF50</color>  <!-- Green -->
+    <color name="staff_text">#FFFFFF</color>
 </resources>

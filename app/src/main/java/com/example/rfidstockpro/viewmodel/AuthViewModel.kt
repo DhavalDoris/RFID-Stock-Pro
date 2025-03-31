@@ -1,13 +1,14 @@
 package com.example.rfidstockpro.viewmodel
 
+import android.content.Context
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rfidstockpro.aws.AwsManager
-import com.example.rfidstockpro.aws.Repository.UserRepository
 import com.example.rfidstockpro.aws.models.UserModel
+import com.example.rfidstockpro.aws.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,6 +41,12 @@ class AuthViewModel : ViewModel() {
     private val _loginResult = MutableLiveData<String>()
     val loginResult: LiveData<String> get() = _loginResult
 
+    private val _userEmail = MutableLiveData<String>()
+    val userEmail: LiveData<String> get() = _userEmail
+
+    fun setUserEmail(email: String) {
+        _userEmail.value = email
+    }
 
     /** ✅ Validate Login Inputs */
     fun validateLogin(email: String, password: String): Boolean {
@@ -59,7 +66,7 @@ class AuthViewModel : ViewModel() {
     }
 
 
-    fun loginUser(email: String, password: String) {
+   /* fun loginUser(email: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val user = AwsManager.getUserByEmail(email)
@@ -79,6 +86,46 @@ class AuthViewModel : ViewModel() {
                 }
             }
         }
+    }*/
+
+
+
+    fun loginUser(email: String, password: String,context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val user = AwsManager.getUserByEmail(email)
+                withContext(Dispatchers.Main) {
+                    if (user == null) {
+                        _loginResult.value = "User not found. Please sign up."
+                    } else if (user.password == password) {
+                        if (user.status == "active") {
+                            // Store user data in SharedPreferences
+                            saveUserDataToPreferences(context, user.userName, user.role)
+
+                            _loginResult.value = "Login successful"
+                        } else {
+                            _loginResult.value = "Your account is not active"
+                        }
+                    } else {
+                        _loginResult.value = "Invalid password. Try again."
+                    }
+                }
+
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _loginResult.value = "Login error: ${e.message}"
+                }
+            }
+        }
+    }
+
+    // Function to save user data in SharedPreferences
+    private fun saveUserDataToPreferences(context: Context, userName: String, role: Int) {
+        val sharedPreferences = context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("USER_NAME", userName)
+        editor.putInt("USER_ROLE", role)
+        editor.apply()
     }
 
 
