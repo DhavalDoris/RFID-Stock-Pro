@@ -1,10 +1,12 @@
 package com.example.rfidstockpro.ui.activities
 
+import android.content.Context
 import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.Toast
@@ -13,19 +15,31 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
+import com.example.rfidstockpro.aws.AwsManager
+import com.example.rfidstockpro.aws.AwsManager.getFileExtension
+import com.example.rfidstockpro.aws.AwsManager.uploadMediaToS3
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.ActivityAddItemBinding
 import com.example.rfidstockpro.viewmodel.AddItemViewModel
 import com.google.android.material.snackbar.Snackbar
+import java.io.File
 
 class AddItemActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAddItemBinding
-    private val CategoryFilterOptions = listOf("Diamond Bracelets", "Diamond Rings", "Diamond Earrings","Diamond Pendants","Chains")
+    private val CategoryFilterOptions = listOf(
+        "Diamond Bracelets",
+        "Diamond Rings",
+        "Diamond Earrings",
+        "Diamond Pendants",
+        "Chains"
+    )
     private val addItemViewModel: AddItemViewModel by viewModels()
     private val IMAGE_PICKER_REQUEST_CODE = 1001
     private val VIDEO_PICKER_REQUEST_CODE = 1002
     private var isImageSelected: Boolean = false // Add this flag
+    private var selectedImage: Uri? = null  // Global Image URI
+    private var selectedVideo: Uri? = null  // Global Video URI
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,29 +62,100 @@ class AddItemActivity : AppCompatActivity() {
 
         // Button Click Listeners
         binding.btnAdd.setOnClickListener {
-            if (validateFields()) {
-                // Proceed with adding the product
-                Toast.makeText(this, "Validation Passed! Proceeding with Add...", Toast.LENGTH_SHORT).show()
-                // You can call your ViewModel's addProduct() here.
+
+            val imageFile = AwsManager.uriToFile(this, selectedImage!!)
+
+            val videoFile = selectedVideo?.let { uri ->
+                AwsManager.uriToFile(this, uri) // Only convert if not null
             }
+
+            // Call the upload function
+            AwsManager.uploadMediaToS3(
+                context = this,  // 'this' refers to the Activity or Fragment context
+                imageFile = imageFile,
+                videoFile = videoFile,  // Pass null if no video file
+                onSuccess = { imageUrl, videoUrl ->
+                    // This block will be called on successful upload
+                    Log.d("AWS_UPLOAD", "Image URL: $imageUrl")
+                    if (videoUrl != null) {
+                        Log.d("AWS_UPLOAD", "Video URL: $videoUrl")
+                    } else {
+                        Log.d("AWS_UPLOAD", "No video uploaded")
+                    }
+                },
+                onError = { errorMessage ->
+                    // This block will be called if there's an error during the upload
+                    Log.e("AWS_UPLOAD", "Error occurred: $errorMessage")
+                }
+            )
+
+            // Proceed with adding the product
+          /*  AwsManager.uploadMediaToS3(
+                context = this,
+                imageFile = imageFile,
+                videoFile = videoFile,
+                onSuccess = { imageUrl, videoUrl ->
+                    Log.d("AWS_UPLOAD", "Image uploaded: $imageUrl")
+                    videoUrl?.let { Log.d("AWS_UPLOAD", "Video uploaded: $it") }
+                    // Save URLs to database or UI
+                },
+                onError = { errorMessage ->
+                    Log.e("AWS_UPLOAD", "Failed: $errorMessage")
+                }
+            )*/
+
+           /* if (validateFields()) {
+                val imageFile = AwsManager.uriToFile(this, selectedImage!!)
+
+                val videoFile = selectedVideo?.let { uri ->
+                    AwsManager.uriToFile(this, uri) // Only convert if not null
+                }
+
+                // Proceed with adding the product
+                AwsManager.uploadMediaToS3(
+                    context = this,
+                    imageFile = imageFile,
+                    videoFile = videoFile,
+                    onSuccess = { imageUrl, videoUrl ->
+                        Log.d("AWS_UPLOAD", "Image uploaded: $imageUrl")
+                        videoUrl?.let { Log.d("Upload", "Video uploaded: $it") }
+                        // Save URLs to database or UI
+                    },
+                    onError = { errorMessage ->
+                        Log.e("AWS_UPLOAD", "Failed: $errorMessage")
+                    }
+                )
+                Toast.makeText(
+                    this,
+                    "Validation Passed! Proceeding with Add...",
+                    Toast.LENGTH_SHORT
+                ).show()
+                // You can call your ViewModel's addProduct() here.
+            }*/
         }
 
         binding.btnAddScan.setOnClickListener {
             if (validateFields()) {
                 // Proceed with adding & scanning
-                Toast.makeText(this, "Validation Passed! Proceeding with Add & Scan...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Validation Passed! Proceeding with Add & Scan...",
+                    Toast.LENGTH_SHORT
+                ).show()
                 // You can call your ViewModel's addProduct() here.
             }
         }
 
         binding.selectedImagesContainer.setOnClickListener {
-            openImagePicker("image/*",IMAGE_PICKER_REQUEST_CODE)
+            openImagePicker("image/*", IMAGE_PICKER_REQUEST_CODE)
         }
 
         binding.selectVideo.setOnClickListener {
             openImagePicker("video/*", VIDEO_PICKER_REQUEST_CODE)
         }
     }
+
+
 
     private fun openImagePicker(type: String, request_code: Int) {
         // Create an intent to pick an image
@@ -106,6 +191,7 @@ class AddItemActivity : AppCompatActivity() {
                     val selectedOption = CategoryFilterOptions[position]
                     // Handle selection if required
                 }
+
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
     }
@@ -124,6 +210,7 @@ class AddItemActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == IMAGE_PICKER_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             val selectedImageUri: Uri? = data.data
+            selectedImage = data.data
             selectedImageUri?.let {
                 binding.selectedImagesContainer.setImageURI(it)
                 isImageSelected = true
@@ -133,6 +220,7 @@ class AddItemActivity : AppCompatActivity() {
 
         if (requestCode == VIDEO_PICKER_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             val selectedVideoUri: Uri? = data.data
+            selectedVideo = data.data
             selectedVideoUri?.let {
                 val retriever = MediaMetadataRetriever()
                 retriever.setDataSource(this, it)

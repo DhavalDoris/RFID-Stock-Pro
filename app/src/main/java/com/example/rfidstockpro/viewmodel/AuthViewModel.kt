@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.rfidstockpro.RFIDApplication.Companion.USER_TABLE
 import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.aws.repository.UserRepository
@@ -93,7 +94,7 @@ class AuthViewModel : ViewModel() {
     fun loginUser(email: String, password: String,context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val user = AwsManager.getUserByEmail(email)
+                val user = AwsManager.getUserByEmail(USER_TABLE, email)
                 withContext(Dispatchers.Main) {
                     if (user == null) {
                         _loginResult.value = "User not found. Please sign up."
@@ -229,12 +230,12 @@ class AuthViewModel : ViewModel() {
     }
 
     // Create User
-    fun createUser(user: UserModel) {
+    fun createUser(user: UserModel, tableName: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val existingUser = AwsManager.getUserByEmail(user.email)
+                val existingUser = AwsManager.getUserByEmail(tableName,user.email)
                 if (existingUser == null) {
-                    val success = AwsManager.saveUser(user)
+                    val success = AwsManager.saveUser(tableName,user)
                     if (success) {
                         _operationResult.postValue("User created successfully")
                     } else {
@@ -270,7 +271,7 @@ class AuthViewModel : ViewModel() {
 
     fun readUserData(email: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val user = AwsManager.getUserByEmail(email)
+            val user = AwsManager.getUserByEmail(USER_TABLE, email)
             withContext(Dispatchers.Main) {
                 if (user != null) {
                     _userData.postValue(user)
@@ -281,14 +282,14 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun updateUserData(user: UserModel) {
+    fun updateUserData(tableName: String,user: UserModel) {
         CoroutineScope(Dispatchers.IO).launch {
             /*val resultMessage = AwsManager.saveUser(user) // Get success/error message
             withContext(Dispatchers.Main) {
                 _operationResult.postValue(resultMessage) // Post exact result message
             }*/
 
-            val success = AwsManager.saveUser(user) // Save updated user
+            val success = AwsManager.saveUser(tableName,user) // Save updated user
             withContext(Dispatchers.Main) {
                 if (success) {
                     _operationResult.postValue("User updated successfully")
@@ -316,15 +317,15 @@ class AuthViewModel : ViewModel() {
     // Read User
     fun getUser(userId: String) {
         viewModelScope.launch {
-            val user = repository.getUser(userId)
-            _userData.postValue(user)
+//            val user = repository.getUser(userId)
+//            _userData.postValue(user)
         }
     }
 
     // Update User
-    fun updateUser(user: UserModel) {
+    fun updateUser(tableName:String,user: UserModel) {
         viewModelScope.launch {
-            val result = repository.updateUser(user)
+            val result = repository.updateUser(tableName,user)
             _operationResult.postValue(result)
         }
     }

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +11,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.RFIDApplication.Companion.USER_TABLE
 import com.example.rfidstockpro.Utils.TextUtils
 import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.databinding.FragmentSignupBinding
@@ -161,7 +161,7 @@ class SignupFragment : Fragment() {
                 permissions = emptyList()
             )
             CoroutineScope(Dispatchers.IO).launch {
-                authViewModel.createUser(user)
+                authViewModel.createUser(user,USER_TABLE)
             }
 
             /*  if (authViewModel.validateSignup(

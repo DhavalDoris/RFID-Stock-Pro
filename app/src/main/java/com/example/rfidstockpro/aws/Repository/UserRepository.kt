@@ -1,6 +1,7 @@
 package com.example.rfidstockpro.aws.repository
 
 import android.util.Log
+import com.example.rfidstockpro.RFIDApplication.Companion.USER_TABLE
 import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.aws.models.UserModel
 import kotlinx.coroutines.Dispatchers
@@ -9,10 +10,9 @@ import software.amazon.awssdk.services.dynamodb.model.*
 
 class UserRepository {
 
-    private val tableName = AwsManager.USER_TABLE
 
     // ✅ Create User (Insert into DynamoDB)
-    suspend fun createUser(user: UserModel): String = withContext(Dispatchers.IO) {
+    suspend fun createUser(tableName:String,user: UserModel): String = withContext(Dispatchers.IO) {
         try {
             val itemValues = UserModel.toMap(user)
 
@@ -29,7 +29,7 @@ class UserRepository {
     }
 
     // ✅ Read User (Fetch from DynamoDB)
-    suspend fun getUser(email: String): UserModel? = withContext(Dispatchers.IO) {
+    suspend fun getUser(tableName:String,email: String): UserModel? = withContext(Dispatchers.IO) {
         try {
             val request = GetItemRequest.builder()
                 .tableName(tableName)
@@ -48,7 +48,7 @@ class UserRepository {
     }
 
     // ✅ Read User (Callback Version)
-    fun getUser(email: String, callback: (UserModel?) -> Unit) {
+    fun getUser(tableName:String,email: String, callback: (UserModel?) -> Unit) {
         Thread {
             try {
                 val request = GetItemRequest.builder()
@@ -68,7 +68,7 @@ class UserRepository {
     }
 
     // ✅ Update User (Using SDK v2)
-    suspend fun updateUser(user: UserModel): String = withContext(Dispatchers.IO) {
+    suspend fun updateUser(tableName:String,user: UserModel): String = withContext(Dispatchers.IO) {
         try {
             val attributeUpdates = UserModel.toMap(user).mapValues { (_, value) ->
                 AttributeValueUpdate.builder()
@@ -91,7 +91,7 @@ class UserRepository {
     }
 
     // ✅ Delete User
-    suspend fun deleteUser(email: String): String = withContext(Dispatchers.IO) {
+    suspend fun deleteUser(tableName:String,email: String): String = withContext(Dispatchers.IO) {
         try {
             val request = DeleteItemRequest.builder()
                 .tableName(tableName)

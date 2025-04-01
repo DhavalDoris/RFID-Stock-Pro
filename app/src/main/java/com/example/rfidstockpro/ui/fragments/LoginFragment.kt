@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.RFIDApplication.Companion.USER_TABLE
 import com.example.rfidstockpro.Utils.TextUtils
 import com.example.rfidstockpro.Utils.observeOnce
 import com.example.rfidstockpro.aws.AwsManager
@@ -288,7 +289,7 @@ class LoginFragment : Fragment() {
                     .setPositiveButton("Update") { _, _ ->
                         val newPassword = inputPassword.text.toString().trim()
                         if (newPassword.isNotEmpty()) {
-                            authViewModel.updateUserData(UserModel(user.email, newPassword))
+                            authViewModel.updateUserData(USER_TABLE,UserModel(user.email, newPassword))
                         } else {
                             Toast.makeText(
                                 requireContext(),
