@@ -86,23 +86,6 @@ class DemoActivity : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
-        /*viewModel.stockData.observe(this) { data ->
-            val dataSet = PieDataSet(data, "")
-            dataSet.colors = listOf(
-                Color.parseColor("#20C4B3"), // Active (Teal)
-                Color.parseColor("#F1875F"), // Pending (Orange)
-                Color.parseColor("#E6504B")  // Inactive (Red)
-            )
-//            dataSet.valueTextSize = 14f
-//            dataSet.valueTextColor = Color.WHITE
-
-            val pieData = PieData(dataSet)
-            pieChart.data = pieData
-            pieChart.invalidate() // Refresh
-
-
-
-        }*/
 
         val entries = ArrayList<PieEntry>()
         entries.add(PieEntry(15f))  // Active

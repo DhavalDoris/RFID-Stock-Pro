@@ -185,6 +185,7 @@
                         android:layout_height="wrap_content" />
 
                     <RelativeLayout
+                        android:id="@+id/rlSell"
                         style="@style/DashboardButtonStyle"
                         android:layout_width="0dp"
                         android:layout_height="@dimen/_70sdp"

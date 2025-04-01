@@ -16,9 +16,6 @@ import com.rscja.utility.StringUtility;
 
 import java.util.HashMap;
 
-/**
- * Created by Administrator on 2019-3-13.
- */
 
 public class Utils {
     private static final String TAG = "Utils";

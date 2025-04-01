@@ -57,10 +57,11 @@ class LoginFragment : Fragment() {
 
         authViewModel.loginResult.observe(viewLifecycleOwner) { result ->
             Toast.makeText(requireContext(), result, Toast.LENGTH_SHORT).show()
-            if (result == "Login successful") {
+            if (result == getString(R.string.login_successful)) {
                 navigateToDashboard()
-            } else if (result == "Account is not active") {
-                binding!!.etEmail.error = "Your account is not active. Contact support."
+            } else if (result == getString(R.string.account_is_not_active)) {
+                binding!!.etEmail.error =
+                    getString(R.string.your_account_is_not_active_contact_support)
             }
         }
     }
@@ -119,7 +120,7 @@ class LoginFragment : Fragment() {
 
     private fun uploadToS3(file: File) {
         val progressDialog = ProgressDialog(requireActivity()).apply {
-            setMessage("Uploading... Please wait")
+            setMessage(getString(R.string.uploading_please_wait))
             setCancelable(false)
             show()
         }
@@ -139,7 +140,8 @@ class LoginFragment : Fragment() {
                     progressDialog.dismiss()
                     val imageUrl = "https://${AwsManager.BUCKET_NAME}.s3.amazonaws.com/$key"
                     Log.e("AWS_TAG", "Upload Success: $imageUrl")
-                    Toast.makeText(requireContext(), "Upload Successful!", Toast.LENGTH_SHORT)
+                    Toast.makeText(requireContext(),
+                        getString(R.string.upload_successful), Toast.LENGTH_SHORT)
                         .show()
                 }
             } catch (e: Exception) {
@@ -148,10 +150,9 @@ class LoginFragment : Fragment() {
                     Log.e("AWS_TAG", "Upload Failed: ${e.message}")
                     Toast.makeText(
                         requireContext(),
-                        "Upload Failed: ${e.message}",
+                        getString(R.string.upload_failed, e.message),
                         Toast.LENGTH_SHORT
-                    )
-                        .show()
+                    ).show()
                 }
             }
         }

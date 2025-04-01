@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/main_bg_color"
+    tools:context=".ui.activities.AddItemActivity">
+
+    <!-- Toolbar -->
+    <!-- Include the Toolbar -->
+    <include
+        android:id="@+id/commonToolbar"
+        layout="@layout/toolbar_common"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nested"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/footerView"
+        android:layout_below="@+id/commonToolbar"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/llTop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/_15sdp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_110sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginBottom="@dimen/_5sdp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <RelativeLayout
+                    android:id="@+id/selectPhoto"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="@color/white"
+                        app:cardCornerRadius="@dimen/_5sdp">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/selectedImagesContainer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:foreground="?android:attr/selectableItemBackground"
+                            android:scaleType="centerCrop"
+                            app:srcCompat="@drawable/select_photo" />
+
+
+                    </androidx.cardview.widget.CardView>
+
+                    <RelativeLayout
+                        android:id="@+id/changeImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/_20sdp"
+                        android:layout_alignParentBottom="true"
+                        android:background="@drawable/chnage_image_bg"
+                        android:visibility="gone"
+                        android:elevation="@dimen/_2sdp">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/iconImage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/click"
+                            android:padding="@dimen/_2sdp"
+                            android:layout_marginLeft="@dimen/_30sdp"/>
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toRightOf="@+id/iconImage"
+                            android:layout_marginLeft="-5dp"
+                            android:drawablePadding="@dimen/_8sdp"
+                            android:fontFamily="@font/rethinksans_variablefont_wght"
+                            android:padding="@dimen/_3sdp"
+                            android:text="@string/change"
+                            android:textColor="@color/white" />
+
+                    </RelativeLayout>
+
+
+                </RelativeLayout>
+
+                <View
+                    android:layout_width="@dimen/_10sdp"
+                    android:layout_height="wrap_content" />
+
+                <RelativeLayout
+                    android:id="@+id/selectVideo"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="@color/white"
+                        app:cardCornerRadius="@dimen/_5sdp">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/selectedVideoContainer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:foreground="?android:attr/selectableItemBackground"
+                            android:scaleType="fitXY"
+                            app:srcCompat="@drawable/select_video" />
+
+                    </androidx.cardview.widget.CardView>
+
+                    <RelativeLayout
+                        android:id="@+id/changeVideo"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/_20sdp"
+                        android:layout_alignParentBottom="true"
+                        android:background="@drawable/chnage_image_bg"
+                        android:visibility="gone"
+                        android:elevation="@dimen/_2sdp">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/iconVideo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/click"
+                            android:padding="@dimen/_2sdp"
+                            android:layout_marginLeft="@dimen/_30sdp"/>
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toRightOf="@+id/iconVideo"
+                            android:layout_marginLeft="-5dp"
+                            android:drawablePadding="@dimen/_8sdp"
+                            android:fontFamily="@font/rethinksans_variablefont_wght"
+                            android:padding="@dimen/_3sdp"
+                            android:text="@string/change"
+                            android:textColor="@color/white" />
+
+                    </RelativeLayout>
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/etProductName"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:background="@drawable/edittext_bg"
+                android:drawablePadding="@dimen/_5sdp"
+                android:hint="@string/product_name"
+                android:padding="12dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_45sdp"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:background="@drawable/edittext_bg"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <Spinner
+                    android:id="@+id/spinnerCategoryFilter"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:dropDownHorizontalOffset="0dp"
+                    android:dropDownVerticalOffset="50dp"
+                    android:gravity="center"
+                    android:paddingEnd="4dp"
+                    android:popupBackground="@color/white" />
+
+                <!-- Manually add dropdown icon -->
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginRight="@dimen/_10sdp"
+                    android:padding="@dimen/_2sdp"
+                    android:src="@drawable/drop_down_arrow" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+
+                <EditText
+                    android:id="@+id/etPrice"
+                    style="@style/AppEditText"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/edittext_bg"
+                    android:drawablePadding="@dimen/_5sdp"
+                    android:hint="@string/price"
+                    android:padding="12dp" />
+
+                <Space
+                    android:layout_width="@dimen/_7sdp"
+                    android:layout_height="@dimen/_10sdp" />
+
+                <EditText
+                    android:id="@+id/etColor"
+                    style="@style/AppEditText"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/edittext_bg"
+                    android:drawablePadding="@dimen/_5sdp"
+                    android:hint="@string/color"
+                    android:padding="12dp" />
+
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/etJewelCode"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:background="@drawable/edittext_bg"
+                android:drawablePadding="@dimen/_5sdp"
+                android:hint="@string/jewel_code"
+                android:padding="12dp" />
+
+            <EditText
+                android:id="@+id/etStyleNo"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:background="@drawable/edittext_bg"
+                android:drawablePadding="@dimen/_5sdp"
+                android:hint="@string/style_no"
+                android:padding="12dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_40sdp"
+                android:layout_marginLeft="@dimen/_10sdp"
+                android:gravity="center_vertical">
+
+                <!-- Label for "Purity:" -->
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:text="Purity:"
+                    android:textSize="16sp" />
+
+                <!-- Button for 10K -->
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/button_10k"
+                    android:layout_width="@dimen/_50sdp"
+                    android:layout_height="@dimen/_30sdp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/button_selector"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:gravity="center"
+                    android:text="10K"
+                    android:textColor="@color/text_color_selector" />
+
+                <!-- Button for 14K -->
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/button_14k"
+                    android:layout_width="@dimen/_50sdp"
+                    android:layout_height="@dimen/_30sdp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/button_selector"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:gravity="center"
+                    android:text="14K"
+                    android:textColor="@color/text_color_selector" />
+                <!-- Button for 18K -->
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/button_18k"
+                    android:layout_width="@dimen/_50sdp"
+                    android:layout_height="@dimen/_30sdp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/button_selector"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:gravity="center"
+                    android:text="18K"
+                    android:textColor="@color/text_color_selector" />
+
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/etTotalDiaWt"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:background="@drawable/edittext_bg"
+                android:drawablePadding="@dimen/_5sdp"
+                android:hint="@string/total_dia_wt"
+                android:padding="12dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+
+                <EditText
+                    android:id="@+id/etTotalGrossWt"
+                    style="@style/AppEditText"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/edittext_bg"
+                    android:drawablePadding="@dimen/_5sdp"
+                    android:hint="@string/total_gross_wt"
+                    android:padding="12dp" />
+
+                <Space
+                    android:layout_width="@dimen/_7sdp"
+                    android:layout_height="@dimen/_10sdp" />
+
+                <EditText
+                    android:id="@+id/etTotalDia"
+                    style="@style/AppEditText"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/edittext_bg"
+                    android:drawablePadding="@dimen/_5sdp"
+                    android:hint="@string/total_dia"
+                    android:padding="12dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_45sdp"
+                android:layout_marginLeft="@dimen/_10sdp"
+                android:gravity="center_vertical">
+
+                <!-- Label for "Purity:" -->
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:text="Status:"
+                    android:textSize="16sp" />
+
+                <!-- Button for 10K -->
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="@dimen/_70sdp"
+                    android:layout_height="@dimen/_28sdp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/button_selector"
+                    android:backgroundTint="@color/appMainColor"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:gravity="center"
+                    android:text="Pending"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/etDescription"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_100sdp"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:background="@drawable/edittext_bg"
+                android:drawablePadding="@dimen/_5sdp"
+                android:gravity="start"
+                android:hint="@string/write"
+                android:padding="12dp" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <LinearLayout
+        android:id="@+id/footerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/edittext_bg"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/_15sdp">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/btnAdd"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/_5sdp"
+            android:layout_marginTop="@dimen/_15sdp"
+            android:layout_marginBottom="@dimen/_15sdp"
+            android:layout_weight="1"
+            android:background="@drawable/button_selector"
+            android:backgroundTint="@color/colorActive"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:padding="@dimen/_10sdp"
+            android:text="Add"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/_12ssp" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/btnAddScan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/_5sdp"
+            android:layout_marginTop="@dimen/_15sdp"
+            android:layout_marginBottom="@dimen/_15sdp"
+            android:layout_weight="1"
+            android:background="@drawable/button_selector"
+            android:backgroundTint="@color/appMainColor"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:padding="@dimen/_10sdp"
+            android:text="Add &amp; Scan"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/_12ssp" />
+
+    </LinearLayout>
+
+</RelativeLayout>

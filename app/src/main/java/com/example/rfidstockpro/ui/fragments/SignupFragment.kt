@@ -187,15 +187,15 @@ class SignupFragment : Fragment() {
 
         authViewModel.operationResult.observe(viewLifecycleOwner) { successMessage ->
             Toast.makeText(requireContext(), successMessage, Toast.LENGTH_SHORT).show()
-            if (successMessage == "User created successfully") {
+            if (successMessage == getString(R.string.user_created_successfully)) {
                 authViewModel.setUserEmail(email)  // Store email in ViewModel
                 val intent = Intent(requireContext(), VerificationActivity::class.java)
                 intent.putExtra("email", email) // Pass the email
                 startActivity(intent)
                 requireActivity().finish()
-            } else if (successMessage == "Email already exists") {
+            } else if (successMessage == getString(R.string.email_already_exists)) {
                 binding!!.etEmail.error =
-                    "This email is already registered" // ✅ Show error on EditText
+                    getString(R.string.this_email_is_already_registered) // ✅ Show error on EditText
             }
 
         }

@@ -8,17 +8,19 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ForegroundColorSpan
 import android.text.style.UnderlineSpan
 import android.widget.TextView
+import com.example.rfidstockpro.R
 
 object TextUtils {
 
     fun applyUnderlineAndColor(context: Context, textView: TextView) {
-        val text = "By signing in with an account, you agree to SO's \n Terms of Service and Privacy Policy."
+        val text =
+            context.getString(R.string.by_signing_in_with_an_account_you_agree_to_so_s_terms_of_service_and_privacy_policy)
         val spannableString = SpannableString(text)
 
-        val termsStart = text.indexOf("Terms of Service")
+        val termsStart = text.indexOf(context.getString(R.string.terms_of_service))
         val termsEnd = termsStart + "Terms of Service".length
 
-        val privacyStart = text.indexOf("Privacy Policy")
+        val privacyStart = text.indexOf(context.getString(R.string.privacy_policy))
         val privacyEnd = privacyStart + "Privacy Policy".length
 
         // Set entire text color to Gray first

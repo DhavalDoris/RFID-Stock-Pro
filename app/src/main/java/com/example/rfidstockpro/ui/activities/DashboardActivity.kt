@@ -72,7 +72,6 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
     private lateinit var uhfDevice: RFIDWithUHFBLE
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDashboardBinding.inflate(layoutInflater)
@@ -104,17 +103,17 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         binding.tvUserRole.text = userRole.toString()
         when (userRole) {
             1 -> { // Owner
-                binding.tvUserRole.text = "Owner"
+                binding.tvUserRole.text = getString(R.string.owner)
 //                binding.tvUserRole.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.owner_background))
 //                binding.tvUserRole.setTextColor(ContextCompat.getColor(this, R.color.owner_text))
             }
             2 -> { // Manager
-                binding.tvUserRole.text = "Manager"
+                binding.tvUserRole.text = getString(R.string.manager)
 //                binding.tvUserRole.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.manager_background))
 //                binding.tvUserRole.setTextColor(ContextCompat.getColor(this, R.color.manager_text))
             }
             3 -> { // Staff
-                binding.tvUserRole.text = "Staff"
+                binding.tvUserRole.text = getString(R.string.staff)
 //                binding.tvUserRole.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.staff_bg_color))
 //                binding.tvUserRole.setTextColor(ContextCompat.getColor(this, R.color.staff_text_color))
             }
@@ -128,6 +127,10 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 
     private fun initClick() {
         binding.rlBuy.setOnClickListener {
+
+        }
+
+        binding.rlSell.setOnClickListener {
             setFragment(UHFReadFragment())
         }
     }
@@ -363,11 +366,9 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         dashboardViewModel.connectButtonText.observe(this) { text ->
             binding.btnConnectScanner.text = text
         }
-
         dashboardViewModel.rfidStatusText.observe(this) { text ->
 //            binding.tvStaus.text = text
         }
-
         dashboardViewModel.footerVisibility.observe(this) { isVisible ->
 //            binding.footerView.visibility = if (isVisible) View.VISIBLE else View.GONE
 //            binding.rlRfidStatus.visibility = if (!isVisible) View.GONE else View.VISIBLE
@@ -401,7 +402,6 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Log.i(TAG, "onActivityResult: requestCode=$requestCode resultCode=$resultCode data=$data")
 
         when (requestCode) {
             REQUEST_SELECT_DEVICE -> {
@@ -411,7 +411,7 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
                         mDevice =
                             BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress)
                         binding.tvRfidName.text = mDevice?.name ?: "Unknown Device"
-                        binding.tvStaus.text = "Connecting..."
+                        binding.tvStaus.text = getString(R.string.connecting)
 //                        binding.rlRfidStatus.visibility = View.VISIBLE
                         AnimationUtils.fadeInView(binding.rlRfidStatus);
                         connectToDevice(deviceAddress)
@@ -442,16 +442,15 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
                         if (connectionStatus == ConnectionStatus.CONNECTED) {
                             Log.e("ConetionTAG", "getStatus: " + "IF")
 //                            showToast(this@DashboardActivity, getString(R.string.connect_success))
-                            binding.tvStaus.text = "Connected"
+                            binding.tvStaus.text = getString(R.string.connected)
 //                            binding.footerView.visibility = View.GONE
 //                            binding.rlRfidStatus.visibility = View.VISIBLE
                             AnimationUtils.fadeInView(binding.rlRfidStatus);
                             AnimationUtils.fadeOutView(binding.footerView);
-
                         } else {
                             Log.e("ConetionTAG", "getStatus: " + "ELSE")
 //                            showToast(this@DashboardActivity, getString(R.string.disConnect))
-                            binding.tvStaus.text = "Disconnected"
+                            binding.tvStaus.text = getString(R.string.disconnected)
                             AnimationUtils.fadeInView(binding.footerView);
                             AnimationUtils.fadeOutView(binding.rlRfidStatus);
                         }
@@ -470,7 +469,7 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         val fragmentManager = supportFragmentManager
         if (fragmentManager.backStackEntryCount > 0) {
             fragmentManager.popBackStack() // Removes the top fragment
-            updateToolbarTitle("Dashboard");
+            updateToolbarTitle(getString(R.string.dashboard));
         } else {
             super.onBackPressed() // Exits the activity and goes back to MainActivity
         }

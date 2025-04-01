@@ -8,6 +8,7 @@ import android.widget.AdapterView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.ViewUtils
 import com.example.rfidstockpro.adapter.UHFTagAdapter
 import com.example.rfidstockpro.databinding.FragmentUhfreadTagBinding
@@ -50,7 +51,7 @@ class UHFReadFragment : Fragment() {
             UHFViewModelFactory(uhfRepository)
         )[UHFReadViewModel::class.java]
 
-        (activity as? DashboardActivity)?.updateToolbarTitle("RFID Tags")
+        (activity as? DashboardActivity)?.updateToolbarTitle(getString(R.string.rfid_tags))
         setupUI()
         observeViewModel()
     }

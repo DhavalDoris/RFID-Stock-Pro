@@ -23,6 +23,7 @@ object AwsManager {
     lateinit var dynamoDBClient: DynamoDbClient
 
     const val USER_TABLE = "user"
+    const val PRODUCT_TABLE = "products"
     private const val AWS_ACCESS_KEY = "AKIAU5LH6AA6PZMWLVGH" // Replace with your IAM User Access Key
     private const val AWS_SECRET_KEY = "82uAgthAYF8t4Di5CNzJHtfS46BhKjnGhz9uWv7D" // Replace with your IAM User Secret Key
     const val BUCKET_NAME = "rfid-stock-pro"
@@ -93,7 +94,7 @@ object AwsManager {
         sesClient.close()
     }
 
-    fun ensureTableExists(callback: (String) -> Unit) {
+    fun ensureUserTableExists(callback: (String) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 Log.e("AWS_TAG", "Checking if table exists: $USER_TABLE")

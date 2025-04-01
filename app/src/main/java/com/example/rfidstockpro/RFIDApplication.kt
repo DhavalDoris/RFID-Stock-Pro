@@ -26,7 +26,7 @@ class RFIDApplication : Application() {
 
     private fun createDynamoDBTable() {
         CoroutineScope(Dispatchers.IO).launch {
-            AwsManager.ensureTableExists { status ->
+            AwsManager.ensureUserTableExists { status ->
                 when (status) {
                     "creating" -> Log.e("AWS_TAG", "Creating DynamoDB Table...")
                     "created", "exists" -> Log.e("AWS_TAG", "DynamoDB Table Ready!")

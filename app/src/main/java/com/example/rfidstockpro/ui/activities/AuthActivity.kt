@@ -33,7 +33,7 @@ class AuthActivity : AppCompatActivity() {
 
         // Connect TabLayout with ViewPager2
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-            tab.text = if (position == 0) "Login" else "Sign up"
+            tab.text = if (position == 0) getString(R.string.login) else getString(R.string.sign_up)
         }.attach()
         setTabFont()
 
@@ -41,13 +41,6 @@ class AuthActivity : AppCompatActivity() {
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)  // -180f else 0f
-               /* val targetHeight  = if (position == 1)  -80f else 0f  // Adjusted height for sign-up tab
-                ObjectAnimator.ofFloat(binding.topLayout, "translationY", targetHeight).apply {
-                    duration = 300
-                    start()
-                }*/
-//                animateHeight(binding.topLayout, targetHeight)
-
                 // Set height based on tab selection
                 val newTopHeight = if (position == 1) resources.getDimensionPixelSize(R.dimen._200sdp)
                 else resources.getDimensionPixelSize(R.dimen._300sdp)

@@ -75,9 +75,10 @@ class VerificationActivity : AppCompatActivity() {
     private fun setupListeners() {
 
         verificationViewModel.otpError.observe(this) { message ->
-            if (message == "OTP Verified Successfully!") {
+            if (message == getString(R.string.otp_verified_successfully)) {
                 // Proceed to next screen on successful OTP verification
-                Toast.makeText(this, "Account Created - Login Now", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this,
+                    getString(R.string.account_created_login_now), Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this, AuthActivity::class.java))
                 finish()
 
@@ -149,7 +150,7 @@ class VerificationActivity : AppCompatActivity() {
 
 
     private fun updateEmailText(email: String) {
-        val fullText = "We sent a code to $email"
+        val fullText = getString(R.string.we_sent_a_code_to, email)
         val spannable = SpannableString(fullText)
 
         val startIndex = fullText.indexOf(email)
