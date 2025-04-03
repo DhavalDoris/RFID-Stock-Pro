@@ -14,6 +14,7 @@ import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -36,7 +37,6 @@ class VerificationActivity : AppCompatActivity() {
     private val verificationViewModel: VerificationViewModel by viewModels()
     var comesFrom: String = ""
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -55,13 +55,14 @@ class VerificationActivity : AppCompatActivity() {
         val email = sessionManager.getEmail()
         updateEmailText(email!!)
 
-
         verificationViewModel.resendOtpText.observe(this) { text ->
             CoroutineScope(Dispatchers.Main).launch {
-                applySpannableText(text, text == "RESEND OTP")
                 Log.e("OTP_TAG", "observe: " + text )
+                binding.tvResendOtp.text = text
             }
         }
+
+        verificationViewModel.resetResendText(this) // Set initial text
 
         // Observe enable/disable state
         verificationViewModel.isResendEnabled.observe(this, Observer { isEnabled ->
@@ -75,7 +76,7 @@ class VerificationActivity : AppCompatActivity() {
         binding.tvResendOtp.setOnClickListener {
             Log.e("OTP_TAG", "Click: "  )
             if (verificationViewModel.isResendEnabled.value == true) {
-                verificationViewModel.startResendTimer()
+                verificationViewModel.startResendTimer(this)
             }
         }
     }
@@ -134,128 +135,6 @@ class VerificationActivity : AppCompatActivity() {
         }
 
     }
-
-    /*private fun applySpannableText(text: String) {
-        val fullText = "Don't receive the OTP? RESEND OTP"
-        val spannable = SpannableString(fullText)
-
-        // Find the index of "RESEND OTP"
-        val startIndex = fullText.indexOf("RESEND OTP")
-        val endIndex = startIndex + "RESEND OTP".length
-
-        val mainColor = ContextCompat.getColor(
-            this,
-            R.color.appMainColor
-        ) // Ensure R.color.blue is defined in colors.xml
-
-        // Apply blue color to "RESEND OTP"
-        spannable.setSpan(
-            ForegroundColorSpan(mainColor),
-            startIndex,
-            endIndex,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-
-
-      *//*  // Make "RESEND OTP" clickable
-        val clickableSpan = object : ClickableSpan() {
-            override fun onClick(widget: View) {
-                // Handle the resend OTP click event
-                Toast.makeText(this@VerificationActivity, "Resend OTP clicked", Toast.LENGTH_SHORT)
-                    .show()
-                // Add your logic here to resend OTP
-            }
-
-            override fun updateDrawState(ds: TextPaint) {
-                super.updateDrawState(ds)
-                ds.isUnderlineText = false // Remove underline
-                ds.color = mainColor // Ensure text color remains blue
-            }
-        }
-
-        spannable.setSpan(
-            clickableSpan,
-            startIndex,
-            endIndex,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-
-        // Set the formatted text to the TextView
-        binding.tvResendOtp.text = spannable
-        // Enable clickable spans in TextView
-        binding.tvResendOtp.movementMethod = LinkMovementMethod.getInstance()
-        binding.tvResendOtp.highlightColor = Color.TRANSPARENT // Remove highlight when clicked*//*
-
-
-
-        // Clickable span if enabled
-        if (text == "RESEND OTP" && verificationViewModel.isResendEnabled.value == true ) {
-            val clickableSpan = object : ClickableSpan() {
-                override fun onClick(widget: android.view.View) {
-                    verificationViewModel.startResendTimer()
-                }
-
-                override fun updateDrawState(ds: TextPaint) {
-                    super.updateDrawState(ds)
-                    ds.isUnderlineText = false
-                    ds.color = mainColor
-                }
-            }
-            spannable.setSpan(
-                clickableSpan,
-                startIndex,
-                endIndex,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-        }
-
-        binding.tvResendOtp.text = spannable
-        binding.tvResendOtp.movementMethod = LinkMovementMethod.getInstance()
-    }*/
-
-    fun applySpannableText(text: String, isClickable: Boolean) {
-        val spannable = SpannableString(text)
-        val phrase = "Resend OTP" // Phrase to find
-        val startIndex = text.indexOf(phrase)
-
-        // 🔍 Ensure the phrase exists before applying spans
-        if (startIndex == -1) {
-            binding.tvResendOtp.text = text // Just set text if phrase not found
-            return
-        }
-
-        val endIndex = startIndex + phrase.length
-        val blueColor = ContextCompat.getColor(this, R.color.appMainColor)
-
-        // Apply color
-        spannable.setSpan(
-            ForegroundColorSpan(blueColor),
-            startIndex,
-            endIndex,
-            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        )
-
-        if (isClickable) {
-            val clickableSpan = object : ClickableSpan() {
-                override fun onClick(widget: View) {
-                    if (verificationViewModel.isResendEnabled.value == true) {
-                        verificationViewModel.startResendTimer()
-                    }
-                }
-
-                override fun updateDrawState(ds: TextPaint) {
-                    super.updateDrawState(ds)
-                    ds.isUnderlineText = false // Remove underline
-                    ds.color = blueColor
-                }
-            }
-            spannable.setSpan(clickableSpan, startIndex, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-
-        binding.tvResendOtp.text = spannable
-        binding.tvResendOtp.movementMethod = LinkMovementMethod.getInstance()
-    }
-
 
 
     private fun updateEmailText(email: String) {

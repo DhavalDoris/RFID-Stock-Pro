@@ -1,5 +1,6 @@
 package com.example.rfidstockpro.ui.activities
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.media.MediaMetadataRetriever
@@ -11,7 +12,9 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
@@ -42,6 +45,17 @@ class AddItemActivity : AppCompatActivity() {
     private var isImageSelected: Boolean = false // Add this flag
     private var selectedImage: Uri? = null  // Global Image URI
     private var selectedVideo: Uri? = null  // Global Video URI
+
+    private lateinit var imageFile: File
+    private lateinit var videoFile: File
+
+    companion object {
+        private const val REQUEST_PICK_IMAGE = 1001
+        private const val REQUEST_PICK_VIDEO = 1002
+        private const val REQUEST_CAPTURE_IMAGE = 1003
+        private const val REQUEST_CAPTURE_VIDEO = 1004
+        private const val MAX_FILE_SIZE_MB = 10.0
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -190,14 +204,61 @@ class AddItemActivity : AppCompatActivity() {
         }
 
         binding.selectedImagesContainer.setOnClickListener {
-            openImagePicker("image/*", IMAGE_PICKER_REQUEST_CODE)
+//            openImagePicker("image/*", IMAGE_PICKER_REQUEST_CODE)
+            showMediaPickerDialog(isImage = true)
         }
 
         binding.selectVideo.setOnClickListener {
-            openImagePicker("video/*", VIDEO_PICKER_REQUEST_CODE)
+//            openImagePicker("video/*", VIDEO_PICKER_REQUEST_CODE)
+            showMediaPickerDialog(isImage = false)
         }
     }
 
+    /**
+     * Shows a dialog to choose between Camera or Gallery
+     */
+    private fun showMediaPickerDialog(isImage: Boolean) {
+        val options = arrayOf("Capture with Camera", "Select from Gallery")
+        AlertDialog.Builder(this)
+            .setTitle(if (isImage) "Select Image" else "Select Video")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> if (isImage) captureImage() else recordVideo()
+                    1 -> if (isImage) pickImageFromGallery() else pickVideoFromGallery()
+                }
+            }.show()
+    }
+
+
+    private fun pickImageFromGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        intent.type = "image/*"
+        startActivityForResult(intent, REQUEST_PICK_IMAGE)
+    }
+
+    private fun pickVideoFromGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+        intent.type = "video/*"
+        startActivityForResult(intent, REQUEST_PICK_VIDEO)
+    }
+
+    private fun captureImage() {
+        val imageIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        imageFile = File(externalCacheDir,  "image_${System.currentTimeMillis()}.jpg")
+        selectedImage = FileProvider.getUriForFile(this, "$packageName.fileprovider", imageFile)
+        imageIntent.putExtra(MediaStore.EXTRA_OUTPUT, selectedImage)
+        startActivityForResult(imageIntent, REQUEST_CAPTURE_IMAGE)
+    }
+
+    private fun recordVideo() {
+        val videoIntent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
+        videoFile = File(externalCacheDir, "video_${System.currentTimeMillis()}.mp4")
+        selectedVideo = FileProvider.getUriForFile(this, "$packageName.fileprovider", videoFile)
+
+        videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, selectedVideo)
+        videoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 60) // 60 sec max
+        startActivityForResult(videoIntent, REQUEST_CAPTURE_VIDEO)
+    }
 
     private fun openImagePicker(type: String, request_code: Int) {
         // Create an intent to pick an image
@@ -248,7 +309,7 @@ class AddItemActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == IMAGE_PICKER_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             val selectedImageUri: Uri? = data.data
@@ -272,8 +333,72 @@ class AddItemActivity : AppCompatActivity() {
                 binding.changeVideo.visibility = View.VISIBLE
             }
         }
+    }*/
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode == Activity.RESULT_OK) {
+            when (requestCode) {
+                REQUEST_PICK_IMAGE, REQUEST_CAPTURE_IMAGE -> {
+                    selectedImage = data?.data ?: selectedImage
+                    selectedImage?.let {
+                        if (validateFileSize(it, isImage = true)) {
+                            binding.selectedImagesContainer.setImageURI(it)
+                        } else {
+                            selectedImage = null
+                        }
+                    }
+                }
+
+                REQUEST_PICK_VIDEO, REQUEST_CAPTURE_VIDEO -> {
+                    selectedVideo = data?.data ?: selectedVideo
+                    selectedVideo?.let {
+                        if (validateFileSize(it, isImage = false)) {
+                            val retriever = MediaMetadataRetriever()
+                            retriever.setDataSource(this, it)
+                            val bitmap = retriever.frameAtTime
+                            binding.selectedVideoContainer.setImageBitmap(bitmap)
+                        } else {
+                            selectedVideo = null
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
+    /**
+     * Validates if the selected file is less than 10MB
+     */
+    private fun validateFileSize(uri: Uri, isImage: Boolean): Boolean {
+        val fileSize = getFileSize(this, uri)
+        if (fileSize > MAX_FILE_SIZE_MB) {
+            Toast.makeText(
+                this,
+                "${if (isImage) "Image" else "Video"} size should be less than 10MB",
+                Toast.LENGTH_SHORT
+            ).show()
+            return false
+        }
+        return true
+    }
+
+    /**
+     * Gets the file size in MB
+     */
+    private fun getFileSize(context: Context, uri: Uri): Double {
+        val cursor = context.contentResolver.query(uri, arrayOf(MediaStore.MediaColumns.SIZE), null, null, null)
+        var size = 0L
+        cursor?.use {
+            if (it.moveToFirst()) {
+                size = it.getLong(0)
+            }
+        }
+        return (size / (1024.0 * 1024.0)) // Convert to MB
+    }
 
     private fun validateFields(): Boolean {
         val productName = binding.etProductName.text.toString().trim()
