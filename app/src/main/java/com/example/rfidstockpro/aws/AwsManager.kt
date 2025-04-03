@@ -54,7 +54,6 @@ object AwsManager {
     const val BUCKET_NAME = "rfid-stock-pro"
     const val FOLDER_NAME = "rfid-uploads"
     private val AWS_REGION = Region.US_EAST_1
-    
 
     fun init(context: Context) {
 
