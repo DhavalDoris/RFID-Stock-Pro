@@ -54,11 +54,7 @@ object AwsManager {
     const val BUCKET_NAME = "rfid-stock-pro"
     const val FOLDER_NAME = "rfid-uploads"
     private val AWS_REGION = Region.US_EAST_1
-
-    // yatin
-//    private const val AWS_ACCESS_KEY = "AKIAU5LH6AA6FUL6NZ3U" // Replace with your IAM User Access Key
-//    private const val AWS_SECRET_KEY = "soyffnSSmPM7/CLN2S1JRfp+u2JbygCpr6FFqQ7E" // Replace with your IAM User Secret Key
-
+    
 
     fun init(context: Context) {
 
