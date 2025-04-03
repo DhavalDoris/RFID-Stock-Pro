@@ -1,0 +1,27 @@
+{
+  "buildFiles": [
+    "C:\\Users\\tempo\\AndroidStudioProjects\\RFIDStockPro\\app\\src\\main\\cpp\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "C:\\Users\\tempo\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "-C",
+      "C:\\Users\\tempo\\AndroidStudioProjects\\RFIDStockPro\\app\\.cxx\\Debug\\5c2f472x\\arm64-v8a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "C:\\Users\\tempo\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-C",
+    "C:\\Users\\tempo\\AndroidStudioProjects\\RFIDStockPro\\app\\.cxx\\Debug\\5c2f472x\\arm64-v8a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "rfidstockpro::@6890427a1f51a3e7e1df": {
+      "artifactName": "rfidstockpro",
+      "abi": "arm64-v8a",
+      "output": "C:\\Users\\tempo\\AndroidStudioProjects\\RFIDStockPro\\app\\build\\intermediates\\cxx\\Debug\\5c2f472x\\obj\\arm64-v8a\\librfidstockpro.so",
+      "runtimeFiles": []
+    }
+  }
+}

@@ -48,15 +48,15 @@
                     android:layout_weight="1">
 
                     <androidx.cardview.widget.CardView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         app:cardBackgroundColor="@color/white"
                         app:cardCornerRadius="@dimen/_5sdp">
 
                         <androidx.appcompat.widget.AppCompatImageView
                             android:id="@+id/selectedImagesContainer"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
                             android:layout_centerInParent="true"
                             android:foreground="?android:attr/selectableItemBackground"
                             android:scaleType="centerCrop"
@@ -109,15 +109,15 @@
                     android:layout_weight="1">
 
                     <androidx.cardview.widget.CardView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         app:cardBackgroundColor="@color/white"
                         app:cardCornerRadius="@dimen/_5sdp">
 
                         <androidx.appcompat.widget.AppCompatImageView
                             android:id="@+id/selectedVideoContainer"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
                             android:layout_centerInParent="true"
                             android:foreground="?android:attr/selectableItemBackground"
                             android:scaleType="fitXY"
@@ -245,6 +245,7 @@
                 style="@style/AppEditText"
                 android:layout_width="match_parent"
                 android:layout_marginTop="@dimen/_5sdp"
+                android:inputType="number"
                 android:background="@drawable/edittext_bg"
                 android:drawablePadding="@dimen/_5sdp"
                 android:hint="@string/style_no"
@@ -305,6 +306,7 @@
             <EditText
                 android:id="@+id/etTotalDiaWt"
                 style="@style/AppEditText"
+                android:inputType="number"
                 android:layout_width="match_parent"
                 android:background="@drawable/edittext_bg"
                 android:drawablePadding="@dimen/_5sdp"

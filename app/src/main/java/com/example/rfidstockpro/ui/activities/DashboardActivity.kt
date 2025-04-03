@@ -35,6 +35,7 @@ import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
 import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.databinding.ActivityDashboardBinding
+import com.example.rfidstockpro.sharedpref.SessionManager
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.ui.fragments.UHFReadFragment
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
@@ -92,12 +93,13 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 
         val toolbarView = findViewById<View>(R.id.commonToolbar)
         tvToolbarTitle = toolbarView.findViewById(R.id.tvToolbarTitle)
+
     }
 
     private fun loadUserData() {
-        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-        val userName = sharedPreferences.getString("USER_NAME", "Guest")
-        val userRole = sharedPreferences.getInt("USER_ROLE", 1)
+        val sessionManager = SessionManager.getInstance(this) // Get Singleton Instance
+        val userName = sessionManager.getUserName()
+        val userRole = sessionManager.getUserRole()
 
         binding.tvUserName.text = userName
         binding.tvUserRole.text = userRole.toString()
@@ -107,11 +109,13 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 //                binding.tvUserRole.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.owner_background))
 //                binding.tvUserRole.setTextColor(ContextCompat.getColor(this, R.color.owner_text))
             }
+
             2 -> { // Manager
                 binding.tvUserRole.text = getString(R.string.manager)
 //                binding.tvUserRole.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.manager_background))
 //                binding.tvUserRole.setTextColor(ContextCompat.getColor(this, R.color.manager_text))
             }
+
             3 -> { // Staff
                 binding.tvUserRole.text = getString(R.string.staff)
 //                binding.tvUserRole.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.staff_bg_color))
@@ -127,7 +131,7 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 
     private fun initClick() {
         binding.rlBuy.setOnClickListener {
-
+            startActivity(Intent(this, AddItemActivity::class.java))
         }
 
         binding.rlSell.setOnClickListener {

@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -14,6 +15,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.rfidstockpro.R
@@ -23,7 +25,9 @@ import com.example.rfidstockpro.Utils.observeOnce
 import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.databinding.FragmentLoginBinding
+import com.example.rfidstockpro.ui.activities.AuthActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity
+import com.example.rfidstockpro.ui.activities.VerificationActivity
 import com.example.rfidstockpro.viewmodel.AuthViewModel
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
@@ -68,8 +72,10 @@ class LoginFragment : Fragment() {
     }
 
     private fun navigateToDashboard() {
-        startActivity(Intent(requireActivity(), DashboardActivity::class.java))
-//        startActivity(Intent(requireActivity(), DeviceListActivity::class.java))
+//      startActivity(Intent(requireActivity(), DashboardActivity::class.java))
+        val intent = Intent(requireContext(), VerificationActivity::class.java)
+        intent.putExtra("comeFrom", "Login") // Pass the email
+        startActivity(intent)
     }
 
     override fun onCreateView(
@@ -79,7 +85,8 @@ class LoginFragment : Fragment() {
     ): View {
         binding = FragmentLoginBinding.inflate(inflater, container, false)
 
-        TextUtils.applyUnderlineAndColor(requireActivity(), binding!!.tvTerms)
+
+        initView()
         setupPasswordToggle()
         setupLoginButton()
         observeValidationErrors()
@@ -113,6 +120,29 @@ class LoginFragment : Fragment() {
         }
 
         return binding!!.root
+    }
+
+    private fun initView() {
+        TextUtils.applyUnderlineAndColor(
+            requireActivity(),
+            binding!!.tvTerms,
+            onTermsClick = {
+                // Open Terms of Service link
+                val url = "https://www.yourwebsite.com/terms"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(intent)
+            },
+            onPrivacyClick = {
+                // Open Privacy Policy link
+                val url = "https://www.yourwebsite.com/privacy"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(intent)
+            }
+        )
+
+        binding!!.forgotPassword.setOnClickListener {
+            showSnackbar("Forgot Password Clicked")
+        }
     }
 
     private fun pickMedia() {
@@ -227,6 +257,7 @@ class LoginFragment : Fragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun setupLoginButton() {
         binding!!.btnLogin.setOnClickListener {
             val email = binding!!.etEmail.text.toString().trim()

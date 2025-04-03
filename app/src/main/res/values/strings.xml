@@ -124,4 +124,6 @@
     <string name="write">Write...</string>
     <string name="add_item">Add item</string>
     <string name="change">Change</string>
+    <string name="connect_scanner">Connect Scanner</string>
+    <string name="buy">Buy</string>
 </resources>

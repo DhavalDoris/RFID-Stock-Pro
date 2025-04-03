@@ -162,6 +162,7 @@
                     <RelativeLayout
                         android:id="@+id/rlBuy"
                         style="@style/DashboardButtonStyle"
+                        android:foreground="?android:attr/selectableItemBackground"
                         android:layout_width="0dp"
                         android:layout_height="@dimen/_70sdp"
                         android:layout_weight="1">
@@ -170,7 +171,7 @@
                             style="@style/DashboardTextStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Buy" />
+                            android:text="@string/buy" />
 
                         <androidx.appcompat.widget.AppCompatImageView
                             style="@style/DashboardImageStyle"
@@ -190,6 +191,7 @@
                         android:layout_width="0dp"
                         android:layout_height="@dimen/_70sdp"
                         android:layout_weight="1"
+                        android:foreground="?android:attr/selectableItemBackground"
                         android:backgroundTint="#EFEBFA">
 
                         <androidx.appcompat.widget.AppCompatTextView
@@ -221,6 +223,7 @@
                         android:layout_width="0dp"
                         android:layout_height="@dimen/_70sdp"
                         android:layout_weight="1"
+                        android:foreground="?android:attr/selectableItemBackground"
                         android:backgroundTint="#D7EBFF">
 
                         <androidx.appcompat.widget.AppCompatTextView
@@ -247,6 +250,7 @@
                         android:layout_width="0dp"
                         android:layout_height="@dimen/_70sdp"
                         android:layout_weight="1"
+                        android:foreground="?android:attr/selectableItemBackground"
                         android:backgroundTint="#D9F3F4">
 
                         <androidx.appcompat.widget.AppCompatTextView
@@ -278,6 +282,7 @@
                         android:layout_width="0dp"
                         android:layout_height="@dimen/_70sdp"
                         android:layout_weight="1"
+                        android:foreground="?android:attr/selectableItemBackground"
                         android:backgroundTint="#E2F4D9">
 
                         <androidx.appcompat.widget.AppCompatTextView
@@ -304,6 +309,7 @@
                         android:layout_width="0dp"
                         android:layout_height="@dimen/_70sdp"
                         android:layout_weight="1"
+                        android:foreground="?android:attr/selectableItemBackground"
                         android:backgroundTint="#FBF2CD">
 
                         <androidx.appcompat.widget.AppCompatTextView
@@ -739,7 +745,8 @@
             android:fontFamily="@font/rethinksans_variablefont_wght"
             android:gravity="center"
             android:padding="12dp"
-            android:text="Connect Scanner"
+            android:text="@string/connect_scanner"
+            android:foreground="?android:attr/selectableItemBackground"
             android:textColor="@android:color/white"
             android:textSize="@dimen/_15ssp"
             app:layout_constraintBottom_toBottomOf="parent"

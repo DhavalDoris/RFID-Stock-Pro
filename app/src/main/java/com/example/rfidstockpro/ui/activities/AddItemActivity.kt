@@ -22,6 +22,8 @@ import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.ActivityAddItemBinding
 import com.example.rfidstockpro.viewmodel.AddItemViewModel
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import java.io.File
 
 class AddItemActivity : AppCompatActivity() {
@@ -69,8 +71,49 @@ class AddItemActivity : AppCompatActivity() {
                 AwsManager.uriToFile(this, uri) // Only convert if not null
             }
 
-            // Call the upload function
+            // Log Image File Details
+            Log.d("AWS_UPLOAD", "Image File Details:")
+            Log.d("AWS_UPLOAD", "Path: ${imageFile.absolutePath}")
+            Log.d("AWS_UPLOAD", "Name: ${imageFile.name}")
+            Log.d(
+                "AWS_UPLOAD",
+                "Size: ${imageFile.length()} bytes (${imageFile.length() / (1024 * 1024)} MB)"
+            )
+            Log.d("AWS_UPLOAD", "Exists: ${imageFile.exists()}")
+
+
+            if (videoFile != null) {
+                // Log Video File Details
+                Log.d("AWS_UPLOAD", "Video File Details:")
+                Log.d("AWS_UPLOAD", "Path: ${videoFile!!.absolutePath}")
+                Log.d("AWS_UPLOAD", "Name: ${videoFile.name}")
+                Log.d(
+                    "AWS_UPLOAD",
+                    "Size: ${videoFile.length()} bytes (${videoFile.length() / (1024 * 1024)} MB)"
+                )
+                Log.d("AWS_UPLOAD", "Exists: ${videoFile.exists()}")
+
+            }
+
+
+            val scope = CoroutineScope(Dispatchers.Main)
+
             AwsManager.uploadMediaToS3(
+                scope = scope, // ✅ Pass a coroutine scope
+                context = this,
+                imageFile = imageFile,
+                videoFile = videoFile,
+                onSuccess = { imageUrl, videoUrl ->
+                    Log.d("AWS_UPLOAD", "Image URL: $imageUrl")
+                    videoUrl?.let { Log.d("AWS_UPLOAD", "Video URL: $it") }
+                },
+                onError = { errorMessage ->
+                    Log.e("AWS_UPLOAD", "Upload failed: $errorMessage")
+                }
+            )
+
+            // Call the upload function
+            /*AwsManager.uploadMediaToS3(
                 context = this,  // 'this' refers to the Activity or Fragment context
                 imageFile = imageFile,
                 videoFile = videoFile,  // Pass null if no video file
@@ -87,51 +130,51 @@ class AddItemActivity : AppCompatActivity() {
                     // This block will be called if there's an error during the upload
                     Log.e("AWS_UPLOAD", "Error occurred: $errorMessage")
                 }
-            )
-
-            // Proceed with adding the product
-          /*  AwsManager.uploadMediaToS3(
-                context = this,
-                imageFile = imageFile,
-                videoFile = videoFile,
-                onSuccess = { imageUrl, videoUrl ->
-                    Log.d("AWS_UPLOAD", "Image uploaded: $imageUrl")
-                    videoUrl?.let { Log.d("AWS_UPLOAD", "Video uploaded: $it") }
-                    // Save URLs to database or UI
-                },
-                onError = { errorMessage ->
-                    Log.e("AWS_UPLOAD", "Failed: $errorMessage")
-                }
             )*/
 
-           /* if (validateFields()) {
-                val imageFile = AwsManager.uriToFile(this, selectedImage!!)
+            // Proceed with adding the product
+            /*  AwsManager.uploadMediaToS3(
+                  context = this,
+                  imageFile = imageFile,
+                  videoFile = videoFile,
+                  onSuccess = { imageUrl, videoUrl ->
+                      Log.d("AWS_UPLOAD", "Image uploaded: $imageUrl")
+                      videoUrl?.let { Log.d("AWS_UPLOAD", "Video uploaded: $it") }
+                      // Save URLs to database or UI
+                  },
+                  onError = { errorMessage ->
+                      Log.e("AWS_UPLOAD", "Failed: $errorMessage")
+                  }
+              )*/
 
-                val videoFile = selectedVideo?.let { uri ->
-                    AwsManager.uriToFile(this, uri) // Only convert if not null
-                }
+            /* if (validateFields()) {
+                 val imageFile = AwsManager.uriToFile(this, selectedImage!!)
 
-                // Proceed with adding the product
-                AwsManager.uploadMediaToS3(
-                    context = this,
-                    imageFile = imageFile,
-                    videoFile = videoFile,
-                    onSuccess = { imageUrl, videoUrl ->
-                        Log.d("AWS_UPLOAD", "Image uploaded: $imageUrl")
-                        videoUrl?.let { Log.d("Upload", "Video uploaded: $it") }
-                        // Save URLs to database or UI
-                    },
-                    onError = { errorMessage ->
-                        Log.e("AWS_UPLOAD", "Failed: $errorMessage")
-                    }
-                )
-                Toast.makeText(
-                    this,
-                    "Validation Passed! Proceeding with Add...",
-                    Toast.LENGTH_SHORT
-                ).show()
-                // You can call your ViewModel's addProduct() here.
-            }*/
+                 val videoFile = selectedVideo?.let { uri ->
+                     AwsManager.uriToFile(this, uri) // Only convert if not null
+                 }
+
+                 // Proceed with adding the product
+                 AwsManager.uploadMediaToS3(
+                     context = this,
+                     imageFile = imageFile,
+                     videoFile = videoFile,
+                     onSuccess = { imageUrl, videoUrl ->
+                         Log.d("AWS_UPLOAD", "Image uploaded: $imageUrl")
+                         videoUrl?.let { Log.d("Upload", "Video uploaded: $it") }
+                         // Save URLs to database or UI
+                     },
+                     onError = { errorMessage ->
+                         Log.e("AWS_UPLOAD", "Failed: $errorMessage")
+                     }
+                 )
+                 Toast.makeText(
+                     this,
+                     "Validation Passed! Proceeding with Add...",
+                     Toast.LENGTH_SHORT
+                 ).show()
+                 // You can call your ViewModel's addProduct() here.
+             }*/
         }
 
         binding.btnAddScan.setOnClickListener {
@@ -154,7 +197,6 @@ class AddItemActivity : AppCompatActivity() {
             openImagePicker("video/*", VIDEO_PICKER_REQUEST_CODE)
         }
     }
-
 
 
     private fun openImagePicker(type: String, request_code: Int) {

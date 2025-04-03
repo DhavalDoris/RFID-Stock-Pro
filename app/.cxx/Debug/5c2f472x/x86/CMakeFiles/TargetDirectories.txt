@@ -1,0 +1,3 @@
+C:/Users/tempo/AndroidStudioProjects/RFIDStockPro/app/.cxx/Debug/5c2f472x/x86/CMakeFiles/rfidstockpro.dir
+C:/Users/tempo/AndroidStudioProjects/RFIDStockPro/app/.cxx/Debug/5c2f472x/x86/CMakeFiles/edit_cache.dir
+C:/Users/tempo/AndroidStudioProjects/RFIDStockPro/app/.cxx/Debug/5c2f472x/x86/CMakeFiles/rebuild_cache.dir

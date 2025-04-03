@@ -44,10 +44,10 @@
             android:name=".ui.activities.AddItemActivity"
             android:exported="true"
             android:theme="@style/AppTheme">
-            <intent-filter>
+           <!-- <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            </intent-filter>-->
         </activity>
         <activity
             android:name=".ui.activities.DemoActivity"
@@ -56,10 +56,10 @@
             android:name=".ui.activities.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.MyApp.Splash">
-           <!-- <intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
+            </intent-filter>
         </activity>
         <activity
             android:name=".ui.activities.VerificationActivity"

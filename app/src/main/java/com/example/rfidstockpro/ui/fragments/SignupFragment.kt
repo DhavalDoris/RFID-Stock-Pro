@@ -2,19 +2,24 @@ package com.example.rfidstockpro.ui.fragments
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.RFIDApplication.Companion.ENCRYPTION_KEY
 import com.example.rfidstockpro.RFIDApplication.Companion.USER_TABLE
 import com.example.rfidstockpro.Utils.TextUtils
 import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.databinding.FragmentSignupBinding
+import com.example.rfidstockpro.encryption.AESUtils
 import com.example.rfidstockpro.ui.activities.VerificationActivity
 import com.example.rfidstockpro.viewmodel.AuthViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -38,8 +43,22 @@ class SignupFragment : Fragment() {
     ): View {
         binding = FragmentSignupBinding.inflate(inflater, container, false)
 
-        TextUtils.applyUnderlineAndColor(requireActivity(), binding!!.tvTerms)
-
+        TextUtils.applyUnderlineAndColor(
+            requireActivity(),
+            binding!!.tvTerms,
+            onTermsClick = {
+                // Open Terms of Service link
+                val url = "https://www.yourwebsite.com/terms"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(intent)
+            },
+            onPrivacyClick = {
+                // Open Privacy Policy link
+                val url = "https://www.yourwebsite.com/privacy"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(intent)
+            }
+        )
 
         setupPasswordToggle()
         observeValidationErrors()
@@ -124,14 +143,29 @@ class SignupFragment : Fragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun setupSignupButton() {
         binding!!.btnSignup.setOnClickListener {
+
+            val userRole =
+                1  // Default Role: Owner      // 0 = Admin, 1 = Owner, 2 = Manager, 3 = Staff
+
             val username = binding!!.etUsername.text.toString().trim()
             val companyName = binding!!.etCompanyName.text.toString().trim()
             email = binding!!.etEmail.text.toString().trim()
             val contactNumber = binding!!.etContactNumber.text.toString().trim()
             val password = binding!!.etPassword.text.toString().trim()
             val confirmPassword = binding!!.etConfirmPassword.text.toString().trim()
+
+            // Validate user role range
+            if (userRole !in 0..3) {
+                Snackbar.make(
+                    binding!!.root,
+                    "Invalid role selected. Please choose a valid role.",
+                    Snackbar.LENGTH_LONG
+                ).show()
+                return@setOnClickListener
+            }
 
             if (!authViewModel.validateSignup(
                     username,
@@ -145,23 +179,26 @@ class SignupFragment : Fragment() {
                 return@setOnClickListener
             }
 
+
+            val encryptedPassword = AESUtils.encrypt(password, ENCRYPTION_KEY)  // Encrypt password
+
             val user = UserModel(
                 id = UUID.randomUUID().toString(),
                 userName = username,
                 companyName = companyName,
                 email = email,
                 mobile = contactNumber.toLong(),
-                password = encryptPassword(password),
+                password = encryptedPassword, // Store the encrypted password
                 otp = generateOTP(),
                 createdDate = Date().toString(),
                 updatedDate = Date().toString(),
-                role = 1,  // Default Role: Owner      // 0 = Admin, 1 = Owner, 2 = Manager, 3 = Staff
+                role = userRole,  // Default Role: Owner      // 0 = Admin, 1 = Owner, 2 = Manager, 3 = Staff
                 // todo temp set to Active
                 status = "active",
                 permissions = emptyList()
             )
             CoroutineScope(Dispatchers.IO).launch {
-                authViewModel.createUser(user,USER_TABLE)
+                authViewModel.createUser(user, USER_TABLE)
             }
 
             /*  if (authViewModel.validateSignup(
@@ -201,10 +238,6 @@ class SignupFragment : Fragment() {
         }
     }
 
-
-    private fun encryptPassword(password: String): String {
-        return password.reversed()  // Replace with actual encryption method
-    }
 
     private fun generateOTP(): Int {
         return (1000..9999).random()

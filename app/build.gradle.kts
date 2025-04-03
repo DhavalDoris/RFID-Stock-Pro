@@ -10,13 +10,18 @@ android {
 
     defaultConfig {
         applicationId = "com.example.rfidstockpro"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
+        externalNativeBuild {
+            cmake {
+                cppFlags += ""
+            }
+        }
     }
 
     buildTypes {
@@ -28,12 +33,7 @@ android {
             )
         }
     }
-    /*ndkVersion = "29.0.13113456" // Correct placement
-    externalNativeBuild {
-        ndkBuild {
-            path "src/main/jni/Android.mk"
-        }
-    }*/
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -52,13 +52,12 @@ android {
         excludes.add("META-INF/io.netty.versions.properties")
         excludes.add("mozilla/public-suffix-list.txt")
     }
-
-    /*externalNativeBuild {
+    externalNativeBuild {
         cmake {
-            path = File("cpp","CMakeLists.txt")
-            version = "3.4.1" // Optional: Specify CMake version if needed
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
         }
-    }*/
+    }
 
 }
 
@@ -95,17 +94,8 @@ dependencies {
     implementation(files("libs/DeviceAPI_ver20250209_release.aar"))
     implementation("no.nordicsemi.android:dfu:2.4.1")
 
-    // AWS Core SDK (Required for all AWS services)
-//     implementation("com.amazonaws:aws-android-sdk-core:2.79.0")
-
-    // AWS DynamoDB (For CRUD Operations)
-//    implementation("com.amazonaws:aws-android-sdk-ddb-mapper:2.79.0")
-//    implementation("com.amazonaws:aws-android-sdk-ddb:2.79.0") // Ensure DynamoDB SDK is included
-//    implementation("com.amazonaws:aws-android-sdk-s3:2.79.0") // Optional for S3 storage
-
     implementation("software.amazon.awssdk:dynamodb:2.25.26")
     implementation ("software.amazon.awssdk:core:2.20.40")
-//  implementation("software.amazon.awssdk:s3:2.25.26")
     implementation("software.amazon.awssdk:s3:2.25.26") {
         exclude(group = "org.apache.httpcomponents", module = "httpclient")
         exclude(group = "org.apache.httpcomponents.client5", module = "httpclient5")
@@ -120,5 +110,4 @@ dependencies {
 
     implementation("javax.xml.stream:stax-api:1.0-2")
     implementation("org.codehaus.woodstox:woodstox-core-asl:4.4.1")
-//    implementation("org.codehaus.woodstox:woodstox-core:6.2.6")
 }

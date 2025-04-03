@@ -9,20 +9,33 @@ import kotlinx.coroutines.launch
 
 
 class RFIDApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
 
-        instance = this
-        AwsManager.init(this)
-        createDynamoDBTable()
-    }
 
     companion object {
         private const val TAG = "AppContext"
         const val USER_TABLE = "user"
         const val PRODUCT_TABLE = "product"
         var instance: RFIDApplication? = null
-            private set
+
+        init {
+            System.loadLibrary("rfidstockpro")
+        }
+
+        external fun getAwsAccessKeyFromNdk(): String
+        external fun getAwsSecretKeyFromNdk(): String
+        external fun getEncryptionKey(): String
+
+        val ENCRYPTION_KEY =  getEncryptionKey()
+    }
+
+
+    override fun onCreate() {
+        super.onCreate()
+
+        instance = this
+        AwsManager.init(this)
+        createDynamoDBTable()
+
     }
 
     private fun createDynamoDBTable() {

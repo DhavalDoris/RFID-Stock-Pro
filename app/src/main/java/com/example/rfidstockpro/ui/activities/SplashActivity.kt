@@ -5,17 +5,13 @@ import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rfidstockpro.databinding.ActivitySplashBinding
+import com.example.rfidstockpro.sharedpref.SessionManager
 
 class SplashActivity : AppCompatActivity() {
 
 
-   /* companion object{
-        init {
-            System.loadLibrary("native-lib")
-        }
-    }
-    private external fun getEncryptedKey(): String?
-*/
+
+
 
     private lateinit var binding: ActivitySplashBinding
 
@@ -29,9 +25,17 @@ class SplashActivity : AppCompatActivity() {
         initActions()
     }
 
+    private external fun getAwsAccessKeyFromNdk(): String
+
     private fun initActions() {
         binding.continueButton.setOnClickListener {
-            startActivity(Intent(this@SplashActivity, AuthActivity::class.java))
+            val sessionManager = SessionManager.getInstance(this) // Get Singleton Instance
+            val intent = if (sessionManager.isLoggedIn()) {
+                Intent(this, DashboardActivity::class.java)  // If logged in, go to Dashboard
+            } else {
+                Intent(this, AuthActivity::class.java) // Otherwise, go to Login screen
+            }
+            startActivity(intent)
             finish()
         }
     }

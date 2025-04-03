@@ -1,0 +1,13 @@
+# ninja log v5
+1	1266	7652987009099943	CMakeFiles/rfidstockpro.dir/rfidstockpro.cpp.o	8a57e18777cf0cc0
+1274	1463	7652987011120738	C:/Users/tempo/AndroidStudioProjects/RFIDStockPro/app/build/intermediates/cxx/Debug/5c2f472x/obj/arm64-v8a/librfidstockpro.so	4737a65ffa35de3
+9	821	7652989018695753	CMakeFiles/rfidstockpro.dir/rfidstockpro.cpp.o	8a57e18777cf0cc0
+821	915	7652989019650223	C:/Users/tempo/AndroidStudioProjects/RFIDStockPro/app/build/intermediates/cxx/Debug/5c2f472x/obj/arm64-v8a/librfidstockpro.so	4737a65ffa35de3
+11	1532	7653587459637962	CMakeFiles/rfidstockpro.dir/rfidstockpro.cpp.o	8a57e18777cf0cc0
+1532	1788	7653587462244716	C:/Users/tempo/AndroidStudioProjects/RFIDStockPro/app/build/intermediates/cxx/Debug/5c2f472x/obj/arm64-v8a/librfidstockpro.so	4737a65ffa35de3
+4	753	7653589378247376	CMakeFiles/rfidstockpro.dir/rfidstockpro.cpp.o	8a57e18777cf0cc0
+754	892	7653589379752022	C:/Users/tempo/AndroidStudioProjects/RFIDStockPro/app/build/intermediates/cxx/Debug/5c2f472x/obj/arm64-v8a/librfidstockpro.so	4737a65ffa35de3
+4	623	7653591174271751	CMakeFiles/rfidstockpro.dir/rfidstockpro.cpp.o	8a57e18777cf0cc0
+624	732	7653591175615248	C:/Users/tempo/AndroidStudioProjects/RFIDStockPro/app/build/intermediates/cxx/Debug/5c2f472x/obj/arm64-v8a/librfidstockpro.so	4737a65ffa35de3
+6	613	7653592785790065	CMakeFiles/rfidstockpro.dir/rfidstockpro.cpp.o	8a57e18777cf0cc0
+613	725	7653592787184779	C:/Users/tempo/AndroidStudioProjects/RFIDStockPro/app/build/intermediates/cxx/Debug/5c2f472x/obj/arm64-v8a/librfidstockpro.so	4737a65ffa35de3
