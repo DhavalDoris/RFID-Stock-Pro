@@ -1,6 +1,9 @@
 package com.example.rfidstockpro.ui.fragments
 
 import android.os.Bundle
+import android.os.SystemClock
+import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,23 +15,26 @@ import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.ViewUtils
 import com.example.rfidstockpro.adapter.UHFTagAdapter
 import com.example.rfidstockpro.databinding.FragmentUhfreadTagBinding
-import com.example.rfidstockpro.viewmodel.UHFReadViewModel
-import com.rscja.deviceapi.interfaces.ConnectionStatus
-import com.example.rfidstockpro.repository.UHFRepository
 import com.example.rfidstockpro.factores.UHFViewModelFactory
+import com.example.rfidstockpro.repository.UHFRepository
 import com.example.rfidstockpro.ui.activities.DashboardActivity
+import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isKeyDownUP
+import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
+import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
+import com.example.rfidstockpro.viewmodel.UHFReadViewModel
 import com.rscja.deviceapi.RFIDWithUHFBLE
+import com.rscja.deviceapi.interfaces.ConnectionStatus
+import com.rscja.deviceapi.interfaces.KeyEventCallback
 
 class UHFReadFragment : Fragment() {
-    private lateinit var viewModel: UHFReadViewModel
+    lateinit var viewModel: UHFReadViewModel
     private lateinit var binding: FragmentUhfreadTagBinding
     private lateinit var adapter: UHFTagAdapter
-
+    private var isExit = false
     // Interface for UHF device provider
     interface UHFDeviceProvider {
         fun provideUHFDevice(): RFIDWithUHFBLE
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,6 +63,7 @@ class UHFReadFragment : Fragment() {
     }
 
     private fun setupUI() {
+        isExit = false
         adapter = UHFTagAdapter(requireContext())
         binding.LvTags.adapter = adapter
 
@@ -73,6 +80,22 @@ class UHFReadFragment : Fragment() {
                 Toast.makeText(requireActivity(), "item clicked $position ", Toast.LENGTH_SHORT).show()
             }
         }
+
+
+        uhfDevice.setKeyEventCallback(object : KeyEventCallback {
+            override fun onKeyDown(keycode: Int) {
+                Log.d(TAG, "keycode = $keycode , isExit = $isExit")
+                if (!isExit) {
+                    viewModel.handleKeyDown(keycode)
+                }
+            }
+
+            override fun onKeyUp(keycode: Int) {
+                Log.d(TAG, "keycode = $keycode , isExit = $isExit")
+                viewModel.handleKeyUp(keycode)
+            }
+        })
+
     }
 
     private fun startInventory() {
@@ -110,6 +133,7 @@ class UHFReadFragment : Fragment() {
 
             connectionStatus.observe(viewLifecycleOwner) { status ->
                 updateUIForConnectionStatus(status)
+                Log.e("KEY_TAG", "observeViewModel: " + status )
             }
         }
     }
@@ -151,9 +175,39 @@ class UHFReadFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        requireActivity().let { activity ->
+            activity.window.decorView.setOnKeyListener { _, keyCode, event ->
+                when (event.action) {
+                    KeyEvent.ACTION_DOWN -> {
+                        viewModel.handleKeyDown(keyCode)
+                        Log.e("KEY_TAG", "onResume: ACTION_DOWN"   )
+                        true
+                    }
+                    KeyEvent.ACTION_UP -> {
+                        viewModel.handleKeyUp(keyCode)
+                        Log.e("KEY_TAG", "onResume: ACTION_UP"   )
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }
+    }
+
+
+
     companion object {
         fun newInstance(): UHFReadFragment {
             return UHFReadFragment()
         }
+    }
+
+    override fun onDestroyView() {
+        Log.i(TAG, "UHFReadTagFragment.onDestroyView")
+        super.onDestroyView()
+        isExit = true
+
     }
 }

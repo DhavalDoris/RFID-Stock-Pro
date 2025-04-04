@@ -5,7 +5,7 @@ import com.rscja.deviceapi.entity.InventoryParameter
 import com.rscja.deviceapi.entity.UHFTAGInfo
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 
-class UHFRepository(private val uhfDevice: RFIDWithUHFBLE) {
+class UHFRepository(val uhfDevice: RFIDWithUHFBLE) {
     fun startInventory(
         maxRunTime: Int = 30000,
         needPhase: Boolean = false,

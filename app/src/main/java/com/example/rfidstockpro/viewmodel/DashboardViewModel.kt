@@ -10,6 +10,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.SPUtils
+import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isKeyDownUP
 import com.github.mikephil.charting.data.PieEntry
 import com.rscja.deviceapi.RFIDWithUHFBLE
 import com.rscja.deviceapi.interfaces.ConnectionStatus

@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -33,7 +32,6 @@ import com.example.rfidstockpro.Utils.AnimationUtils
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
-import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.databinding.ActivityDashboardBinding
 import com.example.rfidstockpro.sharedpref.SessionManager
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
@@ -47,9 +45,6 @@ import com.github.mikephil.charting.data.PieEntry
 import com.rscja.deviceapi.RFIDWithUHFBLE
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 
 class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
@@ -70,7 +65,11 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         return uhfDevice
     }
 
-    private lateinit var uhfDevice: RFIDWithUHFBLE
+
+    companion object {
+        lateinit var uhfDevice: RFIDWithUHFBLE
+        var isKeyDownUP: Boolean = false
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,9 +89,15 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         setupSpinner()
         initClick()
         loadUserData()
+        uhfTrigger()
 
         val toolbarView = findViewById<View>(R.id.commonToolbar)
         tvToolbarTitle = toolbarView.findViewById(R.id.tvToolbarTitle)
+
+    }
+
+    private fun uhfTrigger() {
+
 
     }
 
@@ -464,6 +469,7 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         }
     }
 
+
     override fun onDestroy() {
         dashboardViewModel.disconnect(true)
         super.onDestroy()
@@ -478,5 +484,6 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
             super.onBackPressed() // Exits the activity and goes back to MainActivity
         }
     }
+
 
 }

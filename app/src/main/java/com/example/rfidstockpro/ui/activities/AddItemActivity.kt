@@ -61,7 +61,6 @@ class AddItemActivity : AppCompatActivity() {
         binding.btnAdd.setOnClickListener {
             validateAndLogFields()
 
-
             /*Log.d("ADD_ITEM", "Button Clicked - Logging Selected Data")
 
             if (selectedImageFiles.isEmpty() && selectedVideo == null) {
@@ -271,8 +270,6 @@ class AddItemActivity : AppCompatActivity() {
     }
 
 
-
-
     private fun getRealPathFromUriNew(uri: Uri): String {
         val file = File(cacheDir, "${System.currentTimeMillis()}.jpg")
         contentResolver.openInputStream(uri)?.use { inputStream ->
@@ -282,7 +279,6 @@ class AddItemActivity : AppCompatActivity() {
         }
         return file.absolutePath
     }
-
     /**
      * Validates if the selected file is less than 10MB
      */
@@ -319,7 +315,7 @@ class AddItemActivity : AppCompatActivity() {
         val productCategory = binding.etCategory.text.toString().trim()
         val priceStr = binding.etPrice.text.toString().trim()
         val etSku = binding.etSku.text.toString().trim()
-        val tagId = "12345" // Replace this with actual tag ID logic
+        val tagId = "" // Replace this with actual tag ID logic
         val status = "Pending"
 
         // Extract image paths

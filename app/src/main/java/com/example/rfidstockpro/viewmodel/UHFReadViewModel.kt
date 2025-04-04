@@ -1,11 +1,15 @@
 package com.example.rfidstockpro.viewmodel
 
+import android.os.SystemClock
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rfidstockpro.data.UHFTagModel
 import com.example.rfidstockpro.repository.UHFRepository
+import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
+import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.rscja.deviceapi.entity.UHFTAGInfo
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +18,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.CopyOnWriteArrayList
 
 class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
+    var isKeyDownUP = false
     private val _tagList = MutableLiveData<List<UHFTagModel>>(CopyOnWriteArrayList())
     val tagList: LiveData<List<UHFTagModel>> = _tagList
 
@@ -63,6 +68,44 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
                     addTagToList(it)
                 }
             }
+        }
+    }
+
+    fun handleKeyDown(keyCode: Int) {
+        Log.d("KEY_TAG", "1")
+        if (uhfDevice.connectStatus == ConnectionStatus.CONNECTED) {
+            Log.d("KEY_TAG", "2")
+            when (keyCode) {
+                3 -> {  // Example key for continuous scan
+                    isKeyDownUP = true
+                    startInventory()
+                    Log.d("KEY_TAG", "3")
+                }
+                1 -> {  // Example key for start/stop scan
+                    if (!isKeyDownUP) {
+                        if (_isScanning.value == true) {
+                            stopInventory()
+                        } else {
+                            startInventory()
+                        }
+                    }
+                    Log.d("KEY_TAG", "2")
+                }
+                2 -> {  // Example key for single inventory
+                    if (_isScanning.value == true) {
+                        stopInventory()
+                        SystemClock.sleep(100)
+                    }
+                    Log.d("KEY_TAG", "3")
+                    singleInventory()
+                }
+            }
+        }
+    }
+
+    fun handleKeyUp(keyCode: Int) {
+        if (keyCode == 4) { // Stop scanning on key release
+            stopInventory()
         }
     }
 
