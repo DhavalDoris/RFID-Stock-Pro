@@ -29,6 +29,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.AnimationUtils
+import com.example.rfidstockpro.Utils.FragmentManagerHelper
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
@@ -140,18 +141,13 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         }
 
         binding.rlSell.setOnClickListener {
-            setFragment(UHFReadFragment())
+//            setFragment(UHFReadFragment())
+            FragmentManagerHelper.setFragment(this, UHFReadFragment(), R.id.realtabcontent)
+
         }
     }
 
-    protected fun setFragment(fragment: Fragment?) {
-        val fragmentManager = supportFragmentManager
-        val fragmentTransaction: FragmentTransaction =
-            fragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.realtabcontent, fragment!!)
-        fragmentTransaction.addToBackStack(null) // Adds the fragment to back stack
-        fragmentTransaction.commit()
-    }
+
 
     private fun setupUI() {
         binding.btnConnectScanner.setOnClickListener {

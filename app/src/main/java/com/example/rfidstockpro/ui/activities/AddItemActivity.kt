@@ -14,15 +14,19 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.Utils.FragmentManagerHelper
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.ActivityAddItemBinding
+import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
+import com.example.rfidstockpro.ui.fragments.UHFReadFragment
 import com.example.rfidstockpro.viewmodel.AddItemViewModel
 import com.google.android.material.snackbar.Snackbar
+import com.rscja.deviceapi.RFIDWithUHFBLE
 import java.io.File
 import java.io.FileOutputStream
 
-class AddItemActivity : AppCompatActivity() {
+class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
 
     private val selectedImageFiles = mutableListOf<File>()
 
@@ -366,8 +370,13 @@ class AddItemActivity : AppCompatActivity() {
 
         if (isValid) {
             Log.d("ADD_ITEM", "✅ Validation Passed! Ready to upload.")
+            FragmentManagerHelper.setFragment(this, UHFReadFragment(), R.id.rfidFrame)
         } else {
             Log.d("ADD_ITEM", "❌ Validation Failed! Fix errors before proceeding.")
         }
+    }
+
+    override fun provideUHFDevice(): RFIDWithUHFBLE {
+        return uhfDevice
     }
 }
