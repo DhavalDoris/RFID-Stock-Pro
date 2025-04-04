@@ -11,10 +11,11 @@ import android.widget.TextView
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.data.UHFTagModel
 
-class UHFTagAdapter(context: Context) : BaseAdapter() {
+class UHFTagAdapter(context: Context,private val onTagSelected: (UHFTagModel) -> Unit) : BaseAdapter() {
     private val mInflater: LayoutInflater = LayoutInflater.from(context)
     private var tagList: List<UHFTagModel> = listOf()
     private val checkedItems = SparseBooleanArray()
+    private var lastCheckedPosition: Int = -1 // Track last checked position
 
     fun updateTags(newTagList: List<UHFTagModel>) {
         tagList = newTagList
@@ -37,10 +38,28 @@ class UHFTagAdapter(context: Context) : BaseAdapter() {
             tvPhase.text = tag.phase.toString()
 
             checkBox.setOnCheckedChangeListener(null)
-            checkBox.isChecked = checkedItems[position, false]
+            checkBox.isChecked = position == lastCheckedPosition // Ensure only one is checked
+            checkBox.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    // Uncheck previous selection
+                    if (lastCheckedPosition != -1) {
+                        checkedItems.put(lastCheckedPosition, false)
+                        notifyDataSetChanged() // Refresh UI
+                    }
+                    lastCheckedPosition = position
+                    checkedItems.put(position, true)
+                    onTagSelected.invoke(tag) // Invoke callback with selected tag
+                } else {
+                    checkedItems.put(position, false)
+                    if (lastCheckedPosition == position) {
+                        lastCheckedPosition = -1
+                    }
+                }
+            }
+            /*checkBox.isChecked = checkedItems[position, false]
             checkBox.setOnCheckedChangeListener { _, isChecked ->
                 checkedItems.put(position, isChecked)
-            }
+            }*/
         }
 
         return view

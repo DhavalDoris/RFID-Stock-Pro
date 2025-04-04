@@ -21,6 +21,7 @@ import com.example.rfidstockpro.ui.activities.DashboardActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isKeyDownUP
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
+import com.example.rfidstockpro.viewmodel.SharedProductViewModel
 import com.example.rfidstockpro.viewmodel.UHFReadViewModel
 import com.rscja.deviceapi.RFIDWithUHFBLE
 import com.rscja.deviceapi.interfaces.ConnectionStatus
@@ -31,9 +32,18 @@ class UHFReadFragment : Fragment() {
     private lateinit var binding: FragmentUhfreadTagBinding
     private lateinit var adapter: UHFTagAdapter
     private var isExit = false
+
+    private lateinit var sharedProductViewModel: SharedProductViewModel
+
+
     // Interface for UHF device provider
     interface UHFDeviceProvider {
         fun provideUHFDevice(): RFIDWithUHFBLE
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        sharedProductViewModel = ViewModelProvider(requireActivity()).get(SharedProductViewModel::class.java)
     }
 
     override fun onCreateView(
@@ -42,6 +52,11 @@ class UHFReadFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentUhfreadTagBinding.inflate(inflater, container, false)
+
+        sharedProductViewModel.product.observe(viewLifecycleOwner) { product ->
+            Log.d("UHFReadFragment", "Received Product: ${product}")
+        }
+
         return binding.root
     }
 
@@ -64,7 +79,12 @@ class UHFReadFragment : Fragment() {
 
     private fun setupUI() {
         isExit = false
-        adapter = UHFTagAdapter(requireContext())
+        // Initialize adapter with callback
+        adapter = UHFTagAdapter(requireContext()) { selectedTag ->
+            Log.d("UHFReadFragment", "Selected Tag: ${selectedTag.generateTagString()}")
+            Toast.makeText(requireContext(), "Selected: ${selectedTag.generateTagString()}", Toast.LENGTH_SHORT).show()
+            binding.centerLine.visibility = View.VISIBLE
+        }
         binding.LvTags.adapter = adapter
 
         binding.apply {
@@ -77,6 +97,7 @@ class UHFReadFragment : Fragment() {
 
             LvTags.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
                 // Handle tag selection
+                Log.e(TAG, "item clicked $position "   )
                 Toast.makeText(requireActivity(), "item clicked $position ", Toast.LENGTH_SHORT).show()
             }
         }

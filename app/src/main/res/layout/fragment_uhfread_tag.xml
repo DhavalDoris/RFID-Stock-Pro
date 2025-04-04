@@ -8,39 +8,84 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <RelativeLayout
+        <LinearLayout
             android:id="@+id/rlCountView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/edittext_bg"
-            android:padding="@dimen/_6sdp">
+            android:background="@drawable/edittext_bg">
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/tv_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:fontFamily="@font/rethinksans_bold"
-                android:text="8"
-                android:textColor="@color/appMainColor"
-                android:textSize="@dimen/_20ssp"
-                android:textStyle="bold" />
+            <RelativeLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:padding="@dimen/_6sdp"
+                android:layout_height="wrap_content">
 
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/tvRfidName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/tv_count"
-                android:layout_centerHorizontal="true"
-                android:fontFamily="@font/rethinksans_bold"
-                android:text="Total Found"
-                android:textColor="@color/black"
-                android:textSize="@dimen/_10ssp"
-                android:textStyle="bold" />
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/tv_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:fontFamily="@font/rethinksans_bold"
+                    android:text="8"
+                    android:textColor="@color/appMainColor"
+                    android:textSize="@dimen/_20ssp"
+                    android:textStyle="bold" />
 
 
-        </RelativeLayout>
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/tvRfidName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/tv_count"
+                    android:layout_centerHorizontal="true"
+                    android:fontFamily="@font/rethinksans_bold"
+                    android:text="Total Found"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/_10ssp"
+                    android:textStyle="bold" />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/centerLine"
+                android:layout_width="@dimen/_2sdp"
+                android:layout_height="match_parent"
+                android:background="@color/gray_line"
+                android:orientation="horizontal" />
+
+            <RelativeLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:padding="@dimen/_6sdp"
+                android:layout_height="wrap_content">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/tv_selected"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:fontFamily="@font/rethinksans_bold"
+                    android:text="1"
+                    android:textColor="@color/appMainColor"
+                    android:textSize="@dimen/_20ssp"
+                    android:textStyle="bold" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/tvSelected"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/tv_selected"
+                    android:layout_centerHorizontal="true"
+                    android:fontFamily="@font/rethinksans_bold"
+                    android:text="Total Found"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/_10ssp"
+                    android:textStyle="bold" />
+
+            </RelativeLayout>
+
+
+        </LinearLayout>
 
         <CheckBox
             android:id="@+id/cbFilter"
@@ -353,9 +398,9 @@
             android:id="@+id/footerButtonll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:layout_alignParentBottom="true"
             android:background="@drawable/edittext_bg"
-            android:layout_alignParentBottom="true">
+            android:orientation="vertical">
 
 
             <LinearLayout
@@ -363,10 +408,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_above="@+id/btCancel"
-                android:layout_marginTop="@dimen/_10sdp"
                 android:layout_marginHorizontal="@dimen/_7sdp"
-                android:gravity="center_vertical"
+                android:layout_marginTop="@dimen/_10sdp"
                 android:elevation="@dimen/_8sdp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <Button
@@ -454,7 +499,6 @@
                 android:textStyle="bold" />
 
         </LinearLayout>
-
 
 
     </RelativeLayout>
