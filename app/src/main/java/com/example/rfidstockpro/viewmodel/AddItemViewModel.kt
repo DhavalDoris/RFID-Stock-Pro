@@ -30,44 +30,25 @@ class AddItemViewModel : ViewModel() {
             _validationError.value = "Product Name is required"
             return false
         }
-        if (input.productCategory.isEmpty() || input.productCategory == "Select Category") {
-            _validationError.value = "Please select a Product Category"
+
+
+        if (input.productCategory.trim().isEmpty()) {
+            _validationError.value = "Category is required"
             return false
         }
-        val price = input.priceStr.toDoubleOrNull()
-        if (input.priceStr.isEmpty() || price == null || price <= 0) {
-            _validationError.value = "Enter a valid Price"
+
+        if (input.sku.isEmpty()) {
+            _validationError.value = "sku is required"
             return false
         }
-        if (input.color.isEmpty()) {
-            _validationError.value = "Color is required"
+
+        val price = input.price.toDoubleOrNull()
+        if (input.price.isEmpty() || price == null || price <= 0) {
+            _validationError.value = "Price is required"
             return false
         }
-        if (input.jewelCode.isEmpty()) {
-            _validationError.value = "Jewel Code is required"
-            return false
-        }
-        if (input.styleNo.isEmpty()) {
-            _validationError.value = "Style No. is required"
-            return false
-        }
-        if (input.purity.isEmpty()) {
-            _validationError.value = "Please select a Purity option (10K, 14K, 18K)"
-            return false
-        }
-        if (input.totalDiaWtStr.isEmpty() && input.totalDiaWtStr.toDoubleOrNull() == null) {
-            _validationError.value = "Enter a valid Total Dia Weight"
-            return false
-        }
-        val totalGrossWt = input.totalGrossWtStr.toDoubleOrNull()
-        if (input.totalGrossWtStr.isEmpty() || totalGrossWt == null || totalGrossWt <= 0) {
-            _validationError.value = "Enter a valid Total Gross Weight"
-            return false
-        }
-        if (input.totalDiaStr.isEmpty() && input.totalDiaStr.toIntOrNull() == null) {
-            _validationError.value = "Enter a valid Total Dia number"
-            return false
-        }
+
+
         // Validate Description
         if (input.description.isEmpty()) {
             _validationError.value = "Description is required"

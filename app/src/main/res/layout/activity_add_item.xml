@@ -158,16 +158,16 @@
 
             </LinearLayout>
 
-            <EditText
+            <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etProductName"
                 style="@style/AppEditText"
                 android:layout_width="match_parent"
                 android:background="@drawable/edittext_bg"
                 android:drawablePadding="@dimen/_5sdp"
                 android:hint="@string/product_name"
-                android:padding="12dp" />
+                android:padding="@dimen/_10sdp" />
 
-            <LinearLayout
+            <!--<LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_45sdp"
                 android:layout_marginTop="@dimen/_5sdp"
@@ -187,16 +187,16 @@
                     android:paddingEnd="4dp"
                     android:popupBackground="@color/white" />
 
-                <!-- Manually add dropdown icon -->
+                &lt;!&ndash; Manually add dropdown icon &ndash;&gt;
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_marginRight="@dimen/_10sdp"
                     android:padding="@dimen/_2sdp"
                     android:src="@drawable/drop_down_arrow" />
-            </LinearLayout>
+            </LinearLayout>-->
 
-            <LinearLayout
+            <!--<LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_5sdp"
@@ -212,7 +212,7 @@
                     android:background="@drawable/edittext_bg"
                     android:drawablePadding="@dimen/_5sdp"
                     android:hint="@string/price"
-                    android:padding="12dp" />
+                    android:padding="@dimen/_10sdp" />
 
                 <Space
                     android:layout_width="@dimen/_7sdp"
@@ -226,38 +226,37 @@
                     android:background="@drawable/edittext_bg"
                     android:drawablePadding="@dimen/_5sdp"
                     android:hint="@string/color"
-                    android:padding="12dp" />
+                    android:padding="@dimen/_10sdp" />
 
-            </LinearLayout>
+            </LinearLayout>-->
 
-            <EditText
-                android:id="@+id/etJewelCode"
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etCategory"
                 style="@style/AppEditText"
                 android:layout_width="match_parent"
                 android:layout_marginTop="@dimen/_5sdp"
                 android:background="@drawable/edittext_bg"
                 android:drawablePadding="@dimen/_5sdp"
-                android:hint="@string/jewel_code"
-                android:padding="12dp" />
+                android:hint="@string/category_code"
+                android:padding="@dimen/_10sdp" />
 
-            <EditText
-                android:id="@+id/etStyleNo"
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etSku"
                 style="@style/AppEditText"
                 android:layout_width="match_parent"
                 android:layout_marginTop="@dimen/_5sdp"
-                android:inputType="number"
                 android:background="@drawable/edittext_bg"
                 android:drawablePadding="@dimen/_5sdp"
-                android:hint="@string/style_no"
-                android:padding="12dp" />
+                android:hint="@string/sku"
+                android:padding="@dimen/_10sdp" />
 
-            <LinearLayout
+            <!--<LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_40sdp"
                 android:layout_marginLeft="@dimen/_10sdp"
                 android:gravity="center_vertical">
 
-                <!-- Label for "Purity:" -->
+                &lt;!&ndash; Label for "Purity:" &ndash;&gt;
                 <androidx.appcompat.widget.AppCompatTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -266,7 +265,7 @@
                     android:text="Purity:"
                     android:textSize="16sp" />
 
-                <!-- Button for 10K -->
+                &lt;!&ndash; Button for 10K &ndash;&gt;
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/button_10k"
                     android:layout_width="@dimen/_50sdp"
@@ -278,7 +277,7 @@
                     android:text="10K"
                     android:textColor="@color/text_color_selector" />
 
-                <!-- Button for 14K -->
+                &lt;!&ndash; Button for 14K &ndash;&gt;
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/button_14k"
                     android:layout_width="@dimen/_50sdp"
@@ -289,7 +288,7 @@
                     android:gravity="center"
                     android:text="14K"
                     android:textColor="@color/text_color_selector" />
-                <!-- Button for 18K -->
+                &lt;!&ndash; Button for 18K &ndash;&gt;
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/button_18k"
                     android:layout_width="@dimen/_50sdp"
@@ -301,19 +300,20 @@
                     android:text="18K"
                     android:textColor="@color/text_color_selector" />
 
-            </LinearLayout>
+            </LinearLayout>-->
 
-            <EditText
-                android:id="@+id/etTotalDiaWt"
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etPrice"
                 style="@style/AppEditText"
-                android:inputType="number"
+                android:layout_marginTop="@dimen/_5sdp"
                 android:layout_width="match_parent"
+                android:inputType="number"
                 android:background="@drawable/edittext_bg"
                 android:drawablePadding="@dimen/_5sdp"
-                android:hint="@string/total_dia_wt"
-                android:padding="12dp" />
+                android:hint="@string/total_price"
+                android:padding="@dimen/_10sdp" />
 
-            <LinearLayout
+           <!-- <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_5sdp"
@@ -329,7 +329,7 @@
                     android:background="@drawable/edittext_bg"
                     android:drawablePadding="@dimen/_5sdp"
                     android:hint="@string/total_gross_wt"
-                    android:padding="12dp" />
+                    android:padding="@dimen/_10sdp" />
 
                 <Space
                     android:layout_width="@dimen/_7sdp"
@@ -343,9 +343,9 @@
                     android:background="@drawable/edittext_bg"
                     android:drawablePadding="@dimen/_5sdp"
                     android:hint="@string/total_dia"
-                    android:padding="12dp" />
+                    android:padding="@dimen/_10sdp" />
 
-            </LinearLayout>
+            </LinearLayout>-->
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -376,7 +376,7 @@
                     android:textColor="@color/white" />
             </LinearLayout>
 
-            <EditText
+            <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etDescription"
                 style="@style/AppEditText"
                 android:layout_width="match_parent"
@@ -386,7 +386,7 @@
                 android:drawablePadding="@dimen/_5sdp"
                 android:gravity="start"
                 android:hint="@string/write"
-                android:padding="12dp" />
+                android:padding="@dimen/_10sdp" />
 
         </LinearLayout>
 
@@ -416,6 +416,7 @@
             android:gravity="center"
             android:padding="@dimen/_10sdp"
             android:text="Add"
+            android:visibility="gone"
             android:textColor="@android:color/white"
             android:textSize="@dimen/_12ssp" />
 

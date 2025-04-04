@@ -117,8 +117,9 @@
     <string name="price">Price($)</string>
     <string name="color">Color</string>
     <string name="jewel_code">Jewel Code</string>
-    <string name="style_no">Style No.</string>
-    <string name="total_dia_wt">Total Dia Wt</string>
+    <string name="category_code">Category</string>
+    <string name="sku">SKU</string>
+    <string name="total_price">Price</string>
     <string name="total_gross_wt">Total Gross Wt</string>
     <string name="total_dia">Total Dia</string>
     <string name="write">Write...</string>

@@ -1,1 +1,47 @@
-/build
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android Studio
+/.idea/
+/*.iml
+/local.properties
+
+# Generated files
+*.log
+*.swp
+*.swo
+*.DS_Store
+*.class
+*.apk
+*.ap_
+*.dex
+*.jar
+*.keystore
+*.so
+*.dSYM/
+*.o
+*.obj
+*.hprof
+*.pyc
+*.bin
+
+# CMake & NDK
+.cxx/
+.externalNativeBuild/
+obj/
+cmake-build-debug/
+
+# Generated JSON files
+*.json
+!app/src/main/assets/*.json
+
+# Dependency Caches
+/.gradle/
+/build/
+
+# User-specific files
+/.vscode/
+/*.sublime-workspace
+/.metadata/

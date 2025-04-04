@@ -105,12 +105,13 @@ object AwsManager {
         }
 
 
-    fun uploadMediaToS3(
+    /*fun uploadMediaToS3(
         scope: CoroutineScope,
         context: Context,
-        imageFile: File,
+        imageFiles: List<File>, // Multiple images
+//        imageFile: File,
         videoFile: File?, // Video file is optional
-        onSuccess: (String, String?) -> Unit, // Callback with both URLs
+        onSuccess: (List<String>, String?) -> Unit, // Callback with both URLs
         onError: (String) -> Unit
     ) {
         val progressDialog = ProgressDialog(context).apply {
@@ -167,7 +168,80 @@ object AwsManager {
                 }
             }
         }
+    }*/
+
+
+    fun uploadMediaToS3(
+        scope: CoroutineScope,
+        context: Context,
+        imageFiles: List<File>, // Multiple images
+        videoFile: File?, // Video file is optional
+        onSuccess: (List<String>, String?) -> Unit, // Callback with list of image URLs and optional video URL
+        onError: (String) -> Unit
+    ) {
+        val progressDialog = ProgressDialog(context).apply {
+            setMessage("Uploading... 0%")
+            setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
+            isIndeterminate = false
+            max = 100
+            setCancelable(false)
+            show()
+        }
+
+        scope.launch(Dispatchers.IO) {
+            try {
+                Log.d("AWS_UPLOAD", "Upload started...")
+
+                val uploadedImageUrls = mutableListOf<String>()
+
+                // ✅ Upload multiple images one by one
+                for ((index, imageFile) in imageFiles.withIndex()) {
+                    val imageKey = "images/${UUID.randomUUID()}_${imageFile.name}"
+                    Log.d("AWS_UPLOAD", "Uploading image: $imageKey")
+
+                    val imageUrl = multipartUpload(s3Client, imageFile, imageKey, 2 * 1024 * 1024) { progress ->
+                        progressDialog.progress = progress
+                        progressDialog.setMessage("Uploading Image ${index + 1}/${imageFiles.size}... $progress%")
+                    }
+
+                    uploadedImageUrls.add(imageUrl)
+                    Log.d("AWS_UPLOAD", "Image uploaded successfully: $imageUrl")
+                }
+
+                var videoUrl: String? = null
+                if (videoFile != null) {
+                    val videoKey = "videos/${UUID.randomUUID()}_${videoFile.name}"
+                    Log.d("AWS_UPLOAD", "Uploading video: $videoKey")
+
+                    videoUrl = multipartUpload(s3Client, videoFile, videoKey, 2 * 1024 * 1024) { progress ->
+                        progressDialog.progress = progress
+                        progressDialog.setMessage("Uploading Video... $progress%")
+                    }
+
+                    Log.d("AWS_UPLOAD", "Video uploaded successfully: $videoUrl")
+                } else {
+                    Log.d("AWS_UPLOAD", "No video selected, skipping video upload.")
+                }
+
+                withContext(Dispatchers.Main) {
+                    progressDialog.dismiss()
+                    Log.d("AWS_UPLOAD", "Upload complete, dismissing dialog")
+                    Toast.makeText(context, "Upload Successful", Toast.LENGTH_SHORT).show()
+                    onSuccess(uploadedImageUrls, videoUrl)
+                }
+
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    progressDialog.dismiss()
+                    Log.e("AWS_UPLOAD", "Upload failed: ${e.message}")
+                    Toast.makeText(context, "Upload Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    onError(e.message ?: "Unknown error")
+                }
+            }
+        }
     }
+
+
 
     // ✅ Multipart Upload Function with 2MB Chunk Size & Progress Tracking
     private suspend fun multipartUpload(
@@ -207,7 +281,9 @@ object AwsManager {
             while (position < fileSize) {
                 val size = minOf(partSize.toLong(), fileSize - position)
                 val buffer = ByteArray(size.toInt())
-                input.read(buffer)
+
+                val bytesRead = input.read(buffer)
+                if (bytesRead == -1) break  // Stop reading if EOF is reached
 
                 val partRequest = UploadPartRequest.builder()
                     .bucket(BUCKET_NAME)
@@ -219,7 +295,7 @@ object AwsManager {
                 val partETag = s3Client.uploadPart(partRequest, RequestBody.fromBytes(buffer)).eTag()
                 parts.add(CompletedPart.builder().partNumber(partNumber).eTag(partETag).build())
 
-                totalUploadedBytes += size
+                totalUploadedBytes += bytesRead
                 val progress = ((totalUploadedBytes.toDouble() / fileSize) * 100).toInt()
 
                 // ✅ Update progress correctly in the main thread

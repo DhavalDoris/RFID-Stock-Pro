@@ -1,47 +1,34 @@
 package com.example.rfidstockpro.ui.activities
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
-import android.widget.AdapterView
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.StatusBarUtils
-import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
-import com.example.rfidstockpro.aws.AwsManager
-import com.example.rfidstockpro.aws.AwsManager.getFileExtension
-import com.example.rfidstockpro.aws.AwsManager.uploadMediaToS3
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.ActivityAddItemBinding
 import com.example.rfidstockpro.viewmodel.AddItemViewModel
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import java.io.File
+import java.io.FileOutputStream
 
 class AddItemActivity : AppCompatActivity() {
 
+    private val selectedImageFiles = mutableListOf<File>()
+
+
     private lateinit var binding: ActivityAddItemBinding
-    private val CategoryFilterOptions = listOf(
-        "Diamond Bracelets",
-        "Diamond Rings",
-        "Diamond Earrings",
-        "Diamond Pendants",
-        "Chains"
-    )
     private val addItemViewModel: AddItemViewModel by viewModels()
-    private val IMAGE_PICKER_REQUEST_CODE = 1001
-    private val VIDEO_PICKER_REQUEST_CODE = 1002
     private var isImageSelected: Boolean = false // Add this flag
     private var selectedImage: Uri? = null  // Global Image URI
     private var selectedVideo: Uri? = null  // Global Video URI
@@ -54,7 +41,6 @@ class AddItemActivity : AppCompatActivity() {
         private const val REQUEST_PICK_VIDEO = 1002
         private const val REQUEST_CAPTURE_IMAGE = 1003
         private const val REQUEST_CAPTURE_VIDEO = 1004
-        private const val MAX_FILE_SIZE_MB = 10.0
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +48,6 @@ class AddItemActivity : AppCompatActivity() {
         binding = ActivityAddItemBinding.inflate(layoutInflater)
         setContentView(binding.root)
         StatusBarUtils.setStatusBarColor(this)
-        setupSpinner()
         initUI()
         observeValidationErrors()
     }
@@ -71,15 +56,34 @@ class AddItemActivity : AppCompatActivity() {
 
         binding.commonToolbar.tvToolbarTitle.text = getString(R.string.add_item)
 
-        binding.button10k.isSelected = true
-        binding.button10k.setOnClickListener { selectButton(binding.button10k) }
-        binding.button14k.setOnClickListener { selectButton(binding.button14k) }
-        binding.button18k.setOnClickListener { selectButton(binding.button18k) }
 
         // Button Click Listeners
         binding.btnAdd.setOnClickListener {
+            validateAndLogFields()
 
-            val imageFile = AwsManager.uriToFile(this, selectedImage!!)
+
+            /*Log.d("ADD_ITEM", "Button Clicked - Logging Selected Data")
+
+            if (selectedImageFiles.isEmpty() && selectedVideo == null) {
+                Log.d("ADD_ITEM", "No media selected")
+            } else {
+                // Log multiple images if selected
+                if (selectedImageFiles.isNotEmpty()) {
+                    Log.d("ADD_ITEM", "Selected Images:")
+                    selectedImageFiles.forEachIndexed { index, file ->
+                        Log.d("ADD_ITEM", "Image $index: ${file.absolutePath}")
+                    }
+                } else {
+                    Log.d("ADD_ITEM", "No images selected")
+                }
+
+                // Log video if selected
+                selectedVideo?.let {
+                    Log.d("ADD_ITEM", "Selected Video: ${getRealPathFromUriNew(it)}")
+                } ?: Log.d("ADD_ITEM", "No video selected")
+            }*/
+
+            /*val imageFile = AwsManager.uriToFile(this, selectedImage!!)
 
             val videoFile = selectedVideo?.let { uri ->
                 AwsManager.uriToFile(this, uri) // Only convert if not null
@@ -109,107 +113,33 @@ class AddItemActivity : AppCompatActivity() {
 
             }
 
-
             val scope = CoroutineScope(Dispatchers.Main)
 
             AwsManager.uploadMediaToS3(
                 scope = scope, // ✅ Pass a coroutine scope
                 context = this,
-                imageFile = imageFile,
+                imageFiles  = selectedImageFiles,
                 videoFile = videoFile,
-                onSuccess = { imageUrl, videoUrl ->
-                    Log.d("AWS_UPLOAD", "Image URL: $imageUrl")
+                onSuccess = { imageUrls, videoUrl ->
+
+                    imageUrls.forEach { Log.d("AWS_UPLOAD", "Image URL: $it") }
                     videoUrl?.let { Log.d("AWS_UPLOAD", "Video URL: $it") }
                 },
                 onError = { errorMessage ->
                     Log.e("AWS_UPLOAD", "Upload failed: $errorMessage")
                 }
-            )
-
-            // Call the upload function
-            /*AwsManager.uploadMediaToS3(
-                context = this,  // 'this' refers to the Activity or Fragment context
-                imageFile = imageFile,
-                videoFile = videoFile,  // Pass null if no video file
-                onSuccess = { imageUrl, videoUrl ->
-                    // This block will be called on successful upload
-                    Log.d("AWS_UPLOAD", "Image URL: $imageUrl")
-                    if (videoUrl != null) {
-                        Log.d("AWS_UPLOAD", "Video URL: $videoUrl")
-                    } else {
-                        Log.d("AWS_UPLOAD", "No video uploaded")
-                    }
-                },
-                onError = { errorMessage ->
-                    // This block will be called if there's an error during the upload
-                    Log.e("AWS_UPLOAD", "Error occurred: $errorMessage")
-                }
             )*/
-
-            // Proceed with adding the product
-            /*  AwsManager.uploadMediaToS3(
-                  context = this,
-                  imageFile = imageFile,
-                  videoFile = videoFile,
-                  onSuccess = { imageUrl, videoUrl ->
-                      Log.d("AWS_UPLOAD", "Image uploaded: $imageUrl")
-                      videoUrl?.let { Log.d("AWS_UPLOAD", "Video uploaded: $it") }
-                      // Save URLs to database or UI
-                  },
-                  onError = { errorMessage ->
-                      Log.e("AWS_UPLOAD", "Failed: $errorMessage")
-                  }
-              )*/
-
-            /* if (validateFields()) {
-                 val imageFile = AwsManager.uriToFile(this, selectedImage!!)
-
-                 val videoFile = selectedVideo?.let { uri ->
-                     AwsManager.uriToFile(this, uri) // Only convert if not null
-                 }
-
-                 // Proceed with adding the product
-                 AwsManager.uploadMediaToS3(
-                     context = this,
-                     imageFile = imageFile,
-                     videoFile = videoFile,
-                     onSuccess = { imageUrl, videoUrl ->
-                         Log.d("AWS_UPLOAD", "Image uploaded: $imageUrl")
-                         videoUrl?.let { Log.d("Upload", "Video uploaded: $it") }
-                         // Save URLs to database or UI
-                     },
-                     onError = { errorMessage ->
-                         Log.e("AWS_UPLOAD", "Failed: $errorMessage")
-                     }
-                 )
-                 Toast.makeText(
-                     this,
-                     "Validation Passed! Proceeding with Add...",
-                     Toast.LENGTH_SHORT
-                 ).show()
-                 // You can call your ViewModel's addProduct() here.
-             }*/
         }
 
         binding.btnAddScan.setOnClickListener {
-            if (validateFields()) {
-                // Proceed with adding & scanning
-                Toast.makeText(
-                    this,
-                    "Validation Passed! Proceeding with Add & Scan...",
-                    Toast.LENGTH_SHORT
-                ).show()
-                // You can call your ViewModel's addProduct() here.
-            }
+            validateAndLogFields()
         }
 
         binding.selectedImagesContainer.setOnClickListener {
-//            openImagePicker("image/*", IMAGE_PICKER_REQUEST_CODE)
             showMediaPickerDialog(isImage = true)
         }
 
         binding.selectVideo.setOnClickListener {
-//            openImagePicker("video/*", VIDEO_PICKER_REQUEST_CODE)
             showMediaPickerDialog(isImage = false)
         }
     }
@@ -232,6 +162,7 @@ class AddItemActivity : AppCompatActivity() {
 
     private fun pickImageFromGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         intent.type = "image/*"
         startActivityForResult(intent, REQUEST_PICK_IMAGE)
     }
@@ -260,45 +191,6 @@ class AddItemActivity : AppCompatActivity() {
         startActivityForResult(videoIntent, REQUEST_CAPTURE_VIDEO)
     }
 
-    private fun openImagePicker(type: String, request_code: Int) {
-        // Create an intent to pick an image
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        intent.type = type
-        startActivityForResult(intent, request_code)
-    }
-
-    private fun selectButton(selectedButton: androidx.appcompat.widget.AppCompatTextView) {
-        // Deselect all buttons
-        binding.button10k.isSelected = false
-        binding.button14k.isSelected = false
-        binding.button18k.isSelected = false
-
-        // Select the clicked button
-        selectedButton.isSelected = true
-    }
-
-    private fun setupSpinner() {
-        val adapter = CustomSpinnerAdapter(this, CategoryFilterOptions)
-        binding.spinnerCategoryFilter.adapter = adapter
-        // Set default selection to "Monthly"
-        binding.spinnerCategoryFilter.setSelection(1)
-        // Handle item selection
-        binding.spinnerCategoryFilter.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    val selectedOption = CategoryFilterOptions[position]
-                    // Handle selection if required
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-            }
-    }
-
 
     private fun observeValidationErrors() {
         addItemViewModel.validationError.observe(this) { error ->
@@ -309,45 +201,50 @@ class AddItemActivity : AppCompatActivity() {
         }
     }
 
-    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == IMAGE_PICKER_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-            val selectedImageUri: Uri? = data.data
-            selectedImage = data.data
-            selectedImageUri?.let {
-                binding.selectedImagesContainer.setImageURI(it)
-                isImageSelected = true
-                binding.changeImage.visibility = View.VISIBLE
-            }
-        }
-
-        if (requestCode == VIDEO_PICKER_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-            val selectedVideoUri: Uri? = data.data
-            selectedVideo = data.data
-            selectedVideoUri?.let {
-                val retriever = MediaMetadataRetriever()
-                retriever.setDataSource(this, it)
-                val bitmap = retriever.frameAtTime
-                binding.selectedVideoContainer.setImageBitmap(bitmap)
-//                isImageSelected = true
-                binding.changeVideo.visibility = View.VISIBLE
-            }
-        }
-    }*/
-
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                REQUEST_PICK_IMAGE, REQUEST_CAPTURE_IMAGE -> {
-                    selectedImage = data?.data ?: selectedImage
+                REQUEST_PICK_IMAGE -> {
+                    selectedImageFiles.clear()
+                    if (data?.clipData != null) {
+                        for (i in 0 until data.clipData!!.itemCount) {
+                            val uri = data.clipData!!.getItemAt(i).uri
+                            val filePath = getRealPathFromUriNew(uri)
+                            val file = File(filePath)
+                            if (validateFileSize(uri, isImage = true)) {
+                                selectedImageFiles.add(file)
+                                Log.d("IMAGE_SELECTION", "Selected Image: ${file.absolutePath}")
+                            }
+                        }
+                    } else if (data?.data != null) {
+                        val uri = data.data!!
+                        val filePath = getRealPathFromUriNew(uri)
+                        val file = File(filePath)
+                        if (validateFileSize(uri, isImage = true)) {
+                            selectedImageFiles.add(file)
+                            Log.d("IMAGE_SELECTION", "Selected Image: ${file.absolutePath}")
+                        }
+                    }
+
+                    if (selectedImageFiles.isNotEmpty()) {
+                        binding.selectedImagesContainer.setImageURI(Uri.fromFile(selectedImageFiles[0]))
+                        isImageSelected = true
+                        binding.changeImage.visibility = View.VISIBLE
+                    }
+                }
+
+                REQUEST_CAPTURE_IMAGE -> {
                     selectedImage?.let {
+                        val filePath = getRealPathFromUriNew(it)
+                        val file = File(filePath)
                         if (validateFileSize(it, isImage = true)) {
-                            binding.selectedImagesContainer.setImageURI(it)
-                        } else {
-                            selectedImage = null
+                            selectedImageFiles.add(file)
+                            Log.d("IMAGE_SELECTION", "Captured Image: ${file.absolutePath}")
+                            binding.selectedImagesContainer.setImageURI(Uri.fromFile(file))
+                            isImageSelected = true
+                            binding.changeImage.visibility = View.VISIBLE
                         }
                     }
                 }
@@ -356,10 +253,14 @@ class AddItemActivity : AppCompatActivity() {
                     selectedVideo = data?.data ?: selectedVideo
                     selectedVideo?.let {
                         if (validateFileSize(it, isImage = false)) {
+                            val videoPath = getRealPathFromUriNew(it)
+                            Log.d("VIDEO_SELECTION", "Selected Video: $videoPath")
                             val retriever = MediaMetadataRetriever()
                             retriever.setDataSource(this, it)
                             val bitmap = retriever.frameAtTime
                             binding.selectedVideoContainer.setImageBitmap(bitmap)
+                            isImageSelected = true
+                            binding.changeVideo.visibility = View.VISIBLE
                         } else {
                             selectedVideo = null
                         }
@@ -367,76 +268,111 @@ class AddItemActivity : AppCompatActivity() {
                 }
             }
         }
+    }
 
+
+
+
+    private fun getRealPathFromUriNew(uri: Uri): String {
+        val file = File(cacheDir, "${System.currentTimeMillis()}.jpg")
+        contentResolver.openInputStream(uri)?.use { inputStream ->
+            FileOutputStream(file).use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+        }
+        return file.absolutePath
     }
 
     /**
      * Validates if the selected file is less than 10MB
      */
     private fun validateFileSize(uri: Uri, isImage: Boolean): Boolean {
-        val fileSize = getFileSize(this, uri)
-        if (fileSize > MAX_FILE_SIZE_MB) {
-            Toast.makeText(
-                this,
-                "${if (isImage) "Image" else "Video"} size should be less than 10MB",
-                Toast.LENGTH_SHORT
-            ).show()
-            return false
+        val fileSize = getFileSize( uri)
+        val maxSize = 10 * 1024 * 1024 // 10MB in bytes
+        return if (fileSize > maxSize) {
+            val fileType = if (isImage) "Image" else "Video"
+            Snackbar.make(binding.root, "$fileType size should not exceed 10MB", Snackbar.LENGTH_LONG).show()
+            Log.e("FILE_VALIDATION", "$fileType size is too large: ${fileSize / (1024 * 1024)} MB")
+            false
+        } else {
+            Log.d("FILE_VALIDATION", "File size is valid: ${fileSize / (1024 * 1024)} MB")
+            true
         }
-        return true
     }
 
     /**
      * Gets the file size in MB
      */
-    private fun getFileSize(context: Context, uri: Uri): Double {
-        val cursor = context.contentResolver.query(uri, arrayOf(MediaStore.MediaColumns.SIZE), null, null, null)
-        var size = 0L
+    private fun getFileSize(uri: Uri): Long {
+        val cursor = contentResolver.query(uri, arrayOf(OpenableColumns.SIZE), null, null, null)
+        var size: Long = 0
         cursor?.use {
             if (it.moveToFirst()) {
-                size = it.getLong(0)
+                val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
+                size = it.getLong(sizeIndex)
             }
         }
-        return (size / (1024.0 * 1024.0)) // Convert to MB
+        return size
     }
 
-    private fun validateFields(): Boolean {
+    private fun validateAndLogFields() {
         val productName = binding.etProductName.text.toString().trim()
-        val productCategory = binding.spinnerCategoryFilter.selectedItem.toString()
+        val productCategory = binding.etCategory.text.toString().trim()
         val priceStr = binding.etPrice.text.toString().trim()
-        val color = binding.etColor.text.toString().trim()
-        val jewelCode = binding.etJewelCode.text.toString().trim()
-        val styleNo = binding.etStyleNo.text.toString().trim()
+        val etSku = binding.etSku.text.toString().trim()
+        val tagId = "12345" // Replace this with actual tag ID logic
+        val status = "Pending"
 
-        // Purity selection based on button state.
-        val purity = when {
-            binding.button10k.isSelected -> "10K"
-            binding.button14k.isSelected -> "14K"
-            binding.button18k.isSelected -> "18K"
-            else -> ""
-        }
+        // Extract image paths
+        val selectedImagePaths = selectedImageFiles.map { it.absolutePath }
 
-        val totalDiaWtStr = binding.etTotalDiaWt.text.toString().trim()
-        val totalGrossWtStr = binding.etTotalGrossWt.text.toString().trim()
-        val totalDiaStr = binding.etTotalDia.text.toString().trim()
+        // Extract video path (if selected)
+        val selectedVideoPath = selectedVideo?.let { getRealPathFromUriNew(it) }
+
         val description = binding.etDescription.text.toString().trim()
 
-
         val input = ProductModel(
+            selectedImages = selectedImagePaths,
+            selectedVideo = selectedVideoPath,
             productName = productName,
             productCategory = productCategory,
-            priceStr = priceStr,
-            color = color,
-            jewelCode = jewelCode,
-            styleNo = styleNo,
-            purity = purity,
-            totalDiaWtStr = totalDiaWtStr,
-            totalGrossWtStr = totalGrossWtStr,
-            totalDiaStr = totalDiaStr,
+            sku = etSku,
+            price = priceStr,
             description = description,
-            isImageSelected = isImageSelected
+            isImageSelected = isImageSelected,
+            tagId = tagId,
+            status = status
         )
 
-        return addItemViewModel.validateProductInput(input)
+        val isValid = addItemViewModel.validateProductInput(input)
+
+        // Logging entered data
+        Log.d("ADD_ITEM", "---- Logging Entered Data ----")
+        Log.d("ADD_ITEM", "Product Name: $productName")
+        Log.d("ADD_ITEM", "Category: $productCategory")
+        Log.d("ADD_ITEM", "sku: $etSku")
+        Log.d("ADD_ITEM", "Price: $priceStr")
+        Log.d("ADD_ITEM", "Description: $description")
+        Log.d("ADD_ITEM", "TagId: $tagId")
+        Log.d("ADD_ITEM", "Status: $status")
+
+        // Log selected media
+        if (selectedImageFiles.isNotEmpty()) {
+            selectedImageFiles.forEachIndexed { index, file ->
+                Log.d("ADD_ITEM", "Image $index: ${file.absolutePath}")
+            }
+        } else {
+            Log.d("ADD_ITEM", "No images selected")
+        }
+
+        selectedVideo?.let {
+            Log.d("ADD_ITEM", "Selected Video: ${getRealPathFromUriNew(it)}")
+        } ?: Log.d("ADD_ITEM", "No video selected")
+
+        if (isValid) {
+            Log.d("ADD_ITEM", "✅ Validation Passed! Ready to upload.")
+        } else {
+            Log.d("ADD_ITEM", "❌ Validation Failed! Fix errors before proceeding.")
+        }
     }
 }

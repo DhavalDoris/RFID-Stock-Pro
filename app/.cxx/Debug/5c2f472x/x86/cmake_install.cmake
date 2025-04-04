@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/tempo/AndroidStudioProjects/RFIDStockPro/app/src/main/cpp
+# Install script for directory: D:/Dhaval Work Space/RFID-Stock-Pro/app/src/main/cpp
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 # Set default install directory permissions.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "C:/Users/tempo/AppData/Local/Android/Sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/windows-x86_64/bin/llvm-objdump.exe")
+  set(CMAKE_OBJDUMP "C:/Users/admin/AppData/Local/Android/Sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/windows-x86_64/bin/llvm-objdump.exe")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "C:/Users/tempo/AndroidStudioProjects/RFIDStockPro/app/.cxx/Debug/5c2f472x/x86/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "D:/Dhaval Work Space/RFID-Stock-Pro/app/.cxx/Debug/5c2f472x/x86/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
