@@ -299,7 +299,6 @@ class AddItemActivity : AppCompatActivity() {
             true
         }
     }
-
     /**
      * Gets the file size in MB
      */
