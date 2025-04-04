@@ -1,9 +1,0 @@
-# ninja log v5
-0	6682	7653756835086982	CMakeFiles/rfidstockpro.dir/rfidstockpro.cpp.o	2def983ea0dee24e
-6686	6804	7653756836314605	D:/Dhaval Work Space/RFID-Stock-Pro/app/build/intermediates/cxx/Debug/5c2f472x/obj/arm64-v8a/librfidstockpro.so	933e3eb79279bc63
-0	7	0	clean	8eafa784055587d3
-5	746	7653773608869002	CMakeFiles/rfidstockpro.dir/rfidstockpro.cpp.o	2def983ea0dee24e
-746	829	7653773609725088	D:/Dhaval Work Space/RFID-Stock-Pro/app/build/intermediates/cxx/Debug/5c2f472x/obj/arm64-v8a/librfidstockpro.so	933e3eb79279bc63
-0	7	0	clean	8eafa784055587d3
-5	7065	7653786554731480	CMakeFiles/rfidstockpro.dir/rfidstockpro.cpp.o	2def983ea0dee24e
-7066	8003	7653786564150747	D:/Dhaval Work Space/RFID-Stock-Pro/app/build/intermediates/cxx/Debug/5c2f472x/obj/arm64-v8a/librfidstockpro.so	933e3eb79279bc63

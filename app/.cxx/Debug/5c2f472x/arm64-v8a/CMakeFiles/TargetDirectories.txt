@@ -1,3 +1,0 @@
-D:/Dhaval Work Space/RFID-Stock-Pro/app/.cxx/Debug/5c2f472x/arm64-v8a/CMakeFiles/rfidstockpro.dir
-D:/Dhaval Work Space/RFID-Stock-Pro/app/.cxx/Debug/5c2f472x/arm64-v8a/CMakeFiles/edit_cache.dir
-D:/Dhaval Work Space/RFID-Stock-Pro/app/.cxx/Debug/5c2f472x/arm64-v8a/CMakeFiles/rebuild_cache.dir

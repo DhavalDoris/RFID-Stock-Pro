@@ -1,9 +1,0 @@
-{
-  "Version": "1.0",
-  "DynamoDBObjectMapper": {
-    "Default": {
-      "Region": "us-east-1",
-      "PoolId": "us-east-1_tZqgwk8JN"
-    }
-  }
-}

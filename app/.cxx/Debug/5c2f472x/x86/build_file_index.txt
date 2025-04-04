@@ -1,1 +1,0 @@
-D:\Dhaval Work Space\RFID-Stock-Pro\app\src\main\cpp\CMakeLists.txt
