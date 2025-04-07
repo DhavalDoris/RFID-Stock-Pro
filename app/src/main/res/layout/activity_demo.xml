@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/staff_bg_color">
+    android:background="@color/main_bg_color">
 
-    <androidx.cardview.widget.CardView
+    <!--<androidx.cardview.widget.CardView
         android:id="@+id/cardStockCheckHistory"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Title -->
+            &lt;!&ndash; Title &ndash;&gt;
             <androidx.appcompat.widget.AppCompatTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -37,7 +37,7 @@
                 android:padding="5dp"
                 android:weightSum="10.2">
 
-                <!-- From Date -->
+                &lt;!&ndash; From Date &ndash;&gt;
                 <EditText
                     android:id="@+id/etFromDate"
                     android:layout_width="0dp"
@@ -60,7 +60,7 @@
                     android:layout_width="@dimen/_5sdp"
                     android:layout_height="wrap_content" />
 
-                <!-- To Date -->
+                &lt;!&ndash; To Date &ndash;&gt;
                 <EditText
                     android:id="@+id/etToDate"
                     android:layout_width="0dp"
@@ -91,7 +91,7 @@
                     android:layout_weight="0.8"
                     android:orientation="vertical">
 
-                    <!-- Dropdown Filter -->
+                    &lt;!&ndash; Dropdown Filter &ndash;&gt;
                     <LinearLayout
                         android:layout_width="@dimen/_91sdp"
                         android:layout_height="@dimen/_27sdp"
@@ -114,7 +114,7 @@
                             android:dropDownVerticalOffset="30dp"
                             android:dropDownHorizontalOffset="0dp"/>
 
-                        <!-- Manually add dropdown icon -->
+                        &lt;!&ndash; Manually add dropdown icon &ndash;&gt;
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
@@ -124,7 +124,7 @@
 
 
 
-                    <!-- Legend -->
+                    &lt;!&ndash; Legend &ndash;&gt;
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -268,7 +268,7 @@
                     android:layout_weight="1.2"
                     android:gravity="center_vertical">
 
-                    <!-- Pie Chart -->
+                    &lt;!&ndash; Pie Chart &ndash;&gt;
                     <com.github.mikephil.charting.charts.PieChart
                         android:id="@+id/pieChart"
                         android:layout_width="180dp"
@@ -283,6 +283,96 @@
         </LinearLayout>
 
 
-    </androidx.cardview.widget.CardView>
+    </androidx.cardview.widget.CardView>-->
+
+    <RelativeLayout
+        android:id="@+id/rlSuccessFullAdded"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/_80sdp"
+        android:background="@color/main_bg_color"
+        android:elevation="2dp"
+        android:visibility="visible">
+
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_340sdp"
+            app:srcCompat="@drawable/flyer_popup" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/green_tick" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/rethinksans_bold"
+                android:paddingTop="@dimen/_1sdp"
+                android:text="@string/_1_product"
+                android:textColor="@color/appMainColor"
+                android:textSize="@dimen/_19sdp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@id/tvWelcome"
+                app:layout_constraintTop_toTopOf="@id/tvWelcome" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/rethinksans_bold"
+                android:paddingTop="@dimen/_1sdp"
+                android:text="@string/successfully_added"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_19sdp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@id/tvWelcome"
+                app:layout_constraintTop_toTopOf="@id/tvWelcome" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_30sdp"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:fontFamily="@font/rethinksans_variablefont_wght"
+                android:gravity="center"
+                android:paddingTop="@dimen/_1sdp"
+                android:text="@string/one_products_successfully_scanned_and_confirmed_with_rfid_quick_accurate_and_efficient_tracking_in_action"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/_11sdp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@id/tvWelcome"
+                app:layout_constraintTop_toTopOf="@id/tvWelcome" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/btnProductList"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/_40sdp"
+                android:layout_marginTop="@dimen/_30sdp"
+                android:layout_weight="1"
+                android:background="@drawable/continue_btn_bg"
+                android:backgroundTint="@color/appMainColor"
+                android:enabled="false"
+                android:fontFamily="@font/rethinksans_variablefont_wght"
+                android:gravity="center"
+                android:paddingHorizontal="@dimen/_45sdp"
+                android:text="@string/go_to_product_list"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_12ssp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </LinearLayout>

@@ -127,4 +127,11 @@
     <string name="change">Change</string>
     <string name="connect_scanner">Connect Scanner</string>
     <string name="buy">Buy</string>
+    <string name="_1_product">1 Product</string>
+    <string name="successfully_added">Successfully Added!!</string>
+    <string name="one_products_successfully_scanned_and_confirmed_with_rfid_quick_accurate_and_efficient_tracking_in_action">One products successfully scanned and confirmed with RFID! Quick, accurate, and efficient tracking in action.</string>
+    <string name="go_to_product_list">Go to Product List</string>
+    <string name="add">Add</string>
+    <string name="start_scanning">Start scanning...</string>
+    <string name="with_rfid_boosting_efficiency_n_one_tag_at_a_time">With RFID boosting efficiency\n one tag at a time!</string>
 </resources>

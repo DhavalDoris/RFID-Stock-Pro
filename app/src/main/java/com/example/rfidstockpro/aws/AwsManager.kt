@@ -8,8 +8,11 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import com.example.rfidstockpro.Helper
 import com.example.rfidstockpro.RFIDApplication
+import com.example.rfidstockpro.RFIDApplication.Companion.PRODUCT_TABLE
 import com.example.rfidstockpro.RFIDApplication.Companion.USER_TABLE
+import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.aws.models.UserModel
+import com.example.rfidstockpro.aws.models.toMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,16 +25,23 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.CreateGlobalSecondaryIndexAction
 import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest
+import software.amazon.awssdk.services.dynamodb.model.GlobalSecondaryIndex
+import software.amazon.awssdk.services.dynamodb.model.GlobalSecondaryIndexUpdate
 import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement
 import software.amazon.awssdk.services.dynamodb.model.KeyType
+import software.amazon.awssdk.services.dynamodb.model.Projection
+import software.amazon.awssdk.services.dynamodb.model.ProjectionType
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest
+import software.amazon.awssdk.services.dynamodb.model.UpdateTableRequest
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload
@@ -49,16 +59,16 @@ import java.util.UUID
 object AwsManager {
 
     lateinit var dynamoDBClient: DynamoDbClient
-    private  val AWS_ACCESS_KEY =  RFIDApplication.getAwsAccessKeyFromNdk()
-    private  val AWS_SECRET_KEY = RFIDApplication.getAwsSecretKeyFromNdk()
+    private val AWS_ACCESS_KEY = RFIDApplication.getAwsAccessKeyFromNdk()
+    private val AWS_SECRET_KEY = RFIDApplication.getAwsSecretKeyFromNdk()
     const val BUCKET_NAME = "rfid-stock-pro"
     const val FOLDER_NAME = "rfid-uploads"
     private val AWS_REGION = Region.US_EAST_1
 
     fun init(context: Context) {
 
-        Log.e("AWS_TAG", "AWS_ACCESS_KEY: " + AWS_ACCESS_KEY )
-        Log.e("AWS_TAG", "AWS_SECRET_KEY: " + AWS_SECRET_KEY )
+        Log.e("AWS_TAG", "AWS_ACCESS_KEY: " + AWS_ACCESS_KEY)
+        Log.e("AWS_TAG", "AWS_SECRET_KEY: " + AWS_SECRET_KEY)
 
         try {
             val credentialsProvider = StaticCredentialsProvider.create(
@@ -80,29 +90,33 @@ object AwsManager {
     // ✅ AWS SDK v2 S3 Client
     val s3Client: S3Client = S3Client.builder()
         .region(AWS_REGION)
-        .credentialsProvider(StaticCredentialsProvider.create(
-            AwsBasicCredentials.create(AWS_ACCESS_KEY, AWS_SECRET_KEY)
-        ))
+        .credentialsProvider(
+            StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(AWS_ACCESS_KEY, AWS_SECRET_KEY)
+            )
+        )
         .httpClient(UrlConnectionHttpClient.create()) // Required for Android
         .build()
 
     // ✅ AWS SDK v2 SES Client
     private val sesClient: SesClient = SesClient.builder()
         .region(AWS_REGION)
-        .credentialsProvider(StaticCredentialsProvider.create(
-            AwsBasicCredentials.create(AWS_ACCESS_KEY, AWS_SECRET_KEY)
-        ))
+        .credentialsProvider(
+            StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(AWS_ACCESS_KEY, AWS_SECRET_KEY)
+            )
+        )
         .httpClient(UrlConnectionHttpClient.create()) // Required for Android
         .build()
 
-        private var instance: AwsManager? = null
+    private var instance: AwsManager? = null
 
-        fun getInstance(): AwsManager {
-            if (instance == null) {
-                instance = AwsManager
-            }
-            return instance!!
+    fun getInstance(): AwsManager {
+        if (instance == null) {
+            instance = AwsManager
         }
+        return instance!!
+    }
 
 
     /*fun uploadMediaToS3(
@@ -199,7 +213,12 @@ object AwsManager {
                     val imageKey = "images/${UUID.randomUUID()}_${imageFile.name}"
                     Log.d("AWS_UPLOAD", "Uploading image: $imageKey")
 
-                    val imageUrl = multipartUpload(s3Client, imageFile, imageKey, 2 * 1024 * 1024) { progress ->
+                    val imageUrl = multipartUpload(
+                        s3Client,
+                        imageFile,
+                        imageKey,
+                        2 * 1024 * 1024
+                    ) { progress ->
                         progressDialog.progress = progress
                         progressDialog.setMessage("Uploading Image ${index + 1}/${imageFiles.size}... $progress%")
                     }
@@ -210,10 +229,17 @@ object AwsManager {
 
                 var videoUrl: String? = null
                 if (videoFile != null) {
-                    val videoKey = "videos/${UUID.randomUUID()}_${videoFile.name}"
+                    val videoExtension = videoFile.extension.ifEmpty { "mp4" }
+                    val videoKey =
+                        "videos/${UUID.randomUUID()}_${System.currentTimeMillis()}.$videoExtension"
                     Log.d("AWS_UPLOAD", "Uploading video: $videoKey")
 
-                    videoUrl = multipartUpload(s3Client, videoFile, videoKey, 2 * 1024 * 1024) { progress ->
+                    videoUrl = multipartUpload(
+                        s3Client,
+                        videoFile,
+                        videoKey,
+                        2 * 1024 * 1024
+                    ) { progress ->
                         progressDialog.progress = progress
                         progressDialog.setMessage("Uploading Video... $progress%")
                     }
@@ -234,13 +260,13 @@ object AwsManager {
                 withContext(Dispatchers.Main) {
                     progressDialog.dismiss()
                     Log.e("AWS_UPLOAD", "Upload failed: ${e.message}")
-                    Toast.makeText(context, "Upload Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Upload Failed: ${e.message}", Toast.LENGTH_SHORT)
+                        .show()
                     onError(e.message ?: "Unknown error")
                 }
             }
         }
     }
-
 
 
     // ✅ Multipart Upload Function with 2MB Chunk Size & Progress Tracking
@@ -292,7 +318,8 @@ object AwsManager {
                     .partNumber(partNumber)
                     .build()
 
-                val partETag = s3Client.uploadPart(partRequest, RequestBody.fromBytes(buffer)).eTag()
+                val partETag =
+                    s3Client.uploadPart(partRequest, RequestBody.fromBytes(buffer)).eTag()
                 parts.add(CompletedPart.builder().partNumber(partNumber).eTag(partETag).build())
 
                 totalUploadedBytes += bytesRead
@@ -379,7 +406,7 @@ object AwsManager {
         sesClient.close()
     }
 
-    fun ensureUserTableExists(tableName: String ,callback: (String) -> Unit) {
+    /*fun ensureUserTableExists(tableName: String, primaryKey: String, callback: (String) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 Log.e("AWS_TAG", "Checking if table exists: $tableName")
@@ -392,12 +419,17 @@ object AwsManager {
 
                     val request = CreateTableRequest.builder()
                         .tableName(tableName)
-                        .keySchema(KeySchemaElement.builder().attributeName("email").keyType(KeyType.HASH).build()) // Primary Key
+                        .keySchema(
+                            KeySchemaElement.builder().attributeName(primaryKey)
+                                .keyType(KeyType.HASH).build()
+                        ) // Primary Key
                         .attributeDefinitions(
-                            AttributeDefinition.builder().attributeName("email").attributeType(ScalarAttributeType.S).build()
+                            AttributeDefinition.builder().attributeName(primaryKey).attributeType(ScalarAttributeType.S).build()
                         ) // String Type
+
                         .provisionedThroughput(
-                            ProvisionedThroughput.builder().readCapacityUnits(5L).writeCapacityUnits(5L).build()
+                            ProvisionedThroughput.builder().readCapacityUnits(5L)
+                                .writeCapacityUnits(5L).build()
                         ) // Read & Write Capacity
                         .build()
 
@@ -415,7 +447,77 @@ object AwsManager {
                 callback.invoke("error: ${e.message}")
             }
         }
+    }*/
+
+    fun ensureUserTableExists(tableName: String, primaryKey: String, callback: (String) -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.e("AWS_TAG", "Checking if table exists: $tableName")
+
+                val existingTables = dynamoDBClient.listTables().tableNames()
+                Log.e("AWS_TAG", "Existing Tables: $existingTables")
+
+                if (!existingTables.contains(tableName)) {
+                    callback.invoke("creating")
+
+                    val attributeDefinitions = mutableListOf(
+                        AttributeDefinition.builder().attributeName(primaryKey).attributeType(ScalarAttributeType.S).build()
+                    )
+
+                    val createTableBuilder = CreateTableRequest.builder()
+                        .tableName(tableName)
+                        .keySchema(
+                            KeySchemaElement.builder().attributeName(primaryKey)
+                                .keyType(KeyType.HASH).build()
+                        )
+                        .provisionedThroughput(
+                            ProvisionedThroughput.builder().readCapacityUnits(5L)
+                                .writeCapacityUnits(5L).build()
+                        )
+
+                    // ✅ If it's the product table, add GSI on tagId
+                    if (tableName == PRODUCT_TABLE) {
+                        attributeDefinitions.add(
+                            AttributeDefinition.builder().attributeName("tagId").attributeType(ScalarAttributeType.S).build()
+                        )
+
+                        createTableBuilder.globalSecondaryIndexes(
+                            GlobalSecondaryIndex.builder()
+                                .indexName("tagId-index")
+                                .keySchema(
+                                    KeySchemaElement.builder().attributeName("tagId").keyType(KeyType.HASH).build()
+                                )
+                                .projection(
+                                    Projection.builder().projectionType(ProjectionType.ALL).build()
+                                )
+                                .provisionedThroughput(
+                                    ProvisionedThroughput.builder()
+                                        .readCapacityUnits(5L)
+                                        .writeCapacityUnits(5L)
+                                        .build()
+                                )
+                                .build()
+                        )
+                    }
+
+                    createTableBuilder.attributeDefinitions(attributeDefinitions)
+
+                    val request = createTableBuilder.build()
+                    dynamoDBClient.createTable(request)
+
+                    Log.e("AWS_TAG", "Table creation started: $tableName")
+                    waitForTableToBeActive(tableName)
+                    callback.invoke("created")
+                } else {
+                    callback.invoke("exists")
+                }
+            } catch (e: Exception) {
+                Log.e("AWS_TAG", "❌ Error Checking/Creating Table: ${e.message}", e)
+                callback.invoke("error: ${e.message}")
+            }
+        }
     }
+
 
     private fun waitForTableToBeActive(tableName: String) {
         while (true) {
@@ -468,7 +570,7 @@ object AwsManager {
         }
     }
 
-    fun saveUser(tableName: String,user: UserModel): Boolean {
+    fun saveUser(tableName: String, user: UserModel): Boolean {
         return try {
             val putItemRequest = PutItemRequest.builder()
                 .tableName(tableName)
@@ -499,4 +601,75 @@ object AwsManager {
             false
         }
     }
+
+
+    suspend fun saveProduct(tableName: String, product: ProductModel): Pair<Boolean, String> {
+
+        return withContext(Dispatchers.IO) {
+            try {
+                // 🔍 Step 1: Scan for existing tagId
+                val scanRequest = ScanRequest.builder()
+                    .tableName(tableName)
+                    .filterExpression("tagId = :tagId")
+                    .expressionAttributeValues(
+                        mapOf(":tagId" to AttributeValue.builder().s(product.tagId).build())
+                    )
+                    .build()
+
+                val scanResponse = dynamoDBClient.scan(scanRequest)
+
+                if (scanResponse.count() > 0) {
+                    val msg = "Product with tagId '${product.tagId}' already exists."
+                    Log.e("AWS_SAVE", msg)
+                    return@withContext Pair(false, msg)
+                }
+
+
+                val putItemRequest = PutItemRequest.builder()
+                    .tableName(tableName)
+                    .item(product.toMap()) // Use the extension function
+                    .build()
+
+                dynamoDBClient.putItem(putItemRequest)
+                val successMsg = "Product added successfully: ${product.productName}"
+                Log.d("AWS_SAVE", successMsg)
+                Pair(true, successMsg)
+            } catch (e: Exception) {
+                val errorMsg = "Error saving product: ${e.message}"
+                Log.e("AWS_SAVE", errorMsg, e)
+                Pair(false, errorMsg)
+            }
+        }
+
+    }
+
+
+
+    suspend fun checkIfTagIdExists(tableName: String, tagId: String): Pair<Boolean, String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val queryRequest = QueryRequest.builder()
+                    .tableName(tableName)
+                    .indexName("tagId-index") // 🔥 Must match your GSI
+                    .keyConditionExpression("tagId = :tagVal")
+                    .expressionAttributeValues(mapOf(
+                        ":tagVal" to AttributeValue.builder().s(tagId).build()
+                    ))
+                    .build()
+
+                val result = dynamoDBClient.query(queryRequest)
+
+                if (result.count() > 0) {
+                    true to "Product with tagId '$tagId' already exists!"
+                } else {
+                    false to "✅ tagId is unique, continuing."
+                }
+
+            } catch (e: Exception) {
+                Log.e("AWS_TAG_CHECK", "❌ Error checking tagId: ${e.message}", e)
+                true to "❌ Failed to validate tagId: ${e.message}"
+            }
+        }
+    }
+
 }

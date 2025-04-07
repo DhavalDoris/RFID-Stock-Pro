@@ -35,7 +35,6 @@
             android:layout_marginLeft="@dimen/_5sdp"
             app:srcCompat="@drawable/rfid_img" />
 
-
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tvRfidName"
             android:layout_width="wrap_content"

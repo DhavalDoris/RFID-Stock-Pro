@@ -1,4 +1,5 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white">
@@ -15,10 +16,10 @@
             android:background="@drawable/edittext_bg">
 
             <RelativeLayout
-                android:layout_weight="1"
                 android:layout_width="0dp"
-                android:padding="@dimen/_6sdp"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="@dimen/_6sdp">
 
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/tv_count"
@@ -51,13 +52,16 @@
                 android:layout_width="@dimen/_2sdp"
                 android:layout_height="match_parent"
                 android:background="@color/gray_line"
-                android:orientation="horizontal" />
+                android:orientation="horizontal"
+                android:visibility="gone" />
 
             <RelativeLayout
-                android:layout_weight="1"
+                android:id="@+id/rlTotalFound"
                 android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:padding="@dimen/_6sdp"
-                android:layout_height="wrap_content">
+                android:visibility="gone">
 
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/tv_selected"
@@ -449,7 +453,7 @@
                     android:textSize="@dimen/_11ssp"
                     android:textStyle="bold" />
 
-                <Space
+                <LinearLayout
                     android:layout_width="@dimen/_1sdp"
                     android:layout_height="@dimen/_10sdp" />
 
@@ -481,25 +485,153 @@
 
             </LinearLayout>
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/btCancel"
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_40sdp"
+                android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/_9sdp"
                 android:layout_marginTop="@dimen/_10sdp"
                 android:layout_marginBottom="@dimen/_10sdp"
-                android:background="@drawable/bg_spinner"
-                android:backgroundTint="#E9E9E9"
-                android:fontFamily="@font/rethinksans_variablefont_wght"
-                android:gravity="center"
-                android:text="Cancel"
-                android:textAllCaps="false"
-                android:textColor="#939393"
-                android:textSize="@dimen/_11ssp"
-                android:textStyle="bold" />
+                android:elevation="@dimen/_8sdp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/btCancel"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_40sdp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_cancel"
+                    android:backgroundTint="#E9E9E9"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:gravity="center"
+                    android:text="Cancel"
+                    android:textAllCaps="false"
+                    android:textColor="#939393"
+                    android:textSize="@dimen/_11ssp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/llSpace"
+                    android:layout_width="@dimen/_2sdp"
+                    android:layout_height="@dimen/_10sdp"
+                    android:orientation="horizontal"
+                    android:visibility="gone" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/btAdd"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/_40sdp"
+                    android:layout_margin="@dimen/_2sdp"
+                    android:layout_weight="1"
+                    android:background="@drawable/continue_btn_bg"
+                    android:backgroundTint="@color/appMainColor"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:gravity="center"
+                    android:text="@string/add"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_11ssp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
+        <!--Successfully Added-->
+        <RelativeLayout
+            android:id="@+id/rlSuccessFullAdded"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/main_bg_color"
+            android:elevation="2dp"
+            android:visibility="gone">
+
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_310sdp"
+                app:srcCompat="@drawable/flyer_popup" />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/green_tick" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/rethinksans_bold"
+                    android:paddingTop="@dimen/_1sdp"
+                    android:text="@string/_1_product"
+                    android:textColor="@color/appMainColor"
+                    android:textSize="@dimen/_19sdp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@id/tvWelcome"
+                    app:layout_constraintTop_toTopOf="@id/tvWelcome" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/rethinksans_bold"
+                    android:paddingTop="@dimen/_1sdp"
+                    android:text="@string/successfully_added"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/_19sdp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@id/tvWelcome"
+                    app:layout_constraintTop_toTopOf="@id/tvWelcome" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/_30sdp"
+                    android:layout_marginTop="@dimen/_15sdp"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:gravity="center"
+                    android:paddingTop="@dimen/_1sdp"
+                    android:text="@string/one_products_successfully_scanned_and_confirmed_with_rfid_quick_accurate_and_efficient_tracking_in_action"
+                    android:textColor="@color/gray"
+                    android:textSize="@dimen/_11sdp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@id/tvWelcome"
+                    app:layout_constraintTop_toTopOf="@id/tvWelcome" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/btnProductList"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/_40sdp"
+                    android:layout_marginTop="@dimen/_30sdp"
+                    android:layout_weight="1"
+                    android:background="@drawable/continue_btn_bg"
+                    android:backgroundTint="@color/appMainColor"
+                    android:enabled="false"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:gravity="center"
+                    android:paddingHorizontal="@dimen/_45sdp"
+                    android:text="@string/go_to_product_list"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_12ssp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
 
     </RelativeLayout>
+
+
 </FrameLayout>

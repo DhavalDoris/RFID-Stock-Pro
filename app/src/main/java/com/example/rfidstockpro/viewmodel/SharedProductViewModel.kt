@@ -12,4 +12,8 @@ class SharedProductViewModel : ViewModel() {
     fun setProduct(productModel: ProductModel) {
         _product.value = productModel
     }
+
+    fun updateTagId(tagId: String) {
+        _product.value = _product.value?.copy(tagId = tagId)
+    }
 }

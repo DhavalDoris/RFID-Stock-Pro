@@ -38,12 +38,12 @@ class DemoActivity : AppCompatActivity() {
         enableEdgeToEdge()
         viewModel = ViewModelProvider(this).get(DashboardViewModel::class.java)
 
-        setupPieChart()
-        observeViewModel()
-        setupSpinner()
+//        setupPieChart()
+//        observeViewModel()
+//        setupSpinner()
     }
 
-    private fun setupPieChart() {
+    /*private fun setupPieChart() {
 
         // Load custom font
         val typeface: Typeface? = ResourcesCompat.getFont(this@DemoActivity, R.font.rethinksans_bold)
@@ -133,5 +133,5 @@ class DemoActivity : AppCompatActivity() {
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
-    }
+    }*/
 }

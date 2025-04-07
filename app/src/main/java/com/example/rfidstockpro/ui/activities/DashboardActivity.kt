@@ -1,5 +1,6 @@
 package com.example.rfidstockpro.ui.activities
 
+import UHFConnectionManager
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
@@ -17,16 +18,14 @@ import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
-import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.AnimationUtils
 import com.example.rfidstockpro.Utils.FragmentManagerHelper
@@ -48,9 +47,9 @@ import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback
 
 
-class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
+class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider{
 
-    var tvToolbarTitle: TextView? = null // Declare as public
+//    var tvToolbarTitle: TextView? = null // Declare as public
     private var mDevice: BluetoothDevice? = null
     private lateinit var binding: ActivityDashboardBinding
     private lateinit var pieChart: PieChart
@@ -91,9 +90,8 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         initClick()
         loadUserData()
         uhfTrigger()
-
         val toolbarView = findViewById<View>(R.id.commonToolbar)
-        tvToolbarTitle = toolbarView.findViewById(R.id.tvToolbarTitle)
+//        tvToolbarTitle = toolbarView.findViewById(R.id.tvToolbarTitle)
 
     }
 
@@ -130,9 +128,10 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         }
     }
 
-
     fun updateToolbarTitle(title: String) {
-        tvToolbarTitle!!.text = title
+        val toolbarTitle = findViewById<AppCompatTextView>(R.id.tvToolbarTitle)
+        Log.e(TAG, "updateToolbarTitle: "  )
+        toolbarTitle!!.text = title
     }
 
     private fun initClick() {
@@ -183,6 +182,38 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
     override fun onResume() {
         super.onResume()
         dashboardViewModel.checkBluetoothConnection()
+        UHFConnectionManager.addStatusChangeListener(connectionListener)
+
+        // Immediately update the UI based on current status
+        updateConnectionUI(
+            UHFConnectionManager.getConnectionStatus(),
+            UHFConnectionManager.getConnectedDevice()
+        )
+    }
+    override fun onPause() {
+        super.onPause()
+        UHFConnectionManager.removeStatusChangeListener(connectionListener)
+    }
+
+    private val connectionListener = object : UHFConnectionManager.ConnectionStatusListener {
+        override fun onConnectionStatusChanged(
+            status: ConnectionStatus,
+            device: Any?
+        ) {
+            updateConnectionUI(status, device)
+        }
+    }
+
+    private fun updateConnectionUI(status: ConnectionStatus, device: Any?) {
+        if (status == ConnectionStatus.CONNECTED) {
+            binding.tvStaus.text = getString(R.string.connected)
+            AnimationUtils.fadeInView(binding.rlRfidStatus)
+            AnimationUtils.fadeOutView(binding.footerView)
+        } else {
+            binding.tvStaus.text = getString(R.string.disconnected)
+            AnimationUtils.fadeOutView(binding.rlRfidStatus)
+            AnimationUtils.fadeInView(binding.footerView)
+        }
     }
 
     private fun checkPermissions() {
@@ -480,6 +511,7 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
             super.onBackPressed() // Exits the activity and goes back to MainActivity
         }
     }
+
 
 
 }

@@ -71,22 +71,22 @@
                         android:layout_height="@dimen/_20sdp"
                         android:layout_alignParentBottom="true"
                         android:background="@drawable/chnage_image_bg"
-                        android:visibility="gone"
-                        android:elevation="@dimen/_2sdp">
+                        android:elevation="@dimen/_2sdp"
+                        android:visibility="gone">
 
                         <androidx.appcompat.widget.AppCompatImageView
                             android:id="@+id/iconImage"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:srcCompat="@drawable/click"
+                            android:layout_marginLeft="@dimen/_30sdp"
                             android:padding="@dimen/_2sdp"
-                            android:layout_marginLeft="@dimen/_30sdp"/>
+                            app:srcCompat="@drawable/click" />
 
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_toRightOf="@+id/iconImage"
                             android:layout_marginLeft="-5dp"
+                            android:layout_toRightOf="@+id/iconImage"
                             android:drawablePadding="@dimen/_8sdp"
                             android:fontFamily="@font/rethinksans_variablefont_wght"
                             android:padding="@dimen/_3sdp"
@@ -131,22 +131,22 @@
                         android:layout_height="@dimen/_20sdp"
                         android:layout_alignParentBottom="true"
                         android:background="@drawable/chnage_image_bg"
-                        android:visibility="gone"
-                        android:elevation="@dimen/_2sdp">
+                        android:elevation="@dimen/_2sdp"
+                        android:visibility="gone">
 
                         <androidx.appcompat.widget.AppCompatImageView
                             android:id="@+id/iconVideo"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:srcCompat="@drawable/click"
+                            android:layout_marginLeft="@dimen/_30sdp"
                             android:padding="@dimen/_2sdp"
-                            android:layout_marginLeft="@dimen/_30sdp"/>
+                            app:srcCompat="@drawable/click" />
 
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_toRightOf="@+id/iconVideo"
                             android:layout_marginLeft="-5dp"
+                            android:layout_toRightOf="@+id/iconVideo"
                             android:drawablePadding="@dimen/_8sdp"
                             android:fontFamily="@font/rethinksans_variablefont_wght"
                             android:padding="@dimen/_3sdp"
@@ -305,47 +305,47 @@
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etPrice"
                 style="@style/AppEditText"
-                android:layout_marginTop="@dimen/_5sdp"
                 android:layout_width="match_parent"
-                android:inputType="number"
+                android:layout_marginTop="@dimen/_5sdp"
                 android:background="@drawable/edittext_bg"
                 android:drawablePadding="@dimen/_5sdp"
                 android:hint="@string/total_price"
+                android:inputType="number"
                 android:padding="@dimen/_10sdp" />
 
-           <!-- <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_5sdp"
-                android:gravity="center"
-                android:orientation="horizontal">
+            <!-- <LinearLayout
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 android:layout_marginTop="@dimen/_5sdp"
+                 android:gravity="center"
+                 android:orientation="horizontal">
 
 
-                <EditText
-                    android:id="@+id/etTotalGrossWt"
-                    style="@style/AppEditText"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/edittext_bg"
-                    android:drawablePadding="@dimen/_5sdp"
-                    android:hint="@string/total_gross_wt"
-                    android:padding="@dimen/_10sdp" />
+                 <EditText
+                     android:id="@+id/etTotalGrossWt"
+                     style="@style/AppEditText"
+                     android:layout_width="0dp"
+                     android:layout_weight="1"
+                     android:background="@drawable/edittext_bg"
+                     android:drawablePadding="@dimen/_5sdp"
+                     android:hint="@string/total_gross_wt"
+                     android:padding="@dimen/_10sdp" />
 
-                <Space
-                    android:layout_width="@dimen/_7sdp"
-                    android:layout_height="@dimen/_10sdp" />
+                 <Space
+                     android:layout_width="@dimen/_7sdp"
+                     android:layout_height="@dimen/_10sdp" />
 
-                <EditText
-                    android:id="@+id/etTotalDia"
-                    style="@style/AppEditText"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/edittext_bg"
-                    android:drawablePadding="@dimen/_5sdp"
-                    android:hint="@string/total_dia"
-                    android:padding="@dimen/_10sdp" />
+                 <EditText
+                     android:id="@+id/etTotalDia"
+                     style="@style/AppEditText"
+                     android:layout_width="0dp"
+                     android:layout_weight="1"
+                     android:background="@drawable/edittext_bg"
+                     android:drawablePadding="@dimen/_5sdp"
+                     android:hint="@string/total_dia"
+                     android:padding="@dimen/_10sdp" />
 
-            </LinearLayout>-->
+             </LinearLayout>-->
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -416,9 +416,9 @@
             android:gravity="center"
             android:padding="@dimen/_10sdp"
             android:text="Add"
-            android:visibility="gone"
             android:textColor="@android:color/white"
-            android:textSize="@dimen/_12ssp" />
+            android:textSize="@dimen/_12ssp"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/btnAddScan"
@@ -443,9 +443,93 @@
 
     <FrameLayout
         android:id="@+id/rfidFrame"
-        android:visibility="visible"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/commonToolbar" />
+        android:layout_below="@id/commonToolbar"
+        android:visibility="visible" />
+
+
+    <RelativeLayout
+        android:id="@+id/rlStatScan"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/main_bg_color"
+        android:elevation="2dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/_150sdp"
+                app:srcCompat="@drawable/scanner_img" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/rethinksans_bold"
+                android:paddingTop="@dimen/_1sdp"
+                android:text="@string/start_scanning"
+                android:textColor="@color/appMainColor"
+                android:textSize="@dimen/_19sdp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@id/tvWelcome"
+                app:layout_constraintTop_toTopOf="@id/tvWelcome" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_30sdp"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:fontFamily="@font/rethinksans_variablefont_wght"
+                android:gravity="center"
+                android:paddingTop="@dimen/_1sdp"
+                android:text="@string/with_rfid_boosting_efficiency_n_one_tag_at_a_time"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/_12sdp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@id/tvWelcome"
+                app:layout_constraintTop_toTopOf="@id/tvWelcome" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/footerViewScan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/edittext_bg"
+            android:orientation="vertical"
+            android:layout_alignParentBottom="true">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/btnConnectScannerAdd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_20sdp"
+                android:layout_marginTop="@dimen/_15sdp"
+                android:layout_marginBottom="@dimen/_15sdp"
+                android:background="@drawable/continue_btn_bg"
+                android:fontFamily="@font/rethinksans_variablefont_wght"
+                android:gravity="center"
+                android:padding="12dp"
+                android:text="@string/connect_scanner"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/_15ssp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+        </LinearLayout>
+
+
+
+    </RelativeLayout>
 
 </RelativeLayout>

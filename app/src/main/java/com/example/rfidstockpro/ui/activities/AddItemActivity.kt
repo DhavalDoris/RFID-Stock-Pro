@@ -1,6 +1,9 @@
 package com.example.rfidstockpro.ui.activities
 
+import android.Manifest
 import android.app.Activity
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -9,22 +12,38 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
+import android.webkit.MimeTypeMap
 import androidx.activity.viewModels
+import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatImageView
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.FileProvider
+import androidx.lifecycle.ViewModelProvider
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.FragmentManagerHelper
 import com.example.rfidstockpro.Utils.StatusBarUtils
+import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.ActivityAddItemBinding
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
+import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.ui.fragments.UHFReadFragment
 import com.example.rfidstockpro.viewmodel.AddItemViewModel
+import com.example.rfidstockpro.viewmodel.DashboardViewModel
+import com.example.rfidstockpro.viewmodel.DashboardViewModel.Companion.SHOW_HISTORY_CONNECTED_LIST
+import com.example.rfidstockpro.viewmodel.SharedProductViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.rscja.deviceapi.RFIDWithUHFBLE
+import com.rscja.deviceapi.interfaces.ConnectionStatus
+import com.rscja.deviceapi.interfaces.ConnectionStatusCallback
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
 
@@ -40,11 +59,17 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
     private lateinit var imageFile: File
     private lateinit var videoFile: File
 
+    private val dashboardViewModel: DashboardViewModel by viewModels()
+    var mBtAdapter: BluetoothAdapter? = null
+    private var mDevice: BluetoothDevice? = null
+
     companion object {
         private const val REQUEST_PICK_IMAGE = 1001
         private const val REQUEST_PICK_VIDEO = 1002
         private const val REQUEST_CAPTURE_IMAGE = 1003
         private const val REQUEST_CAPTURE_VIDEO = 1004
+        private val REQUEST_ENABLE_BT: Int = 22
+        private val REQUEST_SELECT_DEVICE: Int = 11
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,85 +82,24 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
     }
 
     private fun initUI() {
-
+        mBtAdapter = BluetoothAdapter.getDefaultAdapter()
         binding.commonToolbar.tvToolbarTitle.text = getString(R.string.add_item)
-
 
         // Button Click Listeners
         binding.btnAdd.setOnClickListener {
             validateAndLogFields()
-
-            /*Log.d("ADD_ITEM", "Button Clicked - Logging Selected Data")
-
-            if (selectedImageFiles.isEmpty() && selectedVideo == null) {
-                Log.d("ADD_ITEM", "No media selected")
-            } else {
-                // Log multiple images if selected
-                if (selectedImageFiles.isNotEmpty()) {
-                    Log.d("ADD_ITEM", "Selected Images:")
-                    selectedImageFiles.forEachIndexed { index, file ->
-                        Log.d("ADD_ITEM", "Image $index: ${file.absolutePath}")
-                    }
-                } else {
-                    Log.d("ADD_ITEM", "No images selected")
-                }
-
-                // Log video if selected
-                selectedVideo?.let {
-                    Log.d("ADD_ITEM", "Selected Video: ${getRealPathFromUriNew(it)}")
-                } ?: Log.d("ADD_ITEM", "No video selected")
-            }*/
-
-            /*val imageFile = AwsManager.uriToFile(this, selectedImage!!)
-
-            val videoFile = selectedVideo?.let { uri ->
-                AwsManager.uriToFile(this, uri) // Only convert if not null
-            }
-
-            // Log Image File Details
-            Log.d("AWS_UPLOAD", "Image File Details:")
-            Log.d("AWS_UPLOAD", "Path: ${imageFile.absolutePath}")
-            Log.d("AWS_UPLOAD", "Name: ${imageFile.name}")
-            Log.d(
-                "AWS_UPLOAD",
-                "Size: ${imageFile.length()} bytes (${imageFile.length() / (1024 * 1024)} MB)"
-            )
-            Log.d("AWS_UPLOAD", "Exists: ${imageFile.exists()}")
-
-
-            if (videoFile != null) {
-                // Log Video File Details
-                Log.d("AWS_UPLOAD", "Video File Details:")
-                Log.d("AWS_UPLOAD", "Path: ${videoFile!!.absolutePath}")
-                Log.d("AWS_UPLOAD", "Name: ${videoFile.name}")
-                Log.d(
-                    "AWS_UPLOAD",
-                    "Size: ${videoFile.length()} bytes (${videoFile.length() / (1024 * 1024)} MB)"
-                )
-                Log.d("AWS_UPLOAD", "Exists: ${videoFile.exists()}")
-
-            }
-
-            val scope = CoroutineScope(Dispatchers.Main)
-
-            AwsManager.uploadMediaToS3(
-                scope = scope, // ✅ Pass a coroutine scope
-                context = this,
-                imageFiles  = selectedImageFiles,
-                videoFile = videoFile,
-                onSuccess = { imageUrls, videoUrl ->
-
-                    imageUrls.forEach { Log.d("AWS_UPLOAD", "Image URL: $it") }
-                    videoUrl?.let { Log.d("AWS_UPLOAD", "Video URL: $it") }
-                },
-                onError = { errorMessage ->
-                    Log.e("AWS_UPLOAD", "Upload failed: $errorMessage")
-                }
-            )*/
         }
 
         binding.btnAddScan.setOnClickListener {
-            validateAndLogFields()
+
+            if (uhfDevice.connectStatus == ConnectionStatus.CONNECTED) {
+                validateAndLogFields()
+            }
+            else{
+                binding.rlStatScan.visibility = View.VISIBLE
+                Log.d("ADD_ITEM", "Show Connecting screen===>>>===>>>")
+            }
+
         }
 
         binding.selectedImagesContainer.setOnClickListener {
@@ -145,6 +109,25 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         binding.selectVideo.setOnClickListener {
             showMediaPickerDialog(isImage = false)
         }
+
+        binding.btnConnectScannerAdd.setOnClickListener {
+            if (dashboardViewModel.isConnected.value == true) {
+                dashboardViewModel.disconnect(true)
+            } else {
+                showBluetoothDevice()
+            }
+        }
+    }
+
+    fun updateToolbarTitleAddItem(title: String) {
+        val toolbarTitle = findViewById<AppCompatTextView>(R.id.tvToolbarTitle)
+        val toolbarSearch = findViewById<AppCompatImageView>(R.id.ivSearch)
+        val toolbarInvoice = findViewById<AppCompatImageView>(R.id.ivInvoice)
+        Log.e(TAG, "updateToolbarTitle: ")
+        toolbarTitle!!.text = title
+
+        toolbarSearch.visibility = View.GONE
+        toolbarInvoice.visibility = View.VISIBLE
     }
 
     /**
@@ -162,10 +145,9 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
             }.show()
     }
 
-
     private fun pickImageFromGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+//        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         intent.type = "image/*"
         startActivityForResult(intent, REQUEST_PICK_IMAGE)
     }
@@ -193,7 +175,6 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         videoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 60) // 60 sec max
         startActivityForResult(videoIntent, REQUEST_CAPTURE_VIDEO)
     }
-
 
     private fun observeValidationErrors() {
         addItemViewModel.validationError.observe(this) { error ->
@@ -269,20 +250,75 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
                         }
                     }
                 }
+
+                REQUEST_SELECT_DEVICE -> {
+                    if (resultCode == Activity.RESULT_OK && data != null) {
+                        val deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE)
+                        if (!deviceAddress.isNullOrEmpty()) {
+                            mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress)
+                            connectToDevice(deviceAddress)
+                        }
+                    }
+                }
+
+                REQUEST_ENABLE_BT -> {
+                    if (resultCode == Activity.RESULT_OK) {
+                        showBluetoothDevice()
+//                    showToast(dashboardActivity!!, "Bluetooth has turned on")
+                    } else {
+//                    showToast(dashboardActivity!!, "Problem in BT Turning ON")
+                    }
+                }
             }
         }
     }
 
+    private fun connectToDevice(deviceAddress: String) {
+        if (uhfDevice.connectStatus == ConnectionStatus.CONNECTING) {
+            showToast(this, getString(R.string.connecting))
+        } else {
+//            showToast(this, "Connecting to $deviceAddress")
+            uhfDevice.connect(deviceAddress, object : ConnectionStatusCallback<Any?> {
+                override fun getStatus(connectionStatus: ConnectionStatus, device: Any?) {
+                    runOnUiThread {
+                        if (connectionStatus == ConnectionStatus.CONNECTED) {
+                            Log.e("ConetionTAG", "getStatus: " + "IF")
+                            UHFConnectionManager.updateConnectionStatus(connectionStatus, device)
+                            binding.rlStatScan.visibility = View.GONE
+                            validateAndLogFields()
+
+                        } else {
+                            UHFConnectionManager.updateConnectionStatus(ConnectionStatus.DISCONNECTED, device)
+                            Log.e("ConetionTAG", "getStatus: " + "ELSE")
+                        }
+                    }
+                }
+            })
+        }
+    }
 
     private fun getRealPathFromUriNew(uri: Uri): String {
-        val file = File(cacheDir, "${System.currentTimeMillis()}.jpg")
-        contentResolver.openInputStream(uri)?.use { inputStream ->
+        // Get MIME type from content resolver
+        val mimeType = contentResolver?.getType(uri)
+        val extension = MimeTypeMap.getSingleton()
+            .getExtensionFromMimeType(mimeType)
+            ?: run {
+                // Fallback: Try to get from URI if mimeType is null
+                MimeTypeMap.getFileExtensionFromUrl(uri.toString()).ifEmpty { "tmp" }
+            }
+
+        // Create a new file in cache with correct extension
+        val file = File(cacheDir, "${System.currentTimeMillis()}.$extension")
+
+        contentResolver?.openInputStream(uri)?.use { inputStream ->
             FileOutputStream(file).use { outputStream ->
                 inputStream.copyTo(outputStream)
             }
         }
+
         return file.absolutePath
     }
+
     /**
      * Validates if the selected file is less than 10MB
      */
@@ -329,8 +365,10 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         val selectedVideoPath = selectedVideo?.let { getRealPathFromUriNew(it) }
 
         val description = binding.etDescription.text.toString().trim()
+        val currentTime = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(Date())
 
         val input = ProductModel(
+            id = UUID.randomUUID().toString(),
             selectedImages = selectedImagePaths,
             selectedVideo = selectedVideoPath,
             productName = productName,
@@ -340,7 +378,8 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
             description = description,
             isImageSelected = isImageSelected,
             tagId = tagId,
-            status = status
+            status = status,
+            currentTime
         )
 
         val isValid = addItemViewModel.validateProductInput(input)
@@ -356,6 +395,7 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         Log.d("ADD_ITEM", "Status: $status")
 
         // Log selected media
+
         if (selectedImageFiles.isNotEmpty()) {
             selectedImageFiles.forEachIndexed { index, file ->
                 Log.d("ADD_ITEM", "Image $index: ${file.absolutePath}")
@@ -370,13 +410,36 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
 
         if (isValid) {
             Log.d("ADD_ITEM", "✅ Validation Passed! Ready to upload.")
-            FragmentManagerHelper.setFragment(this, UHFReadFragment(), R.id.rfidFrame)
+            openTagListFragment(input)
+
         } else {
             Log.d("ADD_ITEM", "❌ Validation Failed! Fix errors before proceeding.")
         }
     }
 
+    private fun openTagListFragment(input: ProductModel) {
+        val viewModel = ViewModelProvider(this).get(SharedProductViewModel::class.java)
+        viewModel.setProduct(input)
+        FragmentManagerHelper.setFragment(this, UHFReadFragment(), R.id.rfidFrame)
+    }
+
     override fun provideUHFDevice(): RFIDWithUHFBLE {
         return uhfDevice
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private fun showBluetoothDevice() {
+        if (mBtAdapter == null) {
+            return
+        }
+        if (!mBtAdapter!!.isEnabled) {
+            val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            startActivityForResult(enableIntent, REQUEST_ENABLE_BT)
+        } else {
+            val newIntent = Intent(this@AddItemActivity, DeviceListActivity::class.java)
+            newIntent.putExtra(SHOW_HISTORY_CONNECTED_LIST, false)
+            startActivityForResult(newIntent, REQUEST_SELECT_DEVICE)
+            dashboardViewModel.cancelDisconnectTimer()
+        }
     }
 }

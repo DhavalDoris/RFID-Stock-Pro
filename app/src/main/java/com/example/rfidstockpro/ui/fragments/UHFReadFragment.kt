@@ -9,23 +9,37 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.RFIDApplication.Companion.PRODUCT_TABLE
 import com.example.rfidstockpro.Utils.ViewUtils
 import com.example.rfidstockpro.adapter.UHFTagAdapter
+import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.databinding.FragmentUhfreadTagBinding
 import com.example.rfidstockpro.factores.UHFViewModelFactory
 import com.example.rfidstockpro.repository.UHFRepository
+import com.example.rfidstockpro.ui.activities.AddItemActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isKeyDownUP
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.viewmodel.SharedProductViewModel
 import com.example.rfidstockpro.viewmodel.UHFReadViewModel
+import com.google.android.material.snackbar.Snackbar
 import com.rscja.deviceapi.RFIDWithUHFBLE
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.KeyEventCallback
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 class UHFReadFragment : Fragment() {
     lateinit var viewModel: UHFReadViewModel
@@ -77,13 +91,27 @@ class UHFReadFragment : Fragment() {
         observeViewModel()
     }
 
+
     private fun setupUI() {
         isExit = false
         // Initialize adapter with callback
         adapter = UHFTagAdapter(requireContext()) { selectedTag ->
             Log.d("UHFReadFragment", "Selected Tag: ${selectedTag.generateTagString()}")
-            Toast.makeText(requireContext(), "Selected: ${selectedTag.generateTagString()}", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(requireContext(), "Selected: ${selectedTag.generateTagString()}", Toast.LENGTH_SHORT).show()
             binding.centerLine.visibility = View.VISIBLE
+            binding.rlTotalFound.visibility = View.VISIBLE
+            binding.btAdd.visibility = View.VISIBLE
+            binding.llSpace.visibility = View.VISIBLE
+
+            binding.buttons.visibility = View.GONE
+
+            // ✅ Update tagId via ViewModel function
+            sharedProductViewModel.updateTagId(selectedTag.generateTagString())
+
+
+            sharedProductViewModel.product.observe(viewLifecycleOwner) { product ->
+                Log.d("UHFReadFragment", "✅ Received Product: $product")
+            }
         }
         binding.LvTags.adapter = adapter
 
@@ -102,6 +130,10 @@ class UHFReadFragment : Fragment() {
             }
         }
 
+        binding.btAdd.setOnClickListener {
+            AddProductToAWS()
+        }
+
 
         uhfDevice.setKeyEventCallback(object : KeyEventCallback {
             override fun onKeyDown(keycode: Int) {
@@ -116,8 +148,68 @@ class UHFReadFragment : Fragment() {
                 viewModel.handleKeyUp(keycode)
             }
         })
-
     }
+
+    private fun AddProductToAWS() {
+        val product = sharedProductViewModel.product.value
+
+        if (product != null) {
+            val scope = CoroutineScope(Dispatchers.Main)
+
+            scope.launch {
+                // 🔍 Check if tagId already exists BEFORE uploading images/videos
+                val (exists, message) = withContext(Dispatchers.IO) {
+                    AwsManager.checkIfTagIdExists(PRODUCT_TABLE, product.tagId)
+                }
+
+                if (exists) {
+                    Log.e("AWS_SAVE", message)
+                    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+                    return@launch // 🔁 Exit early, don't continue
+                }
+
+                // ✅ Proceed to upload only if tagId is unique
+                val imageFiles = product.selectedImages.map { File(it) }
+                val videoFile = product.selectedVideo?.let { File(it) }
+
+                AwsManager.uploadMediaToS3(
+                    scope = scope,
+                    context = requireContext(),
+                    imageFiles = imageFiles,
+                    videoFile = videoFile,
+                    onSuccess = { imageUrls, videoUrl ->
+                        val updatedProduct = product.copy(
+                            selectedImages = imageUrls,
+                            selectedVideo = videoUrl
+                        )
+
+                        scope.launch {
+                            val (isSuccess, saveMessage) = withContext(Dispatchers.IO) {
+                                AwsManager.saveProduct(PRODUCT_TABLE, updatedProduct)
+                            }
+                            if (isSuccess) {
+                                Log.d("AWS_SAVE", saveMessage)
+                                binding.rlSuccessFullAdded.visibility = View.VISIBLE
+                                if (isAdded && activity != null) {
+                                    (activity as? AddItemActivity)?.updateToolbarTitleAddItem("")
+                                }
+                            } else {
+                                Log.e("AWS_SAVE", saveMessage)
+                                Toast.makeText(requireContext(), saveMessage, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    onError = { errorMessage ->
+                        Log.e("AWS_UPLOAD", "❌ Upload failed: $errorMessage")
+                        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+        } else {
+            Toast.makeText(requireContext(), "Product info not found!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     private fun startInventory() {
         val time = binding.etTime.text.toString()
