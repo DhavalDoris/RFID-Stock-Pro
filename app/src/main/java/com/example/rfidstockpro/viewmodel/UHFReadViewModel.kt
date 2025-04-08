@@ -12,6 +12,7 @@ import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.data.UHFTagModel
 import com.example.rfidstockpro.repository.UHFRepository
+import com.example.rfidstockpro.ui.ProductManagement.RFIDTagManager
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.rscja.deviceapi.entity.UHFTAGInfo
@@ -211,6 +212,14 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
                     }
                 }
             )
+        }
+    }
+
+    fun startRFIDScan() {
+        viewModelScope.launch {
+            uhfRepository.startInventory { tag ->
+                RFIDTagManager.addTag(tag.epc ?: "")
+            }
         }
     }
 

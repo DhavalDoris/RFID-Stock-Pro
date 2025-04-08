@@ -40,4 +40,10 @@
 
     <color name="staff_background">#4CAF50</color>  <!-- Green -->
     <color name="staff_text">#FFFFFF</color>
+
+
+    <color name="green_active">#2E7D32</color>
+    <color name="red_inactive">#D32F2F</color>
+
+
 </resources>

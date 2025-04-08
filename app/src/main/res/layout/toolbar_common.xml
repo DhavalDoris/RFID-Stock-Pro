@@ -50,4 +50,16 @@
         app:srcCompat="@drawable/icon_invoice"
         android:tint="@color/white"
         android:visibility="gone"/>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/ivFilter"
+        android:layout_width="@dimen/_30sdp"
+        android:layout_height="@dimen/_30sdp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"
+        android:padding="@dimen/_5sdp"
+        app:srcCompat="@drawable/filter"
+        android:tint="@color/white"
+        android:visibility="gone"/>
 </RelativeLayout>

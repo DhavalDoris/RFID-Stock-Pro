@@ -34,6 +34,7 @@ import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
 import com.example.rfidstockpro.databinding.ActivityDashboardBinding
 import com.example.rfidstockpro.sharedpref.SessionManager
+import com.example.rfidstockpro.ui.ProductManagement.ProductManagementActivity
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.ui.fragments.UHFReadFragment
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
@@ -143,6 +144,10 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 //            setFragment(UHFReadFragment())
             FragmentManagerHelper.setFragment(this, UHFReadFragment(), R.id.realtabcontent)
 
+        }
+
+        binding.productManagement.setOnClickListener {
+            startActivity(Intent(this, ProductManagementActivity::class.java))
         }
     }
 

@@ -13,6 +13,7 @@ import com.example.rfidstockpro.RFIDApplication.Companion.USER_TABLE
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.aws.models.toMap
+import com.example.rfidstockpro.aws.models.toProductModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,7 +55,11 @@ import software.amazon.awssdk.services.s3.model.UploadPartRequest
 import software.amazon.awssdk.services.ses.SesClient
 import java.io.File
 import java.io.FileInputStream
+import java.time.Duration
 import java.util.UUID
+import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption
+import software.amazon.awssdk.core.interceptor.ExecutionAttributes
+import software.amazon.awssdk.core.interceptor.ExecutionInterceptor
 
 object AwsManager {
 
@@ -72,8 +77,12 @@ object AwsManager {
 
             dynamoDBClient = DynamoDbClient.builder()
                 .region(AWS_REGION)
+                .overrideConfiguration {
+                    it.apiCallAttemptTimeout(Duration.ofSeconds(30))
+                    it.addExecutionInterceptor(NoCompressionInterceptor()) // custom
+                }
                 .credentialsProvider(credentialsProvider)
-                .httpClient(UrlConnectionHttpClient.create()) // Required for Android
+                .httpClient(UrlConnectionHttpClient.create())
                 .build()
 
             Log.e("AWS_TAG", "DynamoDB Initialized Successfully")
@@ -548,4 +557,43 @@ object AwsManager {
         }
     }
 
+    suspend fun getAllProducts(): List<ProductModel> {
+        val request = ScanRequest.builder()
+            .tableName(PRODUCT_TABLE)
+            .build()
+
+        val result = dynamoDBClient.scan(request)
+        val items = result.items()
+
+        return items.map { it.toProductModel() } // <-- This line is key
+    }
+
+    suspend fun getPaginatedProducts(
+        lastKey: Map<String, AttributeValue>? = null,
+        pageSize: Int = 10
+    ): Pair<List<ProductModel>, Map<String, AttributeValue>?> {
+        val requestBuilder = ScanRequest.builder()
+            .tableName(PRODUCT_TABLE)
+            .limit(pageSize)
+
+        lastKey?.let {
+            requestBuilder.exclusiveStartKey(it)
+        }
+
+        val result = dynamoDBClient.scan(requestBuilder.build())
+        val items = result.items().map { it.toProductModel() }
+        val newLastKey = result.lastEvaluatedKey()
+
+        return Pair(items, if (newLastKey.isEmpty()) null else newLastKey)
+    }
+    class NoCompressionInterceptor : ExecutionInterceptor {
+        override fun modifyHttpRequest(
+            context: software.amazon.awssdk.core.interceptor.Context.ModifyHttpRequest,
+            executionAttributes: ExecutionAttributes
+        ): software.amazon.awssdk.http.SdkHttpRequest {
+            return context.httpRequest().toBuilder()
+                .putHeader("Accept-Encoding", "identity")
+                .build()
+        }
+    }
 }

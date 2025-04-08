@@ -37,3 +37,22 @@ fun ProductModel.toMap(): Map<String, AttributeValue> {
     )
 }
 
+fun Map<String, AttributeValue>.toProductModel(): ProductModel {
+    return ProductModel(
+        id = this["id"]?.s(),
+        selectedImages = this["selectedImages"]?.l()?.mapNotNull { it.s() } ?: emptyList(),
+        selectedVideo = this["selectedVideo"]?.s()?.takeIf { it.isNotEmpty() },
+        productName = this["productName"]?.s() ?: "",
+        productCategory = this["productCategory"]?.s() ?: "",
+        sku = this["sku"]?.s() ?: "",
+        price = this["price"]?.s() ?: "",
+        description = this["description"]?.s() ?: "",
+        isImageSelected = this["isImageSelected"]?.bool() ?: false,
+        tagId = this["tagId"]?.s() ?: "",
+        status = this["status"]?.s() ?: "",
+        createdAt = this["createdAt"]?.s() ?: ""
+    )
+}
+
+
+

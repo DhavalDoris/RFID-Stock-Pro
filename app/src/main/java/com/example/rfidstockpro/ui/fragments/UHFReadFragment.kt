@@ -154,65 +154,6 @@ class UHFReadFragment : Fragment() {
     }
 
     private fun AddProductToAWS() {
-      /*  val product = sharedProductViewModel.product.value
-
-        if (product != null) {
-            val scope = CoroutineScope(Dispatchers.Main)
-
-            scope.launch {
-                // 🔍 Check if tagId already exists BEFORE uploading images/videos
-                val (exists, message) = withContext(Dispatchers.IO) {
-                    AwsManager.checkIfTagIdExists(PRODUCT_TABLE, product.tagId)
-                }
-
-                if (exists) {
-                    Log.e("AWS_SAVE", message)
-                    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-                    return@launch // 🔁 Exit early, don't continue
-                }
-
-                // ✅ Proceed to upload only if tagId is unique
-                val imageFiles = product.selectedImages.map { File(it) }
-                val videoFile = product.selectedVideo?.let { File(it) }
-
-                AwsManager.uploadMediaToS3(
-                    scope = scope,
-                    context = requireContext(),
-                    imageFiles = imageFiles,
-                    videoFile = videoFile,
-                    onSuccess = { imageUrls, videoUrl ->
-                        val updatedProduct = product.copy(
-                            selectedImages = imageUrls,
-                            selectedVideo = videoUrl
-                        )
-
-                        scope.launch {
-                            val (isSuccess, saveMessage) = withContext(Dispatchers.IO) {
-                                AwsManager.saveProduct(PRODUCT_TABLE, updatedProduct)
-                            }
-                            if (isSuccess) {
-                                Log.d("AWS_SAVE", saveMessage)
-                                binding.rlSuccessFullAdded.visibility = View.VISIBLE
-                                isProductSuccessfullyAdded = true
-                                if (isAdded && activity != null) {
-                                    (activity as? AddItemActivity)?.updateToolbarTitleAddItem("")
-                                }
-                            } else {
-                                Log.e("AWS_SAVE", saveMessage)
-                                Toast.makeText(requireContext(), saveMessage, Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    },
-                    onError = { errorMessage ->
-                        Log.e("AWS_UPLOAD", "❌ Upload failed: $errorMessage")
-                        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
-                    }
-                )
-            }
-        } else {
-            Toast.makeText(requireContext(), "Product info not found!", Toast.LENGTH_SHORT).show()
-        }*/
-
         val product = sharedProductViewModel.product.value
         if (product != null) {
             viewModel.addProductToAWS(
