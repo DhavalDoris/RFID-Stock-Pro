@@ -1,5 +1,6 @@
 package com.example.rfidstockpro.ui.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
@@ -9,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -46,6 +48,7 @@ class UHFReadFragment : Fragment() {
     private lateinit var binding: FragmentUhfreadTagBinding
     private lateinit var adapter: UHFTagAdapter
     private var isExit = false
+    private var isProductSuccessfullyAdded = false
 
     private lateinit var sharedProductViewModel: SharedProductViewModel
 
@@ -190,6 +193,7 @@ class UHFReadFragment : Fragment() {
                             if (isSuccess) {
                                 Log.d("AWS_SAVE", saveMessage)
                                 binding.rlSuccessFullAdded.visibility = View.VISIBLE
+                                isProductSuccessfullyAdded = true
                                 if (isAdded && activity != null) {
                                     (activity as? AddItemActivity)?.updateToolbarTitleAddItem("")
                                 }
@@ -307,6 +311,20 @@ class UHFReadFragment : Fragment() {
                 }
             }
         }
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (binding.rlSuccessFullAdded.visibility == View.VISIBLE) {
+                    // Finish the current activity and go to Dashboard
+                    startActivity(Intent(requireContext(), DashboardActivity::class.java))
+                    requireActivity().finish()
+                } else {
+                    // Pop the fragment back stack
+                    requireActivity().supportFragmentManager.popBackStack()
+                }
+            }
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
 
@@ -323,4 +341,7 @@ class UHFReadFragment : Fragment() {
         isExit = true
 
     }
+
+
+
 }

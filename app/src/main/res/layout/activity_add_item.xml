@@ -440,14 +440,12 @@
 
     </LinearLayout>
 
-
     <FrameLayout
         android:id="@+id/rfidFrame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/commonToolbar"
         android:visibility="visible" />
-
 
     <RelativeLayout
         android:id="@+id/rlStatScan"
