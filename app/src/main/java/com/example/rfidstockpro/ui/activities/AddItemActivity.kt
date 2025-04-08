@@ -44,11 +44,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.ActivityResultLauncher
 
 class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
 
     private val selectedImageFiles = mutableListOf<File>()
-
 
     private lateinit var binding: ActivityAddItemBinding
     private val addItemViewModel: AddItemViewModel by viewModels()
@@ -63,20 +64,20 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
     var mBtAdapter: BluetoothAdapter? = null
     private var mDevice: BluetoothDevice? = null
 
-    companion object {
-        private const val REQUEST_PICK_IMAGE = 1001
-        private const val REQUEST_PICK_VIDEO = 1002
-        private const val REQUEST_CAPTURE_IMAGE = 1003
-        private const val REQUEST_CAPTURE_VIDEO = 1004
-        private val REQUEST_ENABLE_BT: Int = 22
-        private val REQUEST_SELECT_DEVICE: Int = 11
-    }
+    private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
+    private lateinit var pickVideoLauncher: ActivityResultLauncher<Intent>
+    private lateinit var captureImageLauncher: ActivityResultLauncher<Intent>
+    private lateinit var captureVideoLauncher: ActivityResultLauncher<Intent>
+    private lateinit var enableBluetoothLauncher: ActivityResultLauncher<Intent>
+    private lateinit var selectDeviceLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddItemBinding.inflate(layoutInflater)
         setContentView(binding.root)
         StatusBarUtils.setStatusBarColor(this)
+
+        registerActivityResultLaunchers() // Register the launchers
         initUI()
         observeValidationErrors()
     }
@@ -91,14 +92,8 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         }
 
         binding.btnAddScan.setOnClickListener {
+            validateAndLogFields()
 
-            if (uhfDevice.connectStatus == ConnectionStatus.CONNECTED) {
-                validateAndLogFields()
-            }
-            else{
-                binding.rlStatScan.visibility = View.VISIBLE
-                Log.d("ADD_ITEM", "Show Connecting screen===>>>===>>>")
-            }
 
         }
 
@@ -149,13 +144,13 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
 //        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         intent.type = "image/*"
-        startActivityForResult(intent, REQUEST_PICK_IMAGE)
+        pickImageLauncher.launch(intent)
     }
 
     private fun pickVideoFromGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
         intent.type = "video/*"
-        startActivityForResult(intent, REQUEST_PICK_VIDEO)
+        pickVideoLauncher.launch(intent)
     }
 
     private fun captureImage() {
@@ -163,17 +158,16 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         imageFile = File(externalCacheDir,  "image_${System.currentTimeMillis()}.jpg")
         selectedImage = FileProvider.getUriForFile(this, "$packageName.fileprovider", imageFile)
         imageIntent.putExtra(MediaStore.EXTRA_OUTPUT, selectedImage)
-        startActivityForResult(imageIntent, REQUEST_CAPTURE_IMAGE)
+        captureImageLauncher.launch(imageIntent)
     }
 
     private fun recordVideo() {
         val videoIntent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
         videoFile = File(externalCacheDir, "video_${System.currentTimeMillis()}.mp4")
         selectedVideo = FileProvider.getUriForFile(this, "$packageName.fileprovider", videoFile)
-
         videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, selectedVideo)
         videoIntent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 60) // 60 sec max
-        startActivityForResult(videoIntent, REQUEST_CAPTURE_VIDEO)
+        captureVideoLauncher.launch(videoIntent)
     }
 
     private fun observeValidationErrors() {
@@ -185,88 +179,100 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    private fun registerActivityResultLaunchers() {
+        pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data = result.data
+                selectedImageFiles.clear()
+                val uris = when {
+                    data?.clipData != null -> List(data.clipData!!.itemCount) { i -> data.clipData!!.getItemAt(i).uri }
+                    data?.data != null -> listOf(data.data!!)
+                    else -> emptyList()
+                }
 
-        if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                REQUEST_PICK_IMAGE -> {
-                    selectedImageFiles.clear()
-                    if (data?.clipData != null) {
-                        for (i in 0 until data.clipData!!.itemCount) {
-                            val uri = data.clipData!!.getItemAt(i).uri
-                            val filePath = getRealPathFromUriNew(uri)
-                            val file = File(filePath)
-                            if (validateFileSize(uri, isImage = true)) {
-                                selectedImageFiles.add(file)
-                                Log.d("IMAGE_SELECTION", "Selected Image: ${file.absolutePath}")
-                            }
-                        }
-                    } else if (data?.data != null) {
-                        val uri = data.data!!
-                        val filePath = getRealPathFromUriNew(uri)
-                        val file = File(filePath)
-                        if (validateFileSize(uri, isImage = true)) {
-                            selectedImageFiles.add(file)
-                            Log.d("IMAGE_SELECTION", "Selected Image: ${file.absolutePath}")
-                        }
+                uris.forEach { uri ->
+                    val filePath = addItemViewModel.getRealPathFromUriNew(this, uri)
+                    val file = File(filePath)
+                    val isValid = addItemViewModel.validateFileSize(this, uri, true, binding.root)
+                    if (isValid) {
+                        selectedImageFiles.add(file)
+                        Log.d("IMAGE_SELECTION", "Selected Image: ${file.absolutePath}")
                     }
+                }
 
-                    if (selectedImageFiles.isNotEmpty()) {
-                        binding.selectedImagesContainer.setImageURI(Uri.fromFile(selectedImageFiles[0]))
+                if (selectedImageFiles.isNotEmpty()) {
+                    binding.selectedImagesContainer.setImageURI(Uri.fromFile(selectedImageFiles[0]))
+                    isImageSelected = true
+                    binding.changeImage.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        pickVideoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data = result.data
+                selectedVideo = data?.data ?: selectedVideo
+                selectedVideo?.let { uri ->
+                    val isValid = addItemViewModel.validateFileSize(this, uri, false, binding.root)
+                    if (isValid) {
+                        val retriever = MediaMetadataRetriever()
+                        retriever.setDataSource(this, uri)
+                        val bitmap = retriever.frameAtTime
+                        binding.selectedVideoContainer.setImageBitmap(bitmap)
+                        isImageSelected = true
+                        binding.changeVideo.visibility = View.VISIBLE
+                    } else {
+                        selectedVideo = null
+                    }
+                }
+            }
+        }
+
+        captureImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                selectedImage?.let { uri ->
+                    val filePath = addItemViewModel.getRealPathFromUriNew(this, uri)
+                    val file = File(filePath)
+                    val isValid = addItemViewModel.validateFileSize(this, uri, true, binding.root)
+                    if (isValid) {
+                        selectedImageFiles.add(file)
+                        binding.selectedImagesContainer.setImageURI(Uri.fromFile(file))
                         isImageSelected = true
                         binding.changeImage.visibility = View.VISIBLE
                     }
                 }
+            }
+        }
 
-                REQUEST_CAPTURE_IMAGE -> {
-                    selectedImage?.let {
-                        val filePath = getRealPathFromUriNew(it)
-                        val file = File(filePath)
-                        if (validateFileSize(it, isImage = true)) {
-                            selectedImageFiles.add(file)
-                            Log.d("IMAGE_SELECTION", "Captured Image: ${file.absolutePath}")
-                            binding.selectedImagesContainer.setImageURI(Uri.fromFile(file))
-                            isImageSelected = true
-                            binding.changeImage.visibility = View.VISIBLE
-                        }
+        captureVideoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                selectedVideo?.let { uri ->
+                    val isValid = addItemViewModel.validateFileSize(this, uri, false, binding.root)
+                    if (isValid) {
+                        val retriever = MediaMetadataRetriever()
+                        retriever.setDataSource(this, uri)
+                        val bitmap = retriever.frameAtTime
+                        binding.selectedVideoContainer.setImageBitmap(bitmap)
+                        isImageSelected = true
+                        binding.changeVideo.visibility = View.VISIBLE
                     }
                 }
+            }
+        }
 
-                REQUEST_PICK_VIDEO, REQUEST_CAPTURE_VIDEO -> {
-                    selectedVideo = data?.data ?: selectedVideo
-                    selectedVideo?.let {
-                        if (validateFileSize(it, isImage = false)) {
-                            val videoPath = getRealPathFromUriNew(it)
-                            Log.d("VIDEO_SELECTION", "Selected Video: $videoPath")
-                            val retriever = MediaMetadataRetriever()
-                            retriever.setDataSource(this, it)
-                            val bitmap = retriever.frameAtTime
-                            binding.selectedVideoContainer.setImageBitmap(bitmap)
-                            isImageSelected = true
-                            binding.changeVideo.visibility = View.VISIBLE
-                        } else {
-                            selectedVideo = null
-                        }
-                    }
-                }
+        enableBluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                showBluetoothDevice()
+            }
+        }
 
-                REQUEST_SELECT_DEVICE -> {
-                    if (resultCode == Activity.RESULT_OK && data != null) {
-                        val deviceAddress = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE)
-                        if (!deviceAddress.isNullOrEmpty()) {
-                            mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress)
-                            connectToDevice(deviceAddress)
-                        }
-                    }
-                }
-
-                REQUEST_ENABLE_BT -> {
-                    if (resultCode == Activity.RESULT_OK) {
-                        showBluetoothDevice()
-//                    showToast(dashboardActivity!!, "Bluetooth has turned on")
-                    } else {
-//                    showToast(dashboardActivity!!, "Problem in BT Turning ON")
+        selectDeviceLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data = result.data
+                data?.getStringExtra(BluetoothDevice.EXTRA_DEVICE)?.let { deviceAddress ->
+                    if (deviceAddress.isNotEmpty()) {
+                        mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress)
+                        connectToDevice(deviceAddress)
                     }
                 }
             }
@@ -297,59 +303,6 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         }
     }
 
-    private fun getRealPathFromUriNew(uri: Uri): String {
-        // Get MIME type from content resolver
-        val mimeType = contentResolver?.getType(uri)
-        val extension = MimeTypeMap.getSingleton()
-            .getExtensionFromMimeType(mimeType)
-            ?: run {
-                // Fallback: Try to get from URI if mimeType is null
-                MimeTypeMap.getFileExtensionFromUrl(uri.toString()).ifEmpty { "tmp" }
-            }
-
-        // Create a new file in cache with correct extension
-        val file = File(cacheDir, "${System.currentTimeMillis()}.$extension")
-
-        contentResolver?.openInputStream(uri)?.use { inputStream ->
-            FileOutputStream(file).use { outputStream ->
-                inputStream.copyTo(outputStream)
-            }
-        }
-
-        return file.absolutePath
-    }
-
-    /**
-     * Validates if the selected file is less than 10MB
-     */
-    private fun validateFileSize(uri: Uri, isImage: Boolean): Boolean {
-        val fileSize = getFileSize( uri)
-        val maxSize = 10 * 1024 * 1024 // 10MB in bytes
-        return if (fileSize > maxSize) {
-            val fileType = if (isImage) "Image" else "Video"
-            Snackbar.make(binding.root, "$fileType size should not exceed 10MB", Snackbar.LENGTH_LONG).show()
-            Log.e("FILE_VALIDATION", "$fileType size is too large: ${fileSize / (1024 * 1024)} MB")
-            false
-        } else {
-            Log.d("FILE_VALIDATION", "File size is valid: ${fileSize / (1024 * 1024)} MB")
-            true
-        }
-    }
-    /**
-     * Gets the file size in MB
-     */
-    private fun getFileSize(uri: Uri): Long {
-        val cursor = contentResolver.query(uri, arrayOf(OpenableColumns.SIZE), null, null, null)
-        var size: Long = 0
-        cursor?.use {
-            if (it.moveToFirst()) {
-                val sizeIndex = it.getColumnIndex(OpenableColumns.SIZE)
-                size = it.getLong(sizeIndex)
-            }
-        }
-        return size
-    }
-
     private fun validateAndLogFields() {
         val productName = binding.etProductName.text.toString().trim()
         val productCategory = binding.etCategory.text.toString().trim()
@@ -362,7 +315,7 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         val selectedImagePaths = selectedImageFiles.map { it.absolutePath }
 
         // Extract video path (if selected)
-        val selectedVideoPath = selectedVideo?.let { getRealPathFromUriNew(it) }
+        val selectedVideoPath = selectedVideo?.let { addItemViewModel.getRealPathFromUriNew(this,it) }
 
         val description = binding.etDescription.text.toString().trim()
         val currentTime = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(Date())
@@ -405,13 +358,19 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         }
 
         selectedVideo?.let {
-            Log.d("ADD_ITEM", "Selected Video: ${getRealPathFromUriNew(it)}")
+            Log.d("ADD_ITEM", "Selected Video: ${addItemViewModel.getRealPathFromUriNew(this,it)}")
         } ?: Log.d("ADD_ITEM", "No video selected")
 
         if (isValid) {
             Log.d("ADD_ITEM", "✅ Validation Passed! Ready to upload.")
-            openTagListFragment(input)
 
+            if (uhfDevice.connectStatus == ConnectionStatus.CONNECTED) {
+                openTagListFragment(input)
+            }
+            else{
+                binding.rlStatScan.visibility = View.VISIBLE
+                Log.d("ADD_ITEM", "Show Connecting screen===>>>===>>>")
+            }
         } else {
             Log.d("ADD_ITEM", "❌ Validation Failed! Fix errors before proceeding.")
         }
@@ -434,11 +393,11 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         }
         if (!mBtAdapter!!.isEnabled) {
             val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableIntent, REQUEST_ENABLE_BT)
+            enableBluetoothLauncher.launch(enableIntent)
         } else {
             val newIntent = Intent(this@AddItemActivity, DeviceListActivity::class.java)
             newIntent.putExtra(SHOW_HISTORY_CONNECTED_LIST, false)
-            startActivityForResult(newIntent, REQUEST_SELECT_DEVICE)
+            selectDeviceLauncher.launch(newIntent)
             dashboardViewModel.cancelDisconnectTimer()
         }
     }

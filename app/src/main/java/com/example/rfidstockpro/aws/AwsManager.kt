@@ -62,14 +62,9 @@ object AwsManager {
     private val AWS_ACCESS_KEY = RFIDApplication.getAwsAccessKeyFromNdk()
     private val AWS_SECRET_KEY = RFIDApplication.getAwsSecretKeyFromNdk()
     const val BUCKET_NAME = "rfid-stock-pro"
-    const val FOLDER_NAME = "rfid-uploads"
     private val AWS_REGION = Region.US_EAST_1
 
     fun init(context: Context) {
-
-        Log.e("AWS_TAG", "AWS_ACCESS_KEY: " + AWS_ACCESS_KEY)
-        Log.e("AWS_TAG", "AWS_SECRET_KEY: " + AWS_SECRET_KEY)
-
         try {
             val credentialsProvider = StaticCredentialsProvider.create(
                 AwsBasicCredentials.create(AWS_ACCESS_KEY, AWS_SECRET_KEY)
@@ -118,100 +113,34 @@ object AwsManager {
         return instance!!
     }
 
-
-    /*fun uploadMediaToS3(
-        scope: CoroutineScope,
-        context: Context,
-        imageFiles: List<File>, // Multiple images
-//        imageFile: File,
-        videoFile: File?, // Video file is optional
-        onSuccess: (List<String>, String?) -> Unit, // Callback with both URLs
-        onError: (String) -> Unit
-    ) {
-        val progressDialog = ProgressDialog(context).apply {
-            setMessage("Uploading... 0%")
-            setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
-            isIndeterminate = false
-            max = 100
-            setCancelable(false)
-            show()
-        }
-
-        scope.launch(Dispatchers.IO) { // ✅ Use the provided coroutine scope
-            try {
-
-                Log.d("AWS_UPLOAD", "Upload started...")
-
-                // ✅ Multipart Upload for Image with 2MB chunks
-                val imageKey = "images/${UUID.randomUUID()}_${imageFile.name}"
-                Log.d("AWS_UPLOAD", "Uploading image: $imageKey")
-                val imageUrl = multipartUpload(s3Client, imageFile, imageKey, 2 * 1024 * 1024) { progress ->
-                        progressDialog.progress = progress
-                        progressDialog.setMessage("Uploading Image... $progress%")
-
-                }
-                Log.d("AWS_UPLOAD", "Image uploaded successfully: $imageUrl")
-
-                var videoUrl: String? = null
-                if (videoFile != null) {
-                    // ✅ Multipart Upload for Video with 2MB chunks
-                    val videoKey = "videos/${UUID.randomUUID()}_${videoFile.name}"
-                    Log.d("AWS_UPLOAD", "Uploading video: $videoKey")
-                    videoUrl = multipartUpload(s3Client, videoFile, videoKey, 2 * 1024 * 1024) { progress ->
-                            progressDialog.progress = progress
-                            progressDialog.setMessage("Uploading Video... $progress%")
-                    }
-                    Log.d("AWS_UPLOAD", "Video uploaded successfully: $videoUrl")
-                } else {
-                    Log.d("AWS_UPLOAD", "No video selected, skipping video upload.")
-                }
-
-                withContext(Dispatchers.Main) {
-                    progressDialog.dismiss()
-                    Log.d("AWS_UPLOAD", "Upload complete, dismissing dialog")
-                    Toast.makeText(context, "Upload Successful", Toast.LENGTH_SHORT).show()
-                    onSuccess(imageUrl, videoUrl)
-                }
-
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    progressDialog.dismiss()
-                    Log.e("AWS_UPLOAD", "Upload failed: ${e.message}")
-                    Toast.makeText(context, "Upload Failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                    onError(e.message ?: "Unknown error")
-                }
-            }
-        }
-    }*/
-
-
     fun uploadMediaToS3(
         scope: CoroutineScope,
         context: Context,
-        imageFiles: List<File>, // Multiple images
-        videoFile: File?, // Video file is optional
-        onSuccess: (List<String>, String?) -> Unit, // Callback with list of image URLs and optional video URL
+        imageFiles: List<File>,
+        videoFile: File?,
+        onSuccess: (List<String>, String?) -> Unit,
         onError: (String) -> Unit
     ) {
-        val progressDialog = ProgressDialog(context).apply {
-            setMessage("Uploading... 0%")
-            setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
-            isIndeterminate = false
-            max = 100
-            setCancelable(false)
-            show()
-        }
-
         scope.launch(Dispatchers.IO) {
+            var progressDialog: ProgressDialog? = null
+
             try {
-                Log.d("AWS_UPLOAD", "Upload started...")
+                withContext(Dispatchers.Main) {
+                    progressDialog = ProgressDialog(context).apply {
+                        setMessage("Uploading... 0%")
+                        setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
+                        isIndeterminate = false
+                        max = 100
+                        setCancelable(false)
+                        show()
+                    }
+                }
 
                 val uploadedImageUrls = mutableListOf<String>()
 
-                // ✅ Upload multiple images one by one
+                // Upload multiple images one by one
                 for ((index, imageFile) in imageFiles.withIndex()) {
                     val imageKey = "images/${UUID.randomUUID()}_${imageFile.name}"
-                    Log.d("AWS_UPLOAD", "Uploading image: $imageKey")
 
                     val imageUrl = multipartUpload(
                         s3Client,
@@ -219,20 +148,20 @@ object AwsManager {
                         imageKey,
                         2 * 1024 * 1024
                     ) { progress ->
-                        progressDialog.progress = progress
-                        progressDialog.setMessage("Uploading Image ${index + 1}/${imageFiles.size}... $progress%")
+                        // Update progress on main thread
+                        scope.launch(Dispatchers.Main) {
+                            progressDialog?.progress = progress
+                            progressDialog?.setMessage("Uploading Image ${index + 1}/${imageFiles.size}... $progress%")
+                        }
                     }
 
                     uploadedImageUrls.add(imageUrl)
-                    Log.d("AWS_UPLOAD", "Image uploaded successfully: $imageUrl")
                 }
 
                 var videoUrl: String? = null
                 if (videoFile != null) {
                     val videoExtension = videoFile.extension.ifEmpty { "mp4" }
-                    val videoKey =
-                        "videos/${UUID.randomUUID()}_${System.currentTimeMillis()}.$videoExtension"
-                    Log.d("AWS_UPLOAD", "Uploading video: $videoKey")
+                    val videoKey = "videos/${UUID.randomUUID()}_${System.currentTimeMillis()}.$videoExtension"
 
                     videoUrl = multipartUpload(
                         s3Client,
@@ -240,34 +169,28 @@ object AwsManager {
                         videoKey,
                         2 * 1024 * 1024
                     ) { progress ->
-                        progressDialog.progress = progress
-                        progressDialog.setMessage("Uploading Video... $progress%")
+                        // Update progress on main thread
+                        scope.launch(Dispatchers.Main) {
+                            progressDialog?.progress = progress
+                            progressDialog?.setMessage("Uploading Video... $progress%")
+                        }
                     }
-
-                    Log.d("AWS_UPLOAD", "Video uploaded successfully: $videoUrl")
-                } else {
-                    Log.d("AWS_UPLOAD", "No video selected, skipping video upload.")
                 }
 
                 withContext(Dispatchers.Main) {
-                    progressDialog.dismiss()
-                    Log.d("AWS_UPLOAD", "Upload complete, dismissing dialog")
-                    Toast.makeText(context, "Upload Successful", Toast.LENGTH_SHORT).show()
+                    progressDialog?.dismiss()
                     onSuccess(uploadedImageUrls, videoUrl)
                 }
 
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    progressDialog.dismiss()
-                    Log.e("AWS_UPLOAD", "Upload failed: ${e.message}")
-                    Toast.makeText(context, "Upload Failed: ${e.message}", Toast.LENGTH_SHORT)
-                        .show()
+                    progressDialog?.dismiss()
+                    Toast.makeText(context, "Upload Failed: ${e.message}", Toast.LENGTH_SHORT).show()
                     onError(e.message ?: "Unknown error")
                 }
             }
         }
     }
-
 
     // ✅ Multipart Upload Function with 2MB Chunk Size & Progress Tracking
     private suspend fun multipartUpload(
@@ -406,49 +329,6 @@ object AwsManager {
         sesClient.close()
     }
 
-    /*fun ensureUserTableExists(tableName: String, primaryKey: String, callback: (String) -> Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                Log.e("AWS_TAG", "Checking if table exists: $tableName")
-
-                val existingTables = dynamoDBClient.listTables().tableNames()
-                Log.e("AWS_TAG", "Existing Tables: $existingTables")
-
-                if (!existingTables.contains(tableName)) {
-                    callback.invoke("creating")
-
-                    val request = CreateTableRequest.builder()
-                        .tableName(tableName)
-                        .keySchema(
-                            KeySchemaElement.builder().attributeName(primaryKey)
-                                .keyType(KeyType.HASH).build()
-                        ) // Primary Key
-                        .attributeDefinitions(
-                            AttributeDefinition.builder().attributeName(primaryKey).attributeType(ScalarAttributeType.S).build()
-                        ) // String Type
-
-                        .provisionedThroughput(
-                            ProvisionedThroughput.builder().readCapacityUnits(5L)
-                                .writeCapacityUnits(5L).build()
-                        ) // Read & Write Capacity
-                        .build()
-
-                    dynamoDBClient.createTable(request)
-                    Log.e("AWS_TAG", "Table creation started")
-
-                    // Wait for table to be active
-                    waitForTableToBeActive(tableName)
-                    callback.invoke("created")
-                } else {
-                    callback.invoke("exists")
-                }
-            } catch (e: Exception) {
-                Log.e("AWS_TAG", "Error Checking/Creating Table: ${e.message}", e)
-                callback.invoke("error: ${e.message}")
-            }
-        }
-    }*/
-
     fun ensureUserTableExists(tableName: String, primaryKey: String, callback: (String) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -517,7 +397,6 @@ object AwsManager {
             }
         }
     }
-
 
     private fun waitForTableToBeActive(tableName: String) {
         while (true) {
@@ -602,7 +481,6 @@ object AwsManager {
         }
     }
 
-
     suspend fun saveProduct(tableName: String, product: ProductModel): Pair<Boolean, String> {
 
         return withContext(Dispatchers.IO) {
@@ -642,8 +520,6 @@ object AwsManager {
         }
 
     }
-
-
 
     suspend fun checkIfTagIdExists(tableName: String, tagId: String): Pair<Boolean, String> {
         return withContext(Dispatchers.IO) {

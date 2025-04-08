@@ -1,20 +1,26 @@
 package com.example.rfidstockpro.viewmodel
 
+import android.content.Context
 import android.os.SystemClock
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.rfidstockpro.RFIDApplication.Companion.PRODUCT_TABLE
+import com.example.rfidstockpro.aws.AwsManager
+import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.data.UHFTagModel
 import com.example.rfidstockpro.repository.UHFRepository
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.rscja.deviceapi.entity.UHFTAGInfo
 import com.rscja.deviceapi.interfaces.ConnectionStatus
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.concurrent.CopyOnWriteArrayList
 
 class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
@@ -158,4 +164,54 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
     ): Boolean {
         return uhfRepository.setFilter(filterBank, ptr, len, data)
     }
+
+    fun addProductToAWS(
+        context: Context,
+        product: ProductModel, // or whatever your product class is
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val scope = CoroutineScope(Dispatchers.IO)
+
+        scope.launch {
+            val (exists, message) = AwsManager.checkIfTagIdExists(PRODUCT_TABLE, product.tagId)
+            if (exists) {
+                withContext(Dispatchers.Main) { onError(message) }
+                return@launch
+            }
+
+            val imageFiles = product.selectedImages.map { File(it) }
+            val videoFile = product.selectedVideo?.let { File(it) }
+
+            AwsManager.uploadMediaToS3(
+                scope = scope,
+                context = context,
+                imageFiles = imageFiles,
+                videoFile = videoFile,
+                onSuccess = { imageUrls, videoUrl ->
+                    val updatedProduct = product.copy(
+                        selectedImages = imageUrls,
+                        selectedVideo = videoUrl
+                    )
+
+                    scope.launch {
+                        val (isSuccess, saveMessage) = AwsManager.saveProduct(PRODUCT_TABLE, updatedProduct)
+                        withContext(Dispatchers.Main) {
+                            if (isSuccess) {
+                                onSuccess()
+                            } else {
+                                onError(saveMessage)
+                            }
+                        }
+                    }
+                },
+                onError = { errorMessage ->
+                    scope.launch {
+                        withContext(Dispatchers.Main) { onError(errorMessage) }
+                    }
+                }
+            )
+        }
+    }
+
 }

@@ -154,7 +154,7 @@ class UHFReadFragment : Fragment() {
     }
 
     private fun AddProductToAWS() {
-        val product = sharedProductViewModel.product.value
+      /*  val product = sharedProductViewModel.product.value
 
         if (product != null) {
             val scope = CoroutineScope(Dispatchers.Main)
@@ -209,6 +209,24 @@ class UHFReadFragment : Fragment() {
                     }
                 )
             }
+        } else {
+            Toast.makeText(requireContext(), "Product info not found!", Toast.LENGTH_SHORT).show()
+        }*/
+
+        val product = sharedProductViewModel.product.value
+        if (product != null) {
+            viewModel.addProductToAWS(
+                context = requireContext(),
+                product = product,
+                onSuccess = {
+                    binding.rlSuccessFullAdded.visibility = View.VISIBLE
+                    isProductSuccessfullyAdded = true
+                    (activity as? AddItemActivity)?.updateToolbarTitleAddItem("")
+                },
+                onError = { errorMessage ->
+                    Snackbar.make(binding.root, errorMessage, Snackbar.LENGTH_LONG).show()
+                }
+            )
         } else {
             Toast.makeText(requireContext(), "Product info not found!", Toast.LENGTH_SHORT).show()
         }
