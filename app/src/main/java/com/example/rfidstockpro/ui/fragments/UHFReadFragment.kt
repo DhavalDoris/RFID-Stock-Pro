@@ -22,6 +22,7 @@ import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.databinding.FragmentUhfreadTagBinding
 import com.example.rfidstockpro.factores.UHFViewModelFactory
 import com.example.rfidstockpro.repository.UHFRepository
+import com.example.rfidstockpro.ui.ProductManagement.viewmodels.ScannedProductsViewModel
 import com.example.rfidstockpro.ui.activities.AddItemActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isKeyDownUP
@@ -44,6 +45,7 @@ import java.util.Locale
 import java.util.UUID
 
 class UHFReadFragment : Fragment() {
+
     lateinit var viewModel: UHFReadViewModel
     private lateinit var binding: FragmentUhfreadTagBinding
     private lateinit var adapter: UHFTagAdapter
@@ -51,6 +53,7 @@ class UHFReadFragment : Fragment() {
     private var isProductSuccessfullyAdded = false
 
     private lateinit var sharedProductViewModel: SharedProductViewModel
+    private lateinit var scannedProductsViewModel: ScannedProductsViewModel
 
 
     // Interface for UHF device provider
@@ -61,6 +64,8 @@ class UHFReadFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedProductViewModel = ViewModelProvider(requireActivity()).get(SharedProductViewModel::class.java)
+        scannedProductsViewModel = ViewModelProvider(requireActivity())[ScannedProductsViewModel::class.java]
+
     }
 
     override fun onCreateView(
@@ -72,6 +77,8 @@ class UHFReadFragment : Fragment() {
 
         sharedProductViewModel.product.observe(viewLifecycleOwner) { product ->
             Log.d("UHFReadFragment", "Received Product: ${product}")
+//            val scannedUniqueTags = product.distinct()
+//            scannedProductsViewModel.setScannedTags(scannedUniqueTags)
         }
 
         return binding.root
@@ -286,8 +293,6 @@ class UHFReadFragment : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
-
-
     companion object {
         fun newInstance(): UHFReadFragment {
             return UHFReadFragment()
@@ -298,9 +303,6 @@ class UHFReadFragment : Fragment() {
         Log.i(TAG, "UHFReadTagFragment.onDestroyView")
         super.onDestroyView()
         isExit = true
-
     }
-
-
 
 }

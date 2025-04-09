@@ -618,6 +618,34 @@ object AwsManager {
         }
     }
 
+    fun getAllProducts(
+        lastEvaluatedKey: Map<String, AttributeValue>? = null
+    ): Pair<List<ProductModel>, Map<String, AttributeValue>?> {
+
+        val dynamoDbClient: DynamoDbClient = dynamoDBClient // Replace with your instance
+        val tableName = PRODUCT_TABLE // 🔁 Replace with your actual table name
+
+        return try {
+            val scanRequestBuilder = ScanRequest.builder()
+                .tableName(tableName)
+                .limit(10)
+            // Set last evaluated key if paginating
+            lastEvaluatedKey?.let { scanRequestBuilder.exclusiveStartKey(it) }
+
+            val scanRequest = scanRequestBuilder.build()
+            val scanResponse: ScanResponse = dynamoDbClient.scan(scanRequest)
+
+            val products = scanResponse.items().map { it.toProductModel() }
+            val newLastKey = scanResponse.lastEvaluatedKey().takeIf { it.isNotEmpty() }
+
+            Pair(products, newLastKey)
+
+        } catch (e: Exception) {
+            Log.e("DynamoDB", "getPaginatedProducts() error: ", e)
+            Pair(emptyList(), null)
+        }
+    }
+
 
     class NoCompressionInterceptor : ExecutionInterceptor {
         override fun modifyHttpRequest(
