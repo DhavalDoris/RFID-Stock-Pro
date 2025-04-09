@@ -1,21 +1,17 @@
 package com.example.rfidstockpro.ui.ProductManagement.fragments
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.PopupMenu
 import android.widget.PopupWindow
 import android.widget.Toast
-import androidx.appcompat.view.menu.MenuBuilder
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -33,10 +29,16 @@ class InventoryFragment : Fragment() {
     private lateinit var inventoryAdapter: InventoryAdapter
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentInventoryBinding.inflate(inflater, container, false)
         viewModel = ViewModelProvider(this)[InventoryViewModel::class.java]
 
+
+        init()
         setupRecyclerView()
         observeViewModel()
 
@@ -44,30 +46,21 @@ class InventoryFragment : Fragment() {
         return binding.root
     }
 
+    fun init() {
+        binding.btnLoadMore.setOnClickListener {
+            viewModel.loadNextPage()
+        }
+    }
+
     private fun setupRecyclerView() {
         inventoryAdapter = InventoryAdapter(emptyList()) { product, anchorView ->
-            showCustomPopupMenu(requireActivity(),anchorView, product)
+            showCustomPopupMenu(requireActivity(), anchorView, product)
         }
 
         val layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.layoutManager = layoutManager
         binding.recyclerView.adapter = inventoryAdapter
 
-        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                val visibleItemCount = layoutManager.childCount
-                val totalItemCount = layoutManager.itemCount
-                val firstVisibleItemPos = layoutManager.findFirstVisibleItemPosition()
-
-                val isAtEnd = (visibleItemCount + firstVisibleItemPos) >= totalItemCount
-                        && firstVisibleItemPos >= 0
-
-                if (isAtEnd) {
-                    viewModel.loadNextPage()
-                }
-            }
-        })
 
     }
 
@@ -87,8 +80,15 @@ class InventoryFragment : Fragment() {
             true
         )
 
+        val location = IntArray(2)
+        anchor.getLocationOnScreen(location)
+
+        popupWindow.showAtLocation(anchor, Gravity.NO_GRAVITY,
+            location[0] + anchor.width - widthInPx,
+            location[1] + anchor.height)
+
         // This will show it aligned to the bottom-left of the anchor view
-        popupWindow.showAsDropDown(anchor, -popupView.width + anchor.width, 0)
+//        popupWindow.showAsDropDown(anchor, -(widthInPx - anchor.width), 0)
 
         // Set background to dismiss on outside touch
         popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -102,17 +102,17 @@ class InventoryFragment : Fragment() {
         }
 
         popupView.findViewById<LinearLayout>(R.id.action_edit).setOnClickListener {
-            Toast.makeText(context, "Delete clicked", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "edit clicked", Toast.LENGTH_SHORT).show()
             popupWindow.dismiss()
         }
 
         popupView.findViewById<LinearLayout>(R.id.action_locate).setOnClickListener {
-            Toast.makeText(context, "Delete clicked", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "locate clicked", Toast.LENGTH_SHORT).show()
             popupWindow.dismiss()
         }
 
         popupView.findViewById<LinearLayout>(R.id.action_update).setOnClickListener {
-            Toast.makeText(context, "Delete clicked", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "update clicked", Toast.LENGTH_SHORT).show()
             popupWindow.dismiss()
         }
 
@@ -127,10 +127,54 @@ class InventoryFragment : Fragment() {
 
 
     private fun observeViewModel() {
-        viewModel.products.observe(viewLifecycleOwner) { productList ->
-            Log.d("InventoryFragment", "Loaded ${productList.size} products")
-            inventoryAdapter.updateList(productList)
+
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+
+            val productList = viewModel.products.value ?: emptyList()
+            // Show progress only if loading and no data yet
+            binding.progressBar.visibility =
+                if (isLoading && productList.isEmpty()) View.VISIBLE else View.GONE
+
+            // Show "No items" only if not loading and list is empty
+            binding.noItemsText.visibility =
+                if (!isLoading && productList.isEmpty()) View.VISIBLE else View.GONE
+
+            // Show RecyclerView only if list is not empty
+            binding.recyclerView.visibility =
+                if (productList.isNotEmpty()) View.VISIBLE else View.GONE
+
+            binding.btnLoadMore.visibility =
+                if (!isLoading && productList.isNotEmpty()) View.VISIBLE else View.GONE
+
+            binding.loadMoreProgress.visibility =
+                if (isLoading) View.VISIBLE else View.GONE
+
         }
+
+        viewModel.products.observe(viewLifecycleOwner) { productList ->
+            inventoryAdapter.updateList(productList)
+            binding.recyclerView.visibility =
+                if (productList.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.noItemsText.visibility = if (productList.isEmpty()) View.VISIBLE else View.GONE
+
+            // Update count
+            val total = viewModel.totalCount.value ?: 0
+            Log.e("TOTAL_TAG", "observeViewModel:==>> $total")
+            binding.itemCountText.text = "${productList.size} of $total"
+
+            // Show/hide load more
+            binding.loadMoreContainer.visibility =
+                if (productList.size < total) View.VISIBLE else View.GONE
+        }
+
+        viewModel.totalCount.observe(viewLifecycleOwner) { total ->
+            val currentCount = viewModel.products.value?.size ?: 0
+            Log.e("TOTAL_TAG", "observeViewModel:~~>> $total")
+            binding.itemCountText.text = "$currentCount of $total"
+            binding.loadMoreContainer.visibility =
+                if (currentCount < total) View.VISIBLE else View.GONE
+        }
+
     }
 
 

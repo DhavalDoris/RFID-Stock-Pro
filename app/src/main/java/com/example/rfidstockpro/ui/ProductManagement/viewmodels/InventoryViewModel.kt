@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rfidstockpro.aws.AwsManager.getPaginatedProducts
+import com.example.rfidstockpro.aws.AwsManager.getTotalProductCount
 import com.example.rfidstockpro.aws.models.ProductModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,17 +17,28 @@ class InventoryViewModel : ViewModel() {
     private val _products = MutableLiveData<List<ProductModel>>(mutableListOf())
     val products: LiveData<List<ProductModel>> get() = _products
 
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> get() = _isLoading
+
+    private val _totalCount = MutableLiveData<Int>()
+    val totalCount: LiveData<Int> get() = _totalCount
+
     private val allProducts = mutableListOf<ProductModel>()
     private var lastEvaluatedKey: Map<String, AttributeValue>? = null
-    private var isLoading = false
     private var isLastPage = false
 
+    fun setTotalItemCount(count: Int) {
+        _totalCount.postValue(count)
+    }
+
     fun loadNextPage() {
-        if (isLoading || isLastPage) return
-        isLoading = true
+        if (isLoading.value == true || isLastPage) return
+        _isLoading.postValue(true)
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
+
+//                val (newItems, newLastKey, totalC ountFromDb) = getPaginatedProducts(lastEvaluatedKey)
                 val (newItems, newLastKey) = getPaginatedProducts(lastEvaluatedKey)
                 Log.d("DynamoDB", "Fetched items: ${newItems.size}")
                 newItems.forEach { product ->
@@ -35,6 +47,7 @@ class InventoryViewModel : ViewModel() {
                 if (newItems.isNotEmpty()) {
                     allProducts.addAll(newItems)
                     _products.postValue(allProducts)
+                    _totalCount.postValue(getTotalProductCount()) // 👈 add this line
                     lastEvaluatedKey = newLastKey
                     isLastPage = newLastKey == null
                 }else {
@@ -44,7 +57,8 @@ class InventoryViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.e("DynamoDB", "Error loading products", e)
             } finally {
-                isLoading = false
+                _isLoading.postValue(false)
+
             }
         }
     }

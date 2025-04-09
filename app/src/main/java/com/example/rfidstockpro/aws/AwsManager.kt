@@ -60,6 +60,8 @@ import java.util.UUID
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption
 import software.amazon.awssdk.core.interceptor.ExecutionAttributes
 import software.amazon.awssdk.core.interceptor.ExecutionInterceptor
+import software.amazon.awssdk.services.dynamodb.model.ScanResponse
+import software.amazon.awssdk.services.dynamodb.model.Select
 
 object AwsManager {
 
@@ -557,24 +559,23 @@ object AwsManager {
         }
     }
 
-    suspend fun getAllProducts(): List<ProductModel> {
+    suspend fun getTotalProductCount(): Int {
         val request = ScanRequest.builder()
             .tableName(PRODUCT_TABLE)
+            .select(software.amazon.awssdk.services.dynamodb.model.Select.COUNT)
             .build()
 
         val result = dynamoDBClient.scan(request)
-        val items = result.items()
-
-        return items.map { it.toProductModel() } // <-- This line is key
+        return result.count()
     }
 
-    suspend fun getPaginatedProducts(
-        lastKey: Map<String, AttributeValue>? = null,
-        pageSize: Int = 10
-    ): Pair<List<ProductModel>, Map<String, AttributeValue>?> {
+
+   /* suspend fun getPaginatedProducts(
+        lastKey: Map<String, AttributeValue>? = null
+    ): Triple<List<ProductModel>, Map<String, AttributeValue>?,Int> {
         val requestBuilder = ScanRequest.builder()
             .tableName(PRODUCT_TABLE)
-            .limit(pageSize)
+            .limit(5)
 
         lastKey?.let {
             requestBuilder.exclusiveStartKey(it)
@@ -585,7 +586,39 @@ object AwsManager {
         val newLastKey = result.lastEvaluatedKey()
 
         return Pair(items, if (newLastKey.isEmpty()) null else newLastKey)
+    }*/
+
+
+    fun getPaginatedProducts(
+        lastEvaluatedKey: Map<String, AttributeValue>? = null
+    ): Pair<List<ProductModel>, Map<String, AttributeValue>?> {
+
+        val dynamoDbClient: DynamoDbClient = dynamoDBClient // Replace with your instance
+        val tableName = PRODUCT_TABLE // 🔁 Replace with your actual table name
+
+        return try {
+            val scanRequestBuilder = ScanRequest.builder()
+                .tableName(tableName)
+                .limit(5) // 👈 Number of items per page
+
+            // Set last evaluated key if paginating
+            lastEvaluatedKey?.let { scanRequestBuilder.exclusiveStartKey(it) }
+
+            val scanRequest = scanRequestBuilder.build()
+            val scanResponse: ScanResponse = dynamoDbClient.scan(scanRequest)
+
+            val products = scanResponse.items().map { it.toProductModel() }
+            val newLastKey = scanResponse.lastEvaluatedKey().takeIf { it.isNotEmpty() }
+
+            Pair(products, newLastKey)
+
+        } catch (e: Exception) {
+            Log.e("DynamoDB", "getPaginatedProducts() error: ", e)
+            Pair(emptyList(), null)
+        }
     }
+
+
     class NoCompressionInterceptor : ExecutionInterceptor {
         override fun modifyHttpRequest(
             context: software.amazon.awssdk.core.interceptor.Context.ModifyHttpRequest,

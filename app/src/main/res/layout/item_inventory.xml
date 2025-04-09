@@ -117,7 +117,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/rethinksans_variablefont_wght"
-                        android:text="SKU"
+                        android:text="@string/sku"
+                        android:textSize="@dimen/_10ssp"
                         android:textColor="#888888" />
 
                     <androidx.appcompat.widget.AppCompatTextView
@@ -126,6 +127,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/rethinksans_variablefont_wght"
                         android:text="SLR-332-A"
+                        android:textSize="@dimen/_10ssp"
                         android:textColor="@color/black"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -147,7 +149,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/rethinksans_variablefont_wght"
-                        android:text="Category"
+                        android:text="@string/category"
                         android:textSize="@dimen/_10ssp"
                         android:textColor="#888888" />
 
@@ -189,6 +191,7 @@
                         android:layout_marginStart="@dimen/_7sdp"
                         android:fontFamily="@font/rethinksans_variablefont_wght"
                         android:text="Purity"
+                        android:visibility="gone"
                         android:textColor="#888888" />
 
                     <androidx.appcompat.widget.AppCompatTextView
@@ -197,6 +200,7 @@
                         android:layout_marginStart="@dimen/_7sdp"
                         android:fontFamily="@font/rethinksans_variablefont_wght"
                         android:text="14K"
+                        android:visibility="gone"
                         android:textColor="@color/black"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -218,7 +222,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/rethinksans_variablefont_wght"
-                        android:text="Price"
+                        android:text="@string/product_price"
                         android:textColor="#888888" />
 
                     <androidx.appcompat.widget.AppCompatTextView
@@ -248,7 +252,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/rethinksans_variablefont_wght"
-                        android:text="Status"
+                        android:text="@string/status"
                         android:textColor="#888888" />
 
                     <androidx.appcompat.widget.AppCompatTextView
@@ -258,11 +262,12 @@
                         android:background="@drawable/role_bg"
                         android:backgroundTint="#8000DB0F"
                         android:fontFamily="@font/rethinksans_bold"
-                        android:paddingStart="8dp"
-                        android:paddingTop="3dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="3dp"
+                        android:paddingStart="@dimen/_6sdp"
+                        android:paddingTop="@dimen/_2sdp"
+                        android:paddingEnd="@dimen/_6sdp"
+                        android:paddingBottom="@dimen/_2sdp"
                         android:text="Active"
+                        android:layout_marginTop="@dimen/_2sdp"
                         android:textColor="#4CAF50"
                         android:textSize="@dimen/_9ssp"
                         android:textStyle="bold" />
@@ -285,7 +290,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/rethinksans_variablefont_wght"
-                        android:text="Action"
+                        android:text="@string/action"
                         android:textColor="#888888" />
 
                     <androidx.appcompat.widget.AppCompatTextView

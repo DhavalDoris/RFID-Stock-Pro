@@ -21,7 +21,7 @@ class InventoryAdapter(
             binding.productSku.text = product.sku
             binding.productCategory.text = product.productCategory
             binding.productStatus.text = product.status
-            binding.productPrice.text = product.price
+            binding.productPrice.text =  "$" + product.price
             binding.tagIdTextView.text = product.tagId
 
             Glide.with(binding.productImage.context)
