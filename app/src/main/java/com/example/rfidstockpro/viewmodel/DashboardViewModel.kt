@@ -1,6 +1,7 @@
 package com.example.rfidstockpro.viewmodel
 
 import android.app.Application
+import android.bluetooth.BluetoothDevice
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
@@ -42,6 +43,20 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private val disconnectTimer = Timer()
 
     private val applicationContext = getApplication<Application>().applicationContext
+
+    private val _deviceConnected = MutableLiveData<BluetoothDevice?>()
+    val deviceConnected: LiveData<BluetoothDevice?> = _deviceConnected
+
+    private val _connectionStatus = MutableLiveData<ConnectionStatus>()
+    val connectionStatus: LiveData<ConnectionStatus> = _connectionStatus
+
+    fun notifyDeviceConnected(device: BluetoothDevice?) {
+        _deviceConnected.postValue(device)
+    }
+
+    fun notifyConnectionStatus(status: ConnectionStatus) {
+        _connectionStatus.postValue(status)
+    }
 
     init {
         loadStaticData()
@@ -101,6 +116,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun disconnect(isActiveDisconnect: Boolean) {
+        UHFConnectionManager.updateConnectionStatus(ConnectionStatus.DISCONNECTED, null)
         cancelDisconnectTimer()
         uhf.disconnect()
         _isConnected.value = false

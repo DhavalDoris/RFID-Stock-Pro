@@ -2,12 +2,7 @@ package com.example.rfidstockpro.ui.ProductManagement.fragments
 
 import ScannedProductsViewModel
 import UHFConnectionManager
-import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -17,30 +12,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresPermission
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.FragmentInventoryBinding
 import com.example.rfidstockpro.factores.UHFViewModelFactory
 import com.example.rfidstockpro.repository.UHFRepository
+import com.example.rfidstockpro.ui.ProductManagement.BluetoothConnectionManager
 import com.example.rfidstockpro.ui.ProductManagement.ProductPopupMenu
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
-import com.example.rfidstockpro.ui.activities.DeviceListActivity
 import com.example.rfidstockpro.ui.inventory.InventoryAdapter
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
-import com.example.rfidstockpro.viewmodel.DashboardViewModel.Companion.SHOW_HISTORY_CONNECTED_LIST
 import com.example.rfidstockpro.viewmodel.UHFReadViewModel
 import com.rscja.deviceapi.interfaces.ConnectionStatus
-import com.rscja.deviceapi.interfaces.ConnectionStatusCallback
 import com.rscja.deviceapi.interfaces.KeyEventCallback
-import kotlinx.coroutines.launch
 
 
 class ScannedProductsFragment : Fragment() {
@@ -54,6 +41,7 @@ class ScannedProductsFragment : Fragment() {
     var latestIsLoading = false
     private lateinit var dashboardViewModel: DashboardViewModel
     private val uniqueTagSet = mutableSetOf<String>()
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -76,12 +64,13 @@ class ScannedProductsFragment : Fragment() {
 
         initView()
         setupRecyclerView()
-        observeProducts()
+        observeActions()
         setupRFIDGunTrigger()
-        registerActivityResultLaunchers()
+
 
     }
 
+    @SuppressLint("MissingPermission")
     private fun initView() {
         val rfidConnectionView = binding.connectRFID.rlStatScan
         if (UHFConnectionManager.getConnectionStatus() == ConnectionStatus.CONNECTED) {
@@ -91,17 +80,16 @@ class ScannedProductsFragment : Fragment() {
         }
 
         val btnConnectScanner = binding.connectRFID.btnConnectScannerAdd
-        mBtAdapter = BluetoothAdapter.getDefaultAdapter()
         btnConnectScanner.setOnClickListener {
             if (dashboardViewModel.isConnected.value == true) {
                 dashboardViewModel.disconnect(true)
             } else {
-                showBluetoothDevice()
+                BluetoothConnectionManager.showBluetoothDevice(requireActivity())
             }
         }
     }
 
-    private fun registerActivityResultLaunchers() {
+   /* private fun registerActivityResultLaunchers() {
         enableBluetoothLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 if (it.resultCode == Activity.RESULT_OK) {
@@ -128,7 +116,6 @@ class ScannedProductsFragment : Fragment() {
         if (uhfDevice.connectStatus == ConnectionStatus.CONNECTING) {
             showToast(requireActivity(), getString(R.string.connecting))
         } else {
-//            showToast(this, "Connecting to $deviceAddress")
             uhfDevice.connect(deviceAddress, object : ConnectionStatusCallback<Any?> {
                 override fun getStatus(connectionStatus: ConnectionStatus, device: Any?) {
                     lifecycleScope.launch {
@@ -166,7 +153,7 @@ class ScannedProductsFragment : Fragment() {
             selectDeviceLauncher.launch(newIntent)
             dashboardViewModel.cancelDisconnectTimer()
         }
-    }
+    }*/
 
     private fun setupRecyclerView() {
         binding.noItemsText.visibility = View.VISIBLE
@@ -204,7 +191,8 @@ class ScannedProductsFragment : Fragment() {
         }
     }
 
-    private fun observeProducts() {
+    @SuppressLint("MissingPermission")
+    private fun observeActions() {
         uhfReadViewModel.tagList.observe(viewLifecycleOwner) { tagList ->
             var newTagsAdded = false
 
@@ -253,6 +241,20 @@ class ScannedProductsFragment : Fragment() {
             latestTotal = total
             val currentCount = scannedProductsViewModel.pagedProducts.value?.size ?: 0
             updateLoadMoreUI(latestIsLoading, currentCount, total)
+        }
+
+        dashboardViewModel.deviceConnected.observe(viewLifecycleOwner) { device ->
+            device?.let {
+                Log.d("Bluetooth", "Connected to: ${device.name}")
+                binding.connectRFID.rlStatScan.visibility = View.GONE
+            }
+        }
+
+        dashboardViewModel.connectionStatus.observe(viewLifecycleOwner) { status ->
+            if (status == ConnectionStatus.DISCONNECTED) {
+                showToast(requireContext(), "Disconnected")
+                binding.connectRFID.rlStatScan.visibility = View.VISIBLE
+            }
         }
     }
 
