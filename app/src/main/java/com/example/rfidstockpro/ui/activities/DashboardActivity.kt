@@ -48,9 +48,9 @@ import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.ConnectionStatusCallback
 
 
-class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider{
+class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
 
-//    var tvToolbarTitle: TextView? = null // Declare as public
+    //    var tvToolbarTitle: TextView? = null // Declare as public
     private var mDevice: BluetoothDevice? = null
     private lateinit var binding: ActivityDashboardBinding
     private lateinit var pieChart: PieChart
@@ -131,7 +131,7 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 
     fun updateToolbarTitle(title: String) {
         val toolbarTitle = findViewById<AppCompatTextView>(R.id.tvToolbarTitle)
-        Log.e(TAG, "updateToolbarTitle: "  )
+        Log.e(TAG, "updateToolbarTitle: ")
         toolbarTitle!!.text = title
     }
 
@@ -152,8 +152,10 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
     }
 
 
-
     private fun setupUI() {
+        dashboardViewModel.checkBluetoothConnection()
+        UHFConnectionManager.addStatusChangeListener(connectionListener)
+
         binding.btnConnectScanner.setOnClickListener {
             if (dashboardViewModel.isConnected.value == true) {
                 dashboardViewModel.disconnect(true)
@@ -186,8 +188,10 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 
     override fun onResume() {
         super.onResume()
-        dashboardViewModel.checkBluetoothConnection()
-        UHFConnectionManager.addStatusChangeListener(connectionListener)
+        // Force recheck of the connection status
+//        UHFConnectionManager.recheckConnectionStatus()
+
+        Log.e("ONRESUME_TAG", "onResume: " + UHFConnectionManager.getConnectionStatus() )
 
         // Immediately update the UI based on current status
         updateConnectionUI(
@@ -195,21 +199,16 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
             UHFConnectionManager.getConnectedDevice()
         )
     }
-    override fun onPause() {
-        super.onPause()
-        UHFConnectionManager.removeStatusChangeListener(connectionListener)
-    }
 
     private val connectionListener = object : UHFConnectionManager.ConnectionStatusListener {
-        override fun onConnectionStatusChanged(
-            status: ConnectionStatus,
-            device: Any?
-        ) {
+        override fun onConnectionStatusChanged(status: ConnectionStatus, device: Any?) {
             updateConnectionUI(status, device)
         }
     }
 
     private fun updateConnectionUI(status: ConnectionStatus, device: Any?) {
+        if (isFinishing || isDestroyed) return
+
         if (status == ConnectionStatus.CONNECTED) {
             binding.tvStaus.text = getString(R.string.connected)
             AnimationUtils.fadeInView(binding.rlRfidStatus)
@@ -482,6 +481,8 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
                     runOnUiThread {
                         if (connectionStatus == ConnectionStatus.CONNECTED) {
                             Log.e("ConetionTAG", "getStatus: " + "IF")
+                            UHFConnectionManager.updateConnectionStatus(connectionStatus, device)
+
 //                            showToast(this@DashboardActivity, getString(R.string.connect_success))
                             binding.tvStaus.text = getString(R.string.connected)
 //                            binding.footerView.visibility = View.GONE
@@ -489,6 +490,7 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
                             AnimationUtils.fadeInView(binding.rlRfidStatus);
                             AnimationUtils.fadeOutView(binding.footerView);
                         } else {
+                            UHFConnectionManager.updateConnectionStatus(ConnectionStatus.DISCONNECTED, device)
                             Log.e("ConetionTAG", "getStatus: " + "ELSE")
 //                            showToast(this@DashboardActivity, getString(R.string.disConnect))
                             binding.tvStaus.text = getString(R.string.disconnected)
@@ -504,6 +506,7 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 
     override fun onDestroy() {
         dashboardViewModel.disconnect(true)
+        UHFConnectionManager.removeStatusChangeListener(connectionListener)
         super.onDestroy()
     }
 
@@ -516,7 +519,6 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
             super.onBackPressed() // Exits the activity and goes back to MainActivity
         }
     }
-
 
 
 }

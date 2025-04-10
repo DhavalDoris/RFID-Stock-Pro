@@ -93,8 +93,6 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
 
         binding.btnAddScan.setOnClickListener {
             validateAndLogFields()
-
-
         }
 
         binding.selectedImagesContainer.setOnClickListener {
