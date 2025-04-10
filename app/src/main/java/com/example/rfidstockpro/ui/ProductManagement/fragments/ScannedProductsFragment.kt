@@ -1,19 +1,23 @@
 package com.example.rfidstockpro.ui.ProductManagement.fragments
 
+import ScannedProductsViewModel
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.FragmentInventoryBinding
 import com.example.rfidstockpro.factores.UHFViewModelFactory
 import com.example.rfidstockpro.repository.UHFRepository
-import com.example.rfidstockpro.ui.ProductManagement.viewmodels.InventoryViewModel
-import com.example.rfidstockpro.ui.ProductManagement.viewmodels.ScannedProductsViewModel
+import com.example.rfidstockpro.ui.ProductManagement.ProductPopupMenu
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
 import com.example.rfidstockpro.ui.inventory.InventoryAdapter
 import com.example.rfidstockpro.viewmodel.UHFReadViewModel
@@ -25,11 +29,10 @@ class ScannedProductsFragment : Fragment() {
     private lateinit var binding: FragmentInventoryBinding
     private lateinit var scannedProductsViewModel: ScannedProductsViewModel
     private lateinit var uhfReadViewModel: UHFReadViewModel
-    private lateinit var inventoryViewModel: InventoryViewModel
-
     private lateinit var inventoryAdapter: InventoryAdapter
-    private val scannedTagIds = mutableSetOf<String>()
-    private var isScanning = false
+
+    var latestTotal = 0
+    var latestIsLoading = false
 
     private val uniqueTagSet = mutableSetOf<String>()
 
@@ -47,15 +50,22 @@ class ScannedProductsFragment : Fragment() {
         setupRecyclerView()
         observeProducts()
         setupRFIDGunTrigger()
-        binding.btnLoadMore.setOnClickListener {
-            scannedProductsViewModel.loadNextPage()
-        }
+
 
     }
 
     private fun setupRecyclerView() {
         inventoryAdapter = InventoryAdapter(emptyList()) { product, anchorView ->
-            // You can reuse showCustomPopupMenu if needed
+            ProductPopupMenu(requireContext(), anchorView, product, object : ProductPopupMenu.PopupActionListener {
+                override fun onViewClicked(product: ProductModel) {
+                    Toast.makeText(requireContext(), "View: ${product.productName}", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onEditClicked(product: ProductModel) {}
+                override fun onLocateClicked(product: ProductModel) {}
+                override fun onUpdateClicked(product: ProductModel) {}
+                override fun onDeleteClicked(product: ProductModel) {}
+            }).show()
         }
 
         binding.recyclerView.apply {
@@ -63,7 +73,11 @@ class ScannedProductsFragment : Fragment() {
             adapter = inventoryAdapter
         }
 
-
+        binding.btnLoadMore.setOnClickListener {
+            binding.btnLoadMore.visibility = View.GONE
+            binding.loadMoreProgress.visibility = View.VISIBLE
+            scannedProductsViewModel.loadNextPage()
+        }
     }
 
     private fun observeProducts() {
@@ -81,20 +95,61 @@ class ScannedProductsFragment : Fragment() {
 
             if (newTagsAdded) {
                 // 🔄 Pass the updated list to ViewModel
-                scannedProductsViewModel.setTagFilters(uniqueTagSet.toList())
+                scannedProductsViewModel.setMatchedTagIds(uniqueTagSet.toList())
             }
         }
 
-        scannedProductsViewModel.isLoading.observe(viewLifecycleOwner) { loading ->
-            binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
+        scannedProductsViewModel.pagedProducts.observe(viewLifecycleOwner) { products ->
+            inventoryAdapter.updateList(products)
+
+            val total = scannedProductsViewModel.totalCount.value ?: 0
+            val currentCount = products.size
+            binding.itemCountText.text = "$currentCount of $total"
         }
 
-        scannedProductsViewModel.products.observe(viewLifecycleOwner) { productList  ->
-            inventoryAdapter.updateList(productList)
-            binding.btnLoadMore.visibility =
-                if (scannedProductsViewModel.hasMoreData()) View.VISIBLE else View.GONE
+
+        scannedProductsViewModel.isPageLoading.observe(viewLifecycleOwner) { isLoading ->
+            latestIsLoading = isLoading
+            val currentCount = scannedProductsViewModel.pagedProducts.value?.size ?: 0
+            updateLoadMoreUI(isLoading, currentCount, latestTotal)
+        }
+
+        scannedProductsViewModel.totalCount.observe(viewLifecycleOwner) { total ->
+            latestTotal = total
+            val currentCount = scannedProductsViewModel.pagedProducts.value?.size ?: 0
+            updateLoadMoreUI(latestIsLoading, currentCount, total)
         }
     }
+
+    private fun updateLoadMoreUI(isLoading: Boolean, currentCount: Int, total: Int) {
+        val allItemsShown = currentCount >= total
+
+        binding.itemCountText.text = "$currentCount of $total"
+
+        if (allItemsShown || total == 0) {
+            binding.loadMoreContainer.visibility = View.GONE
+        } else {
+            binding.loadMoreContainer.visibility = View.VISIBLE
+
+            // Show loader for minimum 2 seconds
+            if (isLoading) {
+                binding.btnLoadMore.visibility = View.INVISIBLE
+                binding.loadMoreProgress.visibility = View.VISIBLE
+
+                // ⏳ Optional: Minimum 2-second loader experience
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (!latestIsLoading) {
+                        binding.loadMoreProgress.visibility = View.GONE
+                        binding.btnLoadMore.visibility = View.VISIBLE
+                    }
+                }, 2000)
+            } else {
+                binding.loadMoreProgress.visibility = View.GONE
+                binding.btnLoadMore.visibility = View.VISIBLE
+            }
+        }
+    }
+
 
     private fun setupRFIDGunTrigger() {
 

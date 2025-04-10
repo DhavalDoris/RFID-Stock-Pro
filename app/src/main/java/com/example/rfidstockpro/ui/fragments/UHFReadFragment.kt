@@ -1,8 +1,8 @@
 package com.example.rfidstockpro.ui.fragments
 
+import ScannedProductsViewModel
 import android.content.Intent
 import android.os.Bundle
-import android.os.SystemClock
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -11,21 +11,17 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.widget.AppCompatTextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.rfidstockpro.R
-import com.example.rfidstockpro.RFIDApplication.Companion.PRODUCT_TABLE
 import com.example.rfidstockpro.Utils.ViewUtils
 import com.example.rfidstockpro.adapter.UHFTagAdapter
-import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.databinding.FragmentUhfreadTagBinding
 import com.example.rfidstockpro.factores.UHFViewModelFactory
 import com.example.rfidstockpro.repository.UHFRepository
-import com.example.rfidstockpro.ui.ProductManagement.viewmodels.ScannedProductsViewModel
+
 import com.example.rfidstockpro.ui.activities.AddItemActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity
-import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isKeyDownUP
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.viewmodel.SharedProductViewModel
@@ -34,15 +30,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.rscja.deviceapi.RFIDWithUHFBLE
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.KeyEventCallback
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
 
 class UHFReadFragment : Fragment() {
 

@@ -628,7 +628,6 @@ object AwsManager {
         return try {
             val scanRequestBuilder = ScanRequest.builder()
                 .tableName(tableName)
-                .limit(10)
             // Set last evaluated key if paginating
             lastEvaluatedKey?.let { scanRequestBuilder.exclusiveStartKey(it) }
 
@@ -657,4 +656,6 @@ object AwsManager {
                 .build()
         }
     }
+
+
 }

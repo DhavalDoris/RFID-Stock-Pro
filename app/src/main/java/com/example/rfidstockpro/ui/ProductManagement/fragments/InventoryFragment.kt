@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.FragmentInventoryBinding
+import com.example.rfidstockpro.ui.ProductManagement.ProductPopupMenu
 import com.example.rfidstockpro.ui.ProductManagement.viewmodels.InventoryViewModel
 import com.example.rfidstockpro.ui.inventory.InventoryAdapter
 
@@ -53,8 +54,19 @@ class InventoryFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+
+
         inventoryAdapter = InventoryAdapter(emptyList()) { product, anchorView ->
-            showCustomPopupMenu(requireActivity(), anchorView, product)
+            ProductPopupMenu(requireContext(), anchorView, product, object : ProductPopupMenu.PopupActionListener {
+                override fun onViewClicked(product: ProductModel) {
+                    Toast.makeText(requireContext(), "View: ${product.productName}", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onEditClicked(product: ProductModel) {}
+                override fun onLocateClicked(product: ProductModel) {}
+                override fun onUpdateClicked(product: ProductModel) {}
+                override fun onDeleteClicked(product: ProductModel) {}
+            }).show()
         }
 
         val layoutManager = LinearLayoutManager(requireContext())
