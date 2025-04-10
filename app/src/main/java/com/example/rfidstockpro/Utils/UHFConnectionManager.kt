@@ -1,4 +1,5 @@
 import android.bluetooth.BluetoothDevice
+import android.util.Log
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 
 object UHFConnectionManager {
@@ -22,13 +23,26 @@ object UHFConnectionManager {
         }
     }
 
+    // Add this to recheck connection
+    fun recheckConnectionStatus() {
+        Log.d("ONRESUME_TAG", "recheckConnectionStatus - Rechecking... Device: $connectedDevice")
+
+        connectionStatus = if (connectedDevice != null) {
+            ConnectionStatus.CONNECTED
+        } else {
+            ConnectionStatus.DISCONNECTED
+        }
+        notifyListeners()
+    }
+
+
     fun removeStatusChangeListener(listener: ConnectionStatusListener) {
         statusChangeListeners.remove(listener)
     }
 
     private fun notifyListeners() {
-        for (listener in statusChangeListeners) {
-            listener.onConnectionStatusChanged(connectionStatus, connectedDevice)
+        for (listener in statusChangeListeners.toList()) {
+                listener.onConnectionStatusChanged(connectionStatus, connectedDevice)
         }
     }
 

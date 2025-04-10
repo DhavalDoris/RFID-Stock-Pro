@@ -144,7 +144,7 @@ class InventoryFragment : Fragment() {
 
             val productList = viewModel.products.value ?: emptyList()
             // Show progress only if loading and no data yet
-            binding.progressBar.visibility =
+            binding.scanProgressBar.visibility =
                 if (isLoading && productList.isEmpty()) View.VISIBLE else View.GONE
 
             // Show "No items" only if not loading and list is empty

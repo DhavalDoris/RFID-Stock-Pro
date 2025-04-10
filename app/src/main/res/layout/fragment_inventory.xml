@@ -14,10 +14,11 @@
 
     <!-- ProgressBar for loading state -->
     <ProgressBar
-        android:id="@+id/progressBar"
+        android:id="@+id/scanProgressBar"
         style="?android:attr/progressBarStyleLarge"
         android:layout_gravity="center"
         android:visibility="gone"
+        android:layout_above="@+id/loadMoreContainer"
         android:indeterminateTint="@color/appMainColor"
         android:layout_centerInParent="true"
         android:layout_width="wrap_content"

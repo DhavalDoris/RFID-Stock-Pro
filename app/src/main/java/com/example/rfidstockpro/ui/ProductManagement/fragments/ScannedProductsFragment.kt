@@ -55,6 +55,8 @@ class ScannedProductsFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+        binding.noItemsText.visibility = View.VISIBLE
+
         inventoryAdapter = InventoryAdapter(emptyList()) { product, anchorView ->
             ProductPopupMenu(requireContext(), anchorView, product, object : ProductPopupMenu.PopupActionListener {
                 override fun onViewClicked(product: ProductModel) {
@@ -95,6 +97,7 @@ class ScannedProductsFragment : Fragment() {
 
             if (newTagsAdded) {
                 // 🔄 Pass the updated list to ViewModel
+                // Show progress while scanning & matching
                 scannedProductsViewModel.setMatchedTagIds(uniqueTagSet.toList())
             }
         }
@@ -102,9 +105,20 @@ class ScannedProductsFragment : Fragment() {
         scannedProductsViewModel.pagedProducts.observe(viewLifecycleOwner) { products ->
             inventoryAdapter.updateList(products)
 
+            // Hide loading when items are received
+//            binding.scanProgressBar.visibility = View.VISIBLE
+
             val total = scannedProductsViewModel.totalCount.value ?: 0
             val currentCount = products.size
             binding.itemCountText.text = "$currentCount of $total"
+
+            if (products.isNullOrEmpty()) {
+                binding.noItemsText.visibility = View.VISIBLE
+            }
+            else{
+                binding.noItemsText.visibility = View.GONE
+            }
+
         }
 
 
