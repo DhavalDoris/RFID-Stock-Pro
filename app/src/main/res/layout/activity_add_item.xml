@@ -447,7 +447,7 @@
         android:layout_below="@id/commonToolbar"
         android:visibility="visible" />
 
-    <RelativeLayout
+    <!--<RelativeLayout
         android:id="@+id/rlStatScan"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -528,6 +528,12 @@
 
 
 
-    </RelativeLayout>
+    </RelativeLayout>-->
+
+    <include
+        android:id="@+id/connectRFID"
+        layout="@layout/connect_rfid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </RelativeLayout>
