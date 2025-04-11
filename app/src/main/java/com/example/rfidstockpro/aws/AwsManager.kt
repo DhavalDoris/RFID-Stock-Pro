@@ -657,5 +657,37 @@ object AwsManager {
         }
     }
 
+    fun getProductById(
+        tableName: String,
+        productId: String,
+        onSuccess: (ProductModel) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val request = GetItemRequest.builder()
+                    .tableName(tableName)
+                    .key(mapOf("id" to AttributeValue.builder().s(productId).build()))
+                    .build()
+
+                val response = dynamoDBClient.getItem(request)
+
+                if (response.hasItem()) {
+                    val product = response.item().toProductModel()
+                    withContext(Dispatchers.Main) {
+                        onSuccess(product)
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        onError(Exception("No product found with ID: $productId"))
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    onError(e)
+                }
+            }
+        }
+    }
 
 }

@@ -44,6 +44,11 @@
 
     <color name="green_active">#2E7D32</color>
     <color name="red_inactive">#D32F2F</color>
+    <color name="active_bg">#8BFF8B</color>
+    <color name="active_textColor">#72B172</color>
+    <color name="red">#EB7375</color>
+    <color name="orange">#CBA505</color>
 
+    <color name="dot_inactive">#D3D3D3</color>
 
 </resources>

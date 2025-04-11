@@ -20,6 +20,7 @@ import com.example.rfidstockpro.R
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.FragmentInventoryBinding
 import com.example.rfidstockpro.ui.ProductManagement.ProductPopupMenu
+import com.example.rfidstockpro.ui.ProductManagement.helper.ProductHolder
 import com.example.rfidstockpro.ui.ProductManagement.viewmodels.InventoryViewModel
 import com.example.rfidstockpro.ui.inventory.InventoryAdapter
 
@@ -28,7 +29,6 @@ class InventoryFragment : Fragment() {
     private lateinit var binding: FragmentInventoryBinding
     private lateinit var viewModel: InventoryViewModel
     private lateinit var inventoryAdapter: InventoryAdapter
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,13 +55,11 @@ class InventoryFragment : Fragment() {
 
     private fun setupRecyclerView() {
 
-
         inventoryAdapter = InventoryAdapter(emptyList()) { product, anchorView ->
             ProductPopupMenu(requireContext(), anchorView, product, object : ProductPopupMenu.PopupActionListener {
                 override fun onViewClicked(product: ProductModel) {
-                    Toast.makeText(requireContext(), "View: ${product.productName}", Toast.LENGTH_SHORT).show()
+                    openProductDetails(product)
                 }
-
                 override fun onEditClicked(product: ProductModel) {}
                 override fun onLocateClicked(product: ProductModel) {}
                 override fun onUpdateClicked(product: ProductModel) {}
@@ -76,67 +74,15 @@ class InventoryFragment : Fragment() {
 
     }
 
-    fun showCustomPopupMenu(context: Context, anchor: View, product: ProductModel) {
-        val inflater = LayoutInflater.from(context)
-        val popupView = inflater.inflate(R.layout.item_menu, null)
+    private fun openProductDetails(productModel: ProductModel) {
+        ProductHolder.selectedProduct = productModel
+        val fragment = ProductDetailsFragment()
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentProductDetail, fragment)
+            .addToBackStack(null)
+            .commit()
 
-        val widthInDp = 150
-        val scale = context.resources.displayMetrics.density
-        val widthInPx = (widthInDp * scale + 0.5f).toInt()
-
-
-        val popupWindow = PopupWindow(
-            popupView,
-            widthInPx,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            true
-        )
-
-        val location = IntArray(2)
-        anchor.getLocationOnScreen(location)
-
-        popupWindow.showAtLocation(anchor, Gravity.NO_GRAVITY,
-            location[0] + anchor.width - widthInPx,
-            location[1] + anchor.height)
-
-        // This will show it aligned to the bottom-left of the anchor view
-//        popupWindow.showAsDropDown(anchor, -(widthInPx - anchor.width), 0)
-
-        // Set background to dismiss on outside touch
-        popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        popupWindow.isOutsideTouchable = true
-        popupWindow.elevation = 8f
-
-        // Set click listeners
-        popupView.findViewById<LinearLayout>(R.id.action_view).setOnClickListener {
-            Toast.makeText(context, "View clicked", Toast.LENGTH_SHORT).show()
-            popupWindow.dismiss()
-        }
-
-        popupView.findViewById<LinearLayout>(R.id.action_edit).setOnClickListener {
-            Toast.makeText(context, "edit clicked", Toast.LENGTH_SHORT).show()
-            popupWindow.dismiss()
-        }
-
-        popupView.findViewById<LinearLayout>(R.id.action_locate).setOnClickListener {
-            Toast.makeText(context, "locate clicked", Toast.LENGTH_SHORT).show()
-            popupWindow.dismiss()
-        }
-
-        popupView.findViewById<LinearLayout>(R.id.action_update).setOnClickListener {
-            Toast.makeText(context, "update clicked", Toast.LENGTH_SHORT).show()
-            popupWindow.dismiss()
-        }
-
-        popupView.findViewById<LinearLayout>(R.id.action_delete).setOnClickListener {
-            Toast.makeText(context, "Delete clicked", Toast.LENGTH_SHORT).show()
-            popupWindow.dismiss()
-        }
-
-        // Show popup at anchor position
-        popupWindow.showAsDropDown(anchor, 0, 0)
     }
-
 
     private fun observeViewModel() {
 

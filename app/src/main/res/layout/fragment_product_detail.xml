@@ -24,6 +24,56 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_200sdp">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardView"
+                    android:layout_width="@dimen/_150sdp"
+                    android:layout_height="@dimen/_150sdp"
+                    android:layout_centerInParent="true"
+                    app:cardCornerRadius="@dimen/_7sdp">
+
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/mediaViewPager"
+                        android:layout_width="@dimen/_150sdp"
+                        android:layout_height="@dimen/_150sdp" />
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Left arrow -->
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/btnPrev"
+                    android:layout_width="@dimen/_20sdp"
+                    android:layout_height="@dimen/_20sdp"
+                    android:layout_marginRight="@dimen/_10sdp"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/cardView"
+                    app:srcCompat="@drawable/ic_arrow_left" />
+
+                <!-- Right arrow -->
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/btnNext"
+                    android:layout_width="@dimen/_20sdp"
+                    android:layout_height="@dimen/_20sdp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/_10sdp"
+                    android:layout_toRightOf="@+id/cardView"
+                    app:srcCompat="@drawable/ic_arrow_right" />
+
+                <!-- Dots Indicator -->
+                <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+                    android:id="@+id/dotsIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="12dp"
+                    app:dotsSize="10dp" />
+
+            </RelativeLayout>
+
             <TextView
                 android:id="@+id/errorMessage"
                 android:layout_width="wrap_content"
@@ -32,8 +82,7 @@
                 android:fontFamily="@font/rethinksans_variablefont_wght"
                 android:textColor="@color/gray"
                 android:textStyle="bold"
-                android:visibility="gone"/>
-
+                android:visibility="gone" />
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/content_layout"
@@ -155,7 +204,6 @@
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-
 
             <com.facebook.shimmer.ShimmerFrameLayout
                 android:id="@+id/shimmerLayout"

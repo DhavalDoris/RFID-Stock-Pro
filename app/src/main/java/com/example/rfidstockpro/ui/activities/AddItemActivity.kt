@@ -1,21 +1,18 @@
 package com.example.rfidstockpro.ui.activities
 
-import android.Manifest
+import UHFConnectionManager
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
-import android.webkit.MimeTypeMap
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageView
@@ -28,26 +25,21 @@ import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.ActivityAddItemBinding
+import com.example.rfidstockpro.ui.ProductManagement.BluetoothConnectionManager
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.ui.fragments.UHFReadFragment
 import com.example.rfidstockpro.viewmodel.AddItemViewModel
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
-import com.example.rfidstockpro.viewmodel.DashboardViewModel.Companion.SHOW_HISTORY_CONNECTED_LIST
 import com.example.rfidstockpro.viewmodel.SharedProductViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.rscja.deviceapi.RFIDWithUHFBLE
 import com.rscja.deviceapi.interfaces.ConnectionStatus
-import com.rscja.deviceapi.interfaces.ConnectionStatusCallback
 import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.ActivityResultLauncher
-import com.example.rfidstockpro.ui.ProductManagement.BluetoothConnectionManager
 
 class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
 
@@ -309,7 +301,7 @@ class AddItemActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
         val priceStr = binding.etPrice.text.toString().trim()
         val etSku = binding.etSku.text.toString().trim()
         val tagId = "" // Replace this with actual tag ID logic
-        val status = "Pending"
+        val status = "Active"
 
         // Extract image paths
         val selectedImagePaths = selectedImageFiles.map { it.absolutePath }

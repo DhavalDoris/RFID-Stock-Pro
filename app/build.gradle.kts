@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.kapt)
+    id("kotlin-parcelize")
 }
 
 android {
@@ -71,6 +72,7 @@ dependencies {
     implementation(libs.androidx.gridlayout)
     implementation(libs.androidx.ui.text.android)
     implementation(libs.androidx.lifecycle.viewmodel.android)
+    implementation(libs.androidx.media3.exoplayer)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -110,4 +112,9 @@ dependencies {
 
     implementation("javax.xml.stream:stax-api:1.0-2")
     implementation("org.codehaus.woodstox:woodstox-core-asl:4.4.1")
+
+    implementation ("com.facebook.shimmer:shimmer:0.5.0")
+    implementation ("com.tbuonomo:dotsindicator:5.1.0")
+
+    implementation("androidx.media3:media3-ui:1.6.0")
 }
