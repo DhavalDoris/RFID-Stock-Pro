@@ -1,13 +1,14 @@
 package com.example.rfidstockpro.aws
 
+import android.app.ProgressDialog
 import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.webkit.MimeTypeMap
+import android.widget.Toast
 import com.example.rfidstockpro.RFIDApplication
 import com.example.rfidstockpro.RFIDApplication.Companion.PRODUCT_TABLE
 import com.example.rfidstockpro.RFIDApplication.Companion.USER_TABLE
-import com.example.rfidstockpro.api.S3UploadService
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.aws.models.toMap
@@ -16,18 +17,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.ResponseBody
-import okio.BufferedSink
-import okio.ForwardingSink
-import okio.buffer
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.core.interceptor.ExecutionAttributes
@@ -58,17 +47,12 @@ import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload
 import software.amazon.awssdk.services.s3.model.CompletedPart
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest
-import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.model.UploadPartRequest
-import software.amazon.awssdk.services.s3.presigner.S3Presigner
-import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
 import software.amazon.awssdk.services.ses.SesClient
 import java.io.File
 import java.io.FileInputStream
-import java.nio.Buffer
 import java.time.Duration
 import java.util.UUID
-import java.util.concurrent.TimeUnit
 
 object AwsManager {
 
@@ -101,7 +85,7 @@ object AwsManager {
     }
 
     // ✅ AWS SDK v2 S3 Client
-    /*val s3Client: S3Client = S3Client.builder()
+    val s3Client: S3Client = S3Client.builder()
         .region(AWS_REGION)
         .credentialsProvider(
             StaticCredentialsProvider.create(
@@ -109,19 +93,7 @@ object AwsManager {
             )
         )
         .httpClient(UrlConnectionHttpClient.create()) // Required for Android
-        .build()*/
-
-
-  /*  val amazonS3Client: AmazonS3 = AmazonS3Client(
-        BasicAWSCredentials(AWS_ACCESS_KEY, AWS_SECRET_KEY)
-    ).apply {
-        setRegion(com.amazonaws.regions.Region.getRegion("us-east-1"))
-    }
-    val transferUtility: TransferUtility = TransferUtility.builder()
-        .context(RFIDApplication.instance)
-        .s3Client(amazonS3Client)  // Reuse your existing S3 client setup
-        .build()*/
-
+        .build()
 
     // ✅ AWS SDK v2 SES Client
     private val sesClient: SesClient = SesClient.builder()
@@ -143,7 +115,7 @@ object AwsManager {
         return instance!!
     }
 
-    /*fun uploadMediaToS3(
+    fun uploadMediaToS3(
         scope: CoroutineScope,
         context: Context,
         imageFiles: List<File>,
@@ -220,237 +192,9 @@ object AwsManager {
                 }
             }
         }
-    }*/
-
-    /*fun uploadMediaToS3(
-        scope: CoroutineScope,
-        context: Context,
-        imageFiles: List<File>,
-        videoFile: File?,
-        onSuccess: (List<String>, String?) -> Unit,
-        onError: (String) -> Unit
-    ) {
-        val transferUtility = TransferUtility.builder()
-            .context(context)
-            .s3Client(AwsManager.amazonS3Client) // Must be AmazonS3, not S3Client
-            .defaultBucket(AwsManager.BUCKET_NAME)
-            .build()
-
-        scope.launch(Dispatchers.IO) {
-            var progressDialog: ProgressDialog? = null
-            try {
-                withContext(Dispatchers.Main) {
-                    Log.d("S3Upload", "Starting upload, showing progress dialog")
-                    progressDialog = ProgressDialog(context).apply {
-                        setMessage("Uploading... 0%")
-                        setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
-                        isIndeterminate = false
-                        max = 100
-                        setCancelable(false)
-                        show()
-                    }
-                }
-
-                val uploadedImageUrls = mutableListOf<String>()
-
-                for ((index, imageFile) in imageFiles.withIndex()) {
-                    val imageKey = "images/${UUID.randomUUID()}_${imageFile.name}"
-                    Log.d("S3Upload", "Uploading image ${index + 1}: $imageKey")
-                    Log.d("S3Upload", "File size: ${imageFile.length() / 1024} KB")
-
-                    val uploadObserver = transferUtility.upload(
-                        AwsManager.BUCKET_NAME,
-                        imageKey,
-                        imageFile
-                    )
-
-                    val uploadComplete = CompletableDeferred<Unit>()
-
-                    uploadObserver.setTransferListener(object : TransferListener {
-                        override fun onStateChanged(id: Int, state: TransferState) {
-                            Log.d("S3Upload", "Image upload state changed: $state")
-                            if (state == TransferState.COMPLETED) {
-                                val url = "https://${AwsManager.BUCKET_NAME}.s3.amazonaws.com/$imageKey"
-                                uploadedImageUrls.add(url)
-                                Log.d("S3Upload", "Image uploaded successfully: $url")
-                                uploadComplete.complete(Unit)
-
-                            } else if (state == TransferState.FAILED) {
-                                Log.e("S3Upload", "Image upload failed for: $imageKey")
-                                uploadComplete.completeExceptionally(Exception("Upload failed"))
-                            }
-                        }
-
-                        override fun onProgressChanged(id: Int, bytesCurrent: Long, bytesTotal: Long) {
-                            val percentage = if (bytesTotal > 0) (bytesCurrent * 100 / bytesTotal).toInt() else 0
-                            Log.d("S3Upload", "Image progress: $bytesCurrent / $bytesTotal")
-                            Log.d("S3Upload", "Image upload progress: $percentage%")
-                            scope.launch(Dispatchers.Main) {
-                                progressDialog?.progress = percentage
-                                progressDialog?.setMessage("Uploading Image ${index + 1}/${imageFiles.size}... $percentage%")
-                            }
-                        }
-
-                        override fun onError(id: Int, ex: Exception) {
-                            Log.e("S3Upload", "Image upload error: ${ex.message}", ex)
-                            uploadComplete.completeExceptionally(ex)
-                        }
-                    })
-
-                    // Wait until this upload is done before continuing
-                    uploadComplete.await()
-                }
-
-                var videoUrl: String? = null
-                if (videoFile != null) {
-                    val videoKey = "videos/${UUID.randomUUID()}_${videoFile.name}"
-                    Log.d("S3Upload", "Uploading video: $videoKey")
-
-                    val videoUploadObserver = transferUtility.upload(
-                        AwsManager.BUCKET_NAME,
-                        videoKey,
-                        videoFile
-                    )
-
-                    val videoUploadComplete = CompletableDeferred<Unit>()
-
-                    videoUploadObserver.setTransferListener(object : TransferListener {
-                        override fun onStateChanged(id: Int, state: TransferState) {
-                            Log.d("S3Upload", "Video upload state changed: $state")
-                            if (state == TransferState.COMPLETED) {
-                                videoUrl = "https://${AwsManager.BUCKET_NAME}.s3.amazonaws.com/$videoKey"
-                                Log.d("S3Upload", "Video uploaded successfully: $videoUrl")
-                                videoUploadComplete.complete(Unit)
-                            } else if (state == TransferState.FAILED) {
-                                Log.e("S3Upload", "Video upload failed for: $videoKey")
-                                videoUploadComplete.completeExceptionally(Exception("Video upload failed"))
-                            }
-                        }
-
-                        override fun onProgressChanged(id: Int, bytesCurrent: Long, bytesTotal: Long) {
-                            val percentage = if (bytesTotal > 0) (bytesCurrent * 100 / bytesTotal).toInt() else 0
-                            Log.d("S3Upload", "Video upload progress: $percentage%")
-                            scope.launch(Dispatchers.Main) {
-                                progressDialog?.progress = percentage
-                                progressDialog?.setMessage("Uploading Video... $percentage%")
-                            }
-                        }
-
-                        override fun onError(id: Int, ex: Exception) {
-                            Log.e("S3Upload", "Video upload error: ${ex.message}", ex)
-                            videoUploadComplete.completeExceptionally(ex)
-                        }
-                    })
-
-                    videoUploadComplete.await()
-                }
-
-                withContext(Dispatchers.Main) {
-                    Log.d("S3Upload", "All uploads completed successfully")
-                    progressDialog?.dismiss()
-                    onSuccess(uploadedImageUrls, videoUrl)
-                }
-
-            } catch (e: Exception) {
-                Log.e("S3Upload", "Upload failed: ${e.message}", e)
-                withContext(Dispatchers.Main) {
-                    progressDialog?.dismiss()
-                    Toast.makeText(context, "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                    onError(e.message ?: "Unknown error")
-                }
-            }
-        }
-    }*/
-
-    fun uploadFileToS3ViaPresignedUrl(
-        file: File,
-        contentType: String,
-        region: String,
-        onSuccess: (String) -> Unit,
-        onError: (String) -> Unit
-    ) {
-        val objectKey = "uploads/${UUID.randomUUID()}_${file.name}"
-        Log.d("S3_UPLOAD", "Preparing to upload file: ${file.name}")
-        Log.d("S3_UPLOAD", "File size: ${file.length() / (1024 * 1024)} MB")
-        Log.d("S3_UPLOAD", "Generating pre-signed URL for: $objectKey")
-
-        val presignedUrl = generatePresignedUrl(
-            objectKey = objectKey,
-            region = region,
-            contentType = contentType
-        )
-        Log.d("S3_UPLOAD", "Pre-signed URL generated:\n$presignedUrl")
-
-        val okHttpClient = OkHttpClient.Builder()
-            .connectTimeout(2, TimeUnit.MINUTES) // connection timeout
-            .writeTimeout(5, TimeUnit.MINUTES)   // time allowed for writing data
-            .readTimeout(5, TimeUnit.MINUTES)    // time allowed for reading server response
-            .build()
-
-        val requestFile = file.asRequestBody(contentType.toMediaTypeOrNull())
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://s3.amazonaws.com/") // baseUrl is required but will be overridden
-            .client(okHttpClient)
-            .build()
-
-        val service = retrofit.create(S3UploadService::class.java)
-        val call = service.uploadFile(presignedUrl, requestFile, contentType)
-
-        call.enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                if (response.isSuccessful) {
-                    val finalUrl = "https://$BUCKET_NAME.s3.amazonaws.com/$objectKey"
-                    Log.d("S3_UPLOAD", "✅ Upload succeeded in  seconds")
-                    onSuccess(finalUrl)
-                } else {
-                    Log.e("S3_UPLOAD", "❌ Upload failed with code ${response.code()} in  seconds")
-                    onError("Upload failed: HTTP ${response.code()}")
-                }
-            }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                Log.e("S3_UPLOAD", "❌ Upload error: ${t.localizedMessage}", t)
-                onError("Upload error: ${t.localizedMessage}")
-            }
-        })
     }
 
 
-
-    fun generatePresignedUrl(
-        objectKey: String,
-        region: String,
-        contentType: String
-    ): String {
-        Log.d("S3PreSignLogger", "Generating pre-signed URL for objectKey: $objectKey, region: $region, contentType: $contentType")
-        val credentials = AwsBasicCredentials.create(AWS_ACCESS_KEY, AWS_SECRET_KEY)
-
-        val presigner = S3Presigner.builder()
-            .region(Region.of(region))
-            .credentialsProvider { credentials }
-            .build()
-
-        val putObjectRequest = PutObjectRequest.builder()
-            .bucket(BUCKET_NAME)
-            .key(objectKey)
-            .contentType(contentType)
-            .build()
-        Log.d("S3PreSignLogger", "Created PutObjectRequest: $putObjectRequest")
-
-        val presignRequest = PutObjectPresignRequest.builder()
-            .putObjectRequest(putObjectRequest)
-            .signatureDuration(Duration.ofMinutes(15))
-            .build()
-
-        val presignedRequest = presigner.presignPutObject(presignRequest)
-        presigner.close()
-
-        // Log the final URL
-        val presignedUrl = presignedRequest.url().toString()
-        Log.d("S3PreSignLogger", "Generated pre-signed URL: $presignedUrl")
-
-        return presignedRequest.url().toString()
-    }
 
 
     // ✅ Multipart Upload Function with 2MB Chunk Size & Progress Tracking
@@ -471,6 +215,7 @@ object AwsManager {
             "json" -> "application/json"
             else -> "application/octet-stream" // Default type if unknown
         }
+
 
         val initiateRequest = CreateMultipartUploadRequest.builder()
             .bucket(BUCKET_NAME)

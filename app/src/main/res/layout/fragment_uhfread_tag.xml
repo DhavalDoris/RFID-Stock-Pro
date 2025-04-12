@@ -81,7 +81,7 @@
                     android:layout_below="@+id/tv_selected"
                     android:layout_centerHorizontal="true"
                     android:fontFamily="@font/rethinksans_bold"
-                    android:text="Total Found"
+                    android:text="Total Selected"
                     android:textColor="@color/black"
                     android:textSize="@dimen/_10ssp"
                     android:textStyle="bold" />
@@ -616,7 +616,6 @@
                     android:layout_weight="1"
                     android:background="@drawable/continue_btn_bg"
                     android:backgroundTint="@color/appMainColor"
-                    android:enabled="false"
                     android:fontFamily="@font/rethinksans_variablefont_wght"
                     android:gravity="center"
                     android:paddingHorizontal="@dimen/_45sdp"

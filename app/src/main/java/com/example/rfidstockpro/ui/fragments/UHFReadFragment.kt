@@ -19,6 +19,7 @@ import com.example.rfidstockpro.adapter.UHFTagAdapter
 import com.example.rfidstockpro.databinding.FragmentUhfreadTagBinding
 import com.example.rfidstockpro.factores.UHFViewModelFactory
 import com.example.rfidstockpro.repository.UHFRepository
+import com.example.rfidstockpro.ui.ProductManagement.ProductManagementActivity
 
 import com.example.rfidstockpro.ui.activities.AddItemActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity
@@ -88,7 +89,6 @@ class UHFReadFragment : Fragment() {
         observeViewModel()
     }
 
-
     private fun setupUI() {
         isExit = false
         // Initialize adapter with callback
@@ -146,6 +146,12 @@ class UHFReadFragment : Fragment() {
                 viewModel.handleKeyUp(keycode)
             }
         })
+
+        binding.btnProductList.setOnClickListener {
+            Log.d("HELLO_TAG", "keycode")
+            startActivity(Intent(requireActivity(), ProductManagementActivity::class.java))
+            requireActivity().finish()
+        }
     }
 
     private fun AddProductToAWS() {

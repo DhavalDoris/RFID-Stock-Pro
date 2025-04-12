@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rfidstockpro.RFIDApplication.Companion.PRODUCT_TABLE
 import com.example.rfidstockpro.aws.AwsManager
-import com.example.rfidstockpro.aws.AwsManager.uploadFileToS3ViaPresignedUrl
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.data.UHFTagModel
 import com.example.rfidstockpro.repository.UHFRepository
@@ -185,7 +184,7 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
             val imageFiles = product.selectedImages.map { File(it) }
             val videoFile = product.selectedVideo?.let { File(it) }
 
-           /* AwsManager.uploadMediaToS3(
+            AwsManager.uploadMediaToS3(
                 scope = scope,
                 context = context,
                 imageFiles = imageFiles,
@@ -212,19 +211,7 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
                         withContext(Dispatchers.Main) { onError(errorMessage) }
                     }
                 }
-            )*/
-            uploadFileToS3ViaPresignedUrl(
-                file = imageFiles.get(0),
-                contentType = "image/jpeg",
-                region = "us-east-1",
-                onSuccess = { url ->
-                    Log.d("S3Upload", "File uploaded successfully at: $url")
-                },
-                onError = { error ->
-                    Log.e("S3Upload", "Upload failed: $error")
-                }
             )
-
         }
     }
 
