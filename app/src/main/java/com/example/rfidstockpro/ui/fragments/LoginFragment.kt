@@ -156,7 +156,7 @@ class LoginFragment : Fragment() {
             show()
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        /*CoroutineScope(Dispatchers.IO).launch {
             try {
                 val key = "rfid-uploads/${UUID.randomUUID()}_${file.name}"
 
@@ -186,7 +186,7 @@ class LoginFragment : Fragment() {
                     ).show()
                 }
             }
-        }
+        }*/
     }
 
     private fun uriToFile(uri: Uri): File {

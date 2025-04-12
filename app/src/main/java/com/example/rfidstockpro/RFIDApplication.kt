@@ -26,6 +26,7 @@ class RFIDApplication : Application() {
         external fun getEncryptionKey(): String
 
         val ENCRYPTION_KEY = getEncryptionKey()
+
     }
 
 

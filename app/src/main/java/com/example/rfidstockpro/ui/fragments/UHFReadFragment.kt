@@ -129,6 +129,7 @@ class UHFReadFragment : Fragment() {
 
         binding.btAdd.setOnClickListener {
             AddProductToAWS()
+            Log.d("S3Upload", "btAdd")
         }
 
 
