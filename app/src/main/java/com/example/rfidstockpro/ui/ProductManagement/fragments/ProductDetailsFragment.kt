@@ -22,10 +22,8 @@ class ProductDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentProductDetailBinding
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
     }
 
     override fun onCreateView(
@@ -33,10 +31,7 @@ class ProductDetailsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentProductDetailBinding.inflate(inflater, container, false)
-
-
         init()
-
         return binding.root
     }
 

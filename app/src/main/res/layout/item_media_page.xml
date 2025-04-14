@@ -31,4 +31,5 @@
         android:layout_height="match_parent"
         android:visibility="gone"
         app:show_timeout="0" />
+    
 </androidx.cardview.widget.CardView>

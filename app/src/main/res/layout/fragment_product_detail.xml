@@ -30,14 +30,14 @@
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardView"
-                    android:layout_width="@dimen/_150sdp"
+                    android:layout_width="@dimen/_200sdp"
                     android:layout_height="@dimen/_150sdp"
                     android:layout_centerInParent="true"
                     app:cardCornerRadius="@dimen/_7sdp">
 
                     <androidx.viewpager2.widget.ViewPager2
                         android:id="@+id/mediaViewPager"
-                        android:layout_width="@dimen/_150sdp"
+                        android:layout_width="match_parent"
                         android:layout_height="@dimen/_150sdp" />
 
                 </androidx.cardview.widget.CardView>

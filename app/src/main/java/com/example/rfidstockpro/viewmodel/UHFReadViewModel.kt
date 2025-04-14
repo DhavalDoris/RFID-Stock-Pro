@@ -117,6 +117,15 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
     }
 
     private suspend  fun addTagToList(uhfTagInfo: UHFTAGInfo) {
+        val epc = uhfTagInfo.epc ?: return
+
+        // Check with DynamoDB if this tag already exists
+        val (exists, message) = AwsManager.checkIfTagIdExists(PRODUCT_TABLE, epc)
+        if (exists) {
+            Log.d("TAG_FILTER", "Skipping tag $epc: $message")
+            return
+        }
+
         // Ensure this runs on the main thread
         withContext(Dispatchers.Main) {
             val currentList = _tagList.value?.toMutableList() ?: mutableListOf()
@@ -194,6 +203,8 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
                         selectedImages = imageUrls,
                         selectedVideo = videoUrl
                     )
+                    Log.e("AWS_TAG", "imageUrls: " + imageUrls)
+                    Log.e("AWS_TAG", "videoUrl: " + videoUrl)
 
                     scope.launch {
                         val (isSuccess, saveMessage) = AwsManager.saveProduct(PRODUCT_TABLE, updatedProduct)
@@ -201,7 +212,17 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
                             if (isSuccess) {
                                 onSuccess()
                             } else {
-                                onError(saveMessage)
+                                // 🔥 Clean up uploaded media if save fails
+                                scope.launch {
+                                    AwsManager.deleteMediaFromS3(
+                                        imageUrls = imageUrls,
+                                        videoUrl = videoUrl
+                                    )
+                                }
+
+                                onError("Failed to save to DynamoDB: $saveMessage")
+//                                onError(saveMessage)
+
                             }
                         }
                     }

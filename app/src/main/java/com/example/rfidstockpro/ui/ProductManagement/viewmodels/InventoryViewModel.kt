@@ -23,6 +23,7 @@ class InventoryViewModel : ViewModel() {
     private val _totalCount = MutableLiveData<Int>()
     val totalCount: LiveData<Int> get() = _totalCount
 
+
     private val allProducts = mutableListOf<ProductModel>()
     private var lastEvaluatedKey: Map<String, AttributeValue>? = null
     private var isLastPage = false

@@ -188,14 +188,12 @@ object AwsManager {
                 withContext(Dispatchers.Main) {
                     progressDialog?.dismiss()
                     Toast.makeText(context, "Upload Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Log.e("AWS_TAG",  "Upload Failed: ${e.message}"  )
                     onError(e.message ?: "Unknown error")
                 }
             }
         }
     }
-
-
-
 
     // ✅ Multipart Upload Function with 2MB Chunk Size & Progress Tracking
     private suspend fun multipartUpload(
@@ -274,6 +272,31 @@ object AwsManager {
         return "https://$BUCKET_NAME.s3.amazonaws.com/$key"
     }
 
+    fun deleteMediaFromS3(imageUrls: List<String>, videoUrl: String?) {
+        try {
+            val s3Client = s3Client // your initialized S3 client
+
+            // Delete images
+            imageUrls.forEach { url ->
+                val key = extractKeyFromUrl(url)
+                s3Client.deleteObject { it.bucket(BUCKET_NAME).key(key) }
+            }
+
+            // Delete video if available
+            videoUrl?.let {
+                val key = extractKeyFromUrl(it)
+                s3Client.deleteObject { it.bucket(BUCKET_NAME).key(key) }
+            }
+
+            Log.d("AWS_CLEANUP", "🧹 Deleted uploaded media after failure")
+        } catch (e: Exception) {
+            Log.e("AWS_CLEANUP", "❌ Failed to clean up uploaded media: ${e.message}", e)
+        }
+    }
+
+    private fun extractKeyFromUrl(url: String): String {
+        return Uri.parse(url).lastPathSegment ?: ""
+    }
     fun uriToFile(context: Context, uri: Uri): File {
         val inputStream = context.contentResolver.openInputStream(uri)
             ?: throw IllegalArgumentException("Cannot open URI")

@@ -86,7 +86,7 @@ class InventoryFragment : Fragment() {
 
     private fun observeViewModel() {
 
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+        viewModel.isLoading.observe(viewLifecycleOwner) {                                                                                                          isLoading ->
 
             val productList = viewModel.products.value ?: emptyList()
             // Show progress only if loading and no data yet
