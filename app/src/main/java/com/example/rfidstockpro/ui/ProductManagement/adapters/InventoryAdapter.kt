@@ -21,17 +21,19 @@ class InventoryAdapter(
             binding.productSku.text = product.sku
             binding.productCategory.text = product.productCategory
             binding.productStatus.text = product.status
-            binding.productPrice.text =  "$" + product.price
+            binding.productPrice.text = "$" + product.price
             binding.tagIdTextView.text = product.tagId
 
-            Glide.with(binding.productImage.context)
-                .load(product.selectedImages.get(0))
-                .placeholder(R.drawable.app_icon)
-                .error(R.drawable.app_icon)
-                .into(binding.productImage)
+            if (product.selectedImages.isNotEmpty()) {
+                Glide.with(binding.productImage.context)
+                    .load(product.selectedImages.get(0))
+                    .placeholder(R.drawable.app_icon)
+                    .error(R.drawable.app_icon)
+                    .into(binding.productImage)
+            }
 
             binding.llAction.setOnClickListener {
-                onItemClick(product,it)
+                onItemClick(product, it)
             }
 
 
@@ -39,7 +41,8 @@ class InventoryAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InventoryViewHolder {
-        val binding = ItemInventoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding =
+            ItemInventoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return InventoryViewHolder(binding)
     }
 

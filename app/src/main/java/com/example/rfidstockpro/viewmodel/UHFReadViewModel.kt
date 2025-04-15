@@ -175,7 +175,328 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
         return uhfRepository.setFilter(filterBank, ptr, len, data)
     }
 
+
+    fun addOrUpdateProductToAWS(
+        context: Context,
+        product: ProductModel,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        Log.e("UPDATE_PRODUCT_TAG", "addOrUpdateProductToAWS:id " + product.id )
+        Log.e("UPDATE_PRODUCT_TAG", "addOrUpdateProductToAWS:tag_id " + product.tagId )
+        if (product.tagId!!.isNotEmpty()) {
+            updateProductInAWS(context, product, onSuccess, onError)
+        } else {
+            addProductToAWS(context, product, onSuccess, onError)
+        }
+    }
+
+
     fun addProductToAWS(
+        context: Context,
+        product: ProductModel,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            Log.d("AWS_PRODUCT", "Checking if tagId '${product.tagId}' already exists...")
+
+            val (exists, message) = AwsManager.checkIfTagIdExists(PRODUCT_TABLE, product.tagId)
+            if (exists) {
+                Log.w("AWS_PRODUCT", "❌ Tag already exists: $message")
+                withContext(Dispatchers.Main) { onError(message) }
+                return@launch
+            }
+
+            Log.d("AWS_PRODUCT", "✅ TagId is unique. Proceeding...")
+
+            val imageFiles = product.selectedImages.map { File(it) }
+            val videoFile = product.selectedVideo?.let { File(it) }
+
+            Log.d("AWS_PRODUCT", "Uploading media to S3...")
+            AwsManager.uploadMediaToS3(
+                scope = scope,
+                context = context,
+                imageFiles = imageFiles,
+                videoFile = videoFile,
+                onSuccess = { imageUrls, videoUrl ->
+                    Log.d("AWS_PRODUCT", "✅ Media uploaded to S3 successfully.")
+                    Log.d("AWS_PRODUCT", "Images: $imageUrls")
+                    Log.d("AWS_PRODUCT", "Video: $videoUrl")
+
+                    val updatedProduct = product.copy(
+                        selectedImages = imageUrls,
+                        selectedVideo = videoUrl
+                    )
+
+                    scope.launch {
+                        Log.d("AWS_PRODUCT", "Saving product to DynamoDB...")
+                        val (isSuccess, saveMessage) = AwsManager.saveProduct(PRODUCT_TABLE, updatedProduct)
+                        withContext(Dispatchers.Main) {
+                            if (isSuccess) {
+                                Log.i("AWS_PRODUCT", "✅ Product saved to DynamoDB successfully.")
+                                onSuccess()
+                            } else {
+                                Log.e("AWS_PRODUCT", "❌ Failed to save product to DynamoDB. Cleaning up S3 uploads.")
+                                scope.launch {
+                                    AwsManager.deleteMediaFromS3(
+                                        imageUrls = imageUrls,
+                                        videoUrl = videoUrl
+                                    )
+                                    Log.i("AWS_PRODUCT", "🧹 Cleaned up uploaded media from S3.")
+                                }
+                                onError("Failed to save to DynamoDB: $saveMessage")
+                            }
+                        }
+                    }
+                },
+                onError = { errorMessage ->
+                    Log.e("AWS_PRODUCT", "❌ Failed to upload media to S3: $errorMessage")
+                    scope.launch {
+                        withContext(Dispatchers.Main) { onError(errorMessage) }
+                    }
+                }
+            )
+        }
+    }
+
+
+   /* fun updateProductInAWS(
+        context: Context,
+        product: ProductModel,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val scope = CoroutineScope(Dispatchers.IO)
+
+        scope.launch {
+            Log.d("AWS_UPDATE", "Starting product update for ID: ${product.id}")
+
+            // If no media changes, directly update product
+            if (!product.isMediaUpdated) {
+                Log.d("AWS_UPDATE", "No media updated. Directly updating product in DynamoDB...")
+
+                val (isSuccess, saveMessage) = AwsManager.saveProduct(PRODUCT_TABLE, product)
+                withContext(Dispatchers.Main) {
+                    if (isSuccess) {
+                        Log.i("AWS_UPDATE", "✅ Product updated successfully without media changes.")
+                        onSuccess()
+                    } else {
+                        Log.e("AWS_UPDATE", "❌ Failed to update product in DynamoDB: $saveMessage")
+                        onError("Failed to update product: $saveMessage")
+                    }
+                }
+                return@launch
+            }
+
+            // Media has changed, so upload new and delete old after success
+            val oldImageUrls = product.selectedImages
+            val oldVideoUrl = product.selectedVideo
+
+            val imageFiles = product.selectedImages.map { File(it) }
+//            val videoFile = product.selectedVideo?.let { File(it) }
+
+//            val imageFiles = product.newImageFiles.map { File(it) }
+//            val videoFile = product.newVideoFile?.let { File(it) }
+
+
+            val videoFile = product.selectedVideo?.takeIf {
+                !it.startsWith("http") && File(it).exists() && File(it).length() > 0
+            }?.let { File(it) }
+
+            videoFile?.let {
+                Log.d("UPLOAD_VIDEO", "Video Path: ${it.absolutePath}")
+                Log.d("UPLOAD_VIDEO", "Video Exists: ${it.exists()}, Size: ${it.length()} bytes")
+            } ?: Log.d("UPLOAD_VIDEO", "No valid video file to upload.")
+            // ✅ Check for file existence and size BEFORE uploading
+
+            val validImageFiles = imageFiles.filter { it.exists() && it.length() > 0 }
+            val validVideoFile = videoFile?.takeIf { it.exists() && it.length() > 0 }
+
+            // Log sizes for testing
+            validImageFiles.forEachIndexed { index, file ->
+                Log.d("UPLOAD_DEBUG", "Image $index: ${file.absolutePath}, Size: ${file.length()} bytes")
+            }
+            validVideoFile?.let {
+                Log.d("UPLOAD_DEBUG", "Video: ${it.absolutePath}, Size: ${it.length()} bytes")
+            }
+
+            if (validImageFiles.isEmpty() && validVideoFile == null) {
+                withContext(Dispatchers.Main) {
+                    onError("❌ No valid media files to upload (files might be empty or missing)")
+                }
+                return@launch
+            }
+
+            Log.d("AWS_UPDATE", "Uploading new media to S3...")
+            Log.d("AWS_UPDATE", "==>  $imageFiles")
+            Log.d("AWS_UPDATE", "~~>  $videoFile")
+            AwsManager.uploadMediaToS3(
+                scope = scope,
+                context = context,
+                imageFiles = imageFiles,
+                videoFile = videoFile,
+                onSuccess = { newImageUrls, newVideoUrl ->
+                    Log.d("AWS_UPDATE", "✅ New media uploaded to S3.")
+                    Log.d("AWS_UPDATE", "New images: $newImageUrls")
+                    Log.d("AWS_UPDATE", "New video: $newVideoUrl")
+
+                    val updatedProduct = product.copy(
+                        selectedImages = newImageUrls,
+                        selectedVideo = newVideoUrl,
+                        isMediaUpdated = false // Reset flag after update
+                    )
+
+                    scope.launch {
+                        Log.d("AWS_UPDATE", "Updating product in DynamoDB...")
+                        val (isSuccess, saveMessage) = AwsManager.saveProduct(PRODUCT_TABLE, updatedProduct)
+                        withContext(Dispatchers.Main) {
+                            if (isSuccess) {
+                                Log.i("AWS_UPDATE", "✅ Product updated in DynamoDB.")
+                                // Delete old media
+                                scope.launch {
+                                    AwsManager.deleteMediaFromS3(
+                                        imageUrls = oldImageUrls,
+                                        videoUrl = oldVideoUrl
+                                    )
+                                    Log.i("AWS_UPDATE", "🧹 Deleted old media from S3.")
+                                }
+                                onSuccess()
+                            } else {
+                                Log.e("AWS_UPDATE", "❌ DynamoDB update failed. Rolling back new media.")
+                                // Clean up new uploads
+                                scope.launch {
+                                    AwsManager.deleteMediaFromS3(
+                                        imageUrls = newImageUrls,
+                                        videoUrl = newVideoUrl
+                                    )
+                                    Log.i("AWS_UPDATE", "🧹 Rolled back new media from S3.")
+                                }
+                                onError("Failed to update DynamoDB: $saveMessage")
+                            }
+                        }
+                    }
+                },
+                onError = { errorMessage ->
+                    Log.e("AWS_UPDATE", "❌ Failed to upload new media: $errorMessage")
+                    scope.launch {
+                        withContext(Dispatchers.Main) { onError(errorMessage) }
+                    }
+                }
+            )
+        }
+    }*/
+
+
+    fun updateProductInAWS(
+        context: Context,
+        product: ProductModel,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val scope = CoroutineScope(Dispatchers.IO)
+
+        scope.launch {
+            Log.d("AWS_UPDATE", "🔄 Starting product update for ID: ${product.id}")
+
+            if (!product.isMediaUpdated) {
+                // No media update, just update product
+                val (isSuccess, saveMessage) = AwsManager.saveProduct(PRODUCT_TABLE, product)
+                withContext(Dispatchers.Main) {
+                    if (isSuccess) {
+                        Log.i("AWS_UPDATE", "✅ Product updated without media changes.")
+                        onSuccess()
+                    } else {
+                        Log.e("AWS_UPDATE", "❌ Failed to update product: $saveMessage")
+                        onError("Failed to update product: $saveMessage")
+                    }
+                }
+                return@launch
+            }
+
+            // Separate URLs and local files
+            val oldImageUrls = product.selectedImages.filter { it.startsWith("http") }
+            val oldVideoUrl = product.selectedVideo?.takeIf { it.startsWith("http") }
+
+            val imageFiles = product.selectedImages
+                .filter { it.startsWith("/") || it.startsWith("content://") }
+                .map { File(it) }
+                .filter { it.exists() && it.length() > 0 }
+
+            val videoFile = product.selectedVideo?.takeIf {
+                it.startsWith("/") && File(it).exists() && File(it).length() > 0
+            }?.let { File(it) }
+
+            if (imageFiles.isEmpty() && videoFile == null) {
+                withContext(Dispatchers.Main) {
+                    onError("❌ No valid new media selected to upload.")
+                }
+                return@launch
+            }
+
+            Log.d("AWS_UPDATE", "⬆️ Uploading media to S3...")
+
+            AwsManager.uploadMediaToS3(
+                scope = scope,
+                context = context,
+                imageFiles = imageFiles,
+                videoFile = videoFile,
+                onSuccess = { newImageUrls, newVideoUrl ->
+                    Log.d("AWS_UPDATE", "✅ Media uploaded.")
+                    Log.d("AWS_UPDATE", "🖼️ New image URLs: $newImageUrls")
+                    Log.d("AWS_UPDATE", "🎥 New video URL: $newVideoUrl")
+
+                    // Merge old + new media
+                    val updatedProduct = product.copy(
+                        selectedImages = oldImageUrls + newImageUrls,
+                        selectedVideo = newVideoUrl ?: product.selectedVideo,
+                        isMediaUpdated = false
+                    )
+
+                    scope.launch {
+                        val (isSuccess, saveMessage) = AwsManager.saveProduct(PRODUCT_TABLE, updatedProduct)
+                        withContext(Dispatchers.Main) {
+                            if (isSuccess) {
+                                Log.i("AWS_UPDATE", "✅ Product saved to DynamoDB.")
+
+                                // 🧹 Delete old media only if replaced
+                                scope.launch {
+                                    if (newImageUrls.isNotEmpty() || newVideoUrl != null) {
+                                        AwsManager.deleteMediaFromS3(
+                                            imageUrls = if (newImageUrls.isNotEmpty()) oldImageUrls else emptyList(),
+                                            videoUrl = if (newVideoUrl != null) oldVideoUrl else null
+                                        )
+                                        Log.i("AWS_UPDATE", "🧹 Cleaned old media from S3.")
+                                    }
+                                }
+                                onSuccess()
+                            } else {
+                                Log.e("AWS_UPDATE", "❌ Product save failed. Rolling back media.")
+                                scope.launch {
+                                    AwsManager.deleteMediaFromS3(
+                                        imageUrls = newImageUrls,
+                                        videoUrl = newVideoUrl
+                                    )
+                                }
+                                onError("Failed to update product: $saveMessage")
+                            }
+                        }
+                    }
+                },
+                onError = { errorMessage ->
+                    Log.e("AWS_UPDATE", "❌ Upload error: $errorMessage")
+                    scope.launch {
+                        onError(errorMessage)
+                    }
+                }
+            )
+        }
+    }
+
+
+
+    /*fun addProductToAWS(
         context: Context,
         product: ProductModel, // or whatever your product class is
         onSuccess: () -> Unit,
@@ -187,6 +508,15 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
             val (exists, message) = AwsManager.checkIfTagIdExists(PRODUCT_TABLE, product.tagId)
             if (exists) {
                 withContext(Dispatchers.Main) { onError(message) }
+                return@launch
+            }
+
+            // ✅ If no new media selected, just update product in DynamoDB
+            if (!product.isMediaUpdated) {
+                val (isSuccess, saveMessage) = AwsManager.saveProduct(PRODUCT_TABLE, product)
+                withContext(Dispatchers.Main) {
+                    if (isSuccess) onSuccess() else onError("Failed to update product: $saveMessage")
+                }
                 return@launch
             }
 
@@ -234,7 +564,7 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
                 }
             )
         }
-    }
+    }*/
 
     fun startRFIDScan() {
         viewModelScope.launch {

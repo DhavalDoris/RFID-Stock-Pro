@@ -21,7 +21,7 @@ import com.example.rfidstockpro.factores.UHFViewModelFactory
 import com.example.rfidstockpro.repository.UHFRepository
 import com.example.rfidstockpro.ui.ProductManagement.ProductManagementActivity
 
-import com.example.rfidstockpro.ui.activities.AddItemActivity
+import com.example.rfidstockpro.ui.activities.AddProductActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
@@ -157,13 +157,14 @@ class UHFReadFragment : Fragment() {
     private fun AddProductToAWS() {
         val product = sharedProductViewModel.product.value
         if (product != null) {
-            viewModel.addProductToAWS(
+//            viewModel.addProductToAWS(
+            viewModel.addOrUpdateProductToAWS(
                 context = requireContext(),
                 product = product,
                 onSuccess = {
                     binding.rlSuccessFullAdded.visibility = View.VISIBLE
                     isProductSuccessfullyAdded = true
-                    (activity as? AddItemActivity)?.updateToolbarTitleAddItem("")
+                    (activity as? AddProductActivity)?.updateToolbarTitleAddItem("")
                 },
                 onError = { errorMessage ->
                     Snackbar.make(binding.root, errorMessage, Snackbar.LENGTH_LONG).show()

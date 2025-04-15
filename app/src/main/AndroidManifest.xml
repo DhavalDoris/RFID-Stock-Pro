@@ -51,7 +51,7 @@
             </intent-filter>-->
         </activity>
         <activity
-            android:name=".ui.activities.AddItemActivity"
+            android:name=".ui.activities.AddProductActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme">

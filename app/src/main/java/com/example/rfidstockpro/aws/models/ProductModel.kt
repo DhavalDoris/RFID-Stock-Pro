@@ -12,9 +12,11 @@ data class ProductModel(
     val price: String,
     val description: String,
     val isImageSelected: Boolean,
+    val isMediaUpdated : Boolean,
     var tagId: String,  // Added tagId
     val status: String,  // Added status
-    val createdAt: String  // 🔥 New field
+    val createdAt: String , // 🔥 New field
+    val updatedAt: String  // 🔥 New field
 )
 
 
@@ -27,9 +29,11 @@ fun ProductModel.toMap(): Map<String, AttributeValue> {
         "price" to AttributeValue.builder().s(price).build(),
         "description" to AttributeValue.builder().s(description).build(),
         "isImageSelected" to AttributeValue.builder().bool(isImageSelected).build(),
+        "isMediaUpdated" to AttributeValue.builder().bool(isImageSelected).build(),
         "tagId" to AttributeValue.builder().s(tagId).build(),
         "status" to AttributeValue.builder().s(status).build(),
         "createdAt" to AttributeValue.builder().s(createdAt).build(),
+        "updatedAt" to AttributeValue.builder().s(updatedAt).build(),
         "selectedImages" to AttributeValue.builder().l(
             selectedImages.map { AttributeValue.builder().s(it).build() }
         ).build(),
@@ -48,9 +52,11 @@ fun Map<String, AttributeValue>.toProductModel(): ProductModel {
         price = this["price"]?.s() ?: "",
         description = this["description"]?.s() ?: "",
         isImageSelected = this["isImageSelected"]?.bool() ?: false,
+        isMediaUpdated = this["isMediaUpdated"]?.bool() ?: false,
         tagId = this["tagId"]?.s() ?: "",
         status = this["status"]?.s() ?: "",
-        createdAt = this["createdAt"]?.s() ?: ""
+        createdAt = this["createdAt"]?.s() ?: "",
+        updatedAt = this["updatedAt"]?.s() ?: ""
     )
 }
 

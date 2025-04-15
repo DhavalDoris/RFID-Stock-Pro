@@ -1,6 +1,7 @@
 package com.example.rfidstockpro.ui.ProductManagement.fragments
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -22,6 +23,7 @@ import com.example.rfidstockpro.databinding.FragmentInventoryBinding
 import com.example.rfidstockpro.ui.ProductManagement.ProductPopupMenu
 import com.example.rfidstockpro.ui.ProductManagement.helper.ProductHolder
 import com.example.rfidstockpro.ui.ProductManagement.viewmodels.InventoryViewModel
+import com.example.rfidstockpro.ui.activities.AddProductActivity
 import com.example.rfidstockpro.ui.inventory.InventoryAdapter
 
 
@@ -56,11 +58,16 @@ class InventoryFragment : Fragment() {
     private fun setupRecyclerView() {
 
         inventoryAdapter = InventoryAdapter(emptyList()) { product, anchorView ->
+            ProductHolder.selectedProduct = product
             ProductPopupMenu(requireContext(), anchorView, product, object : ProductPopupMenu.PopupActionListener {
                 override fun onViewClicked(product: ProductModel) {
                     openProductDetails(product)
                 }
-                override fun onEditClicked(product: ProductModel) {}
+                override fun onEditClicked(product: ProductModel) {
+                    val intent = Intent(requireContext(), AddProductActivity::class.java)
+                    intent.putExtra("source", "EditScreen")
+                    startActivity(intent)
+                }
                 override fun onLocateClicked(product: ProductModel) {}
                 override fun onUpdateClicked(product: ProductModel) {}
                 override fun onDeleteClicked(product: ProductModel) {}

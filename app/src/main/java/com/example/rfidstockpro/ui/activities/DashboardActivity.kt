@@ -137,13 +137,14 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 
     private fun initClick() {
         binding.rlBuy.setOnClickListener {
-            startActivity(Intent(this, AddItemActivity::class.java))
+            val intent = Intent(this, AddProductActivity::class.java)
+            intent.putExtra("source", "Dashboard")
+            startActivity(intent)
         }
 
         binding.rlSell.setOnClickListener {
 //            setFragment(UHFReadFragment())
             FragmentManagerHelper.setFragment(this, UHFReadFragment(), R.id.realtabcontent)
-
         }
 
         binding.productManagement.setOnClickListener {

@@ -70,6 +70,7 @@
                     android:layout_alignParentBottom="true"
                     android:layout_centerHorizontal="true"
                     android:layout_marginBottom="12dp"
+                    app:dotsColor="@color/appMainColor"
                     app:dotsSize="10dp" />
 
             </RelativeLayout>
@@ -301,9 +302,8 @@
                 android:orientation="horizontal"
                 android:paddingHorizontal="@dimen/_15sdp">
 
-
                 <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/btnAddScan"
+                    android:id="@+id/btnLocate"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="@dimen/_5sdp"
@@ -321,7 +321,7 @@
                     android:textSize="@dimen/_12ssp" />
 
                 <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/btnAdd"
+                    android:id="@+id/btnEditProduct"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="@dimen/_5sdp"

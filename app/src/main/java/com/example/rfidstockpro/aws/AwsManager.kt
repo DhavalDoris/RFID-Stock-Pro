@@ -148,7 +148,7 @@ object AwsManager {
                         s3Client,
                         imageFile,
                         imageKey,
-                        2 * 1024 * 1024
+                        5* 1024 * 1024
                     ) { progress ->
                         // Update progress on main thread
                         scope.launch(Dispatchers.Main) {
@@ -169,7 +169,7 @@ object AwsManager {
                         s3Client,
                         videoFile,
                         videoKey,
-                        2 * 1024 * 1024
+                        5 * 1024 * 1024
                     ) { progress ->
                         // Update progress on main thread
                         scope.launch(Dispatchers.Main) {

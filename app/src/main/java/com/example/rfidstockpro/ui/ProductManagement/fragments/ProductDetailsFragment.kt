@@ -1,5 +1,6 @@
 package com.example.rfidstockpro.ui.ProductManagement.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,6 +16,7 @@ import com.example.rfidstockpro.databinding.FragmentProductDetailBinding
 import com.example.rfidstockpro.databinding.ItemProductRowBinding
 import com.example.rfidstockpro.ui.ProductManagement.adapters.MediaPagerAdapter
 import com.example.rfidstockpro.ui.ProductManagement.helper.ProductHolder
+import com.example.rfidstockpro.ui.activities.AddProductActivity
 import com.google.android.material.snackbar.Snackbar
 
 
@@ -47,9 +49,6 @@ class ProductDetailsFragment : Fragment() {
         )
         binding.mediaViewPager.adapter = adapter
         binding.dotsIndicator.setViewPager2(binding.mediaViewPager)
-
-
-
 
         binding.btnPrev.setOnClickListener {
             val current = binding.mediaViewPager.currentItem
@@ -94,6 +93,18 @@ class ProductDetailsFragment : Fragment() {
         }
 
         refreshProductDetails()
+
+        binding.btnEditProduct.setOnClickListener {
+            val product = ProductHolder.selectedProduct
+            if (product != null) {
+                val intent = Intent(requireContext(), AddProductActivity::class.java)
+                intent.putExtra("source", "EditScreen")
+                startActivity(intent)
+            } else {
+                Snackbar.make(binding.root, "Product data not found", Snackbar.LENGTH_SHORT).show()
+            }
+        }
+
     }
 
     private fun refreshProductDetails() {
