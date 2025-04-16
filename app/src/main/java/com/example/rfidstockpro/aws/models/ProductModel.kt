@@ -11,13 +11,17 @@ data class ProductModel(
     val sku: String,                   // SKU (Stock Keeping Unit)
     val price: String,
     val description: String,
-    val isImageSelected: Boolean,
-    val isMediaUpdated : Boolean,
+    var isImageSelected: Boolean,
+    val isMediaUpdated: Boolean,
     var tagId: String,  // Added tagId
     val status: String,  // Added status
-    val createdAt: String , // 🔥 New field
-    val updatedAt: String  // 🔥 New field
+    val createdAt: String, // 🔥 New field
+    val updatedAt: String,  // 🔥 New field
+    // Temporary fields - not to be stored
+    var previewImageUrls: List<String>? = null,
+    var previewVideoUrl: String? = null
 )
+
 
 
 fun ProductModel.toMap(): Map<String, AttributeValue> {

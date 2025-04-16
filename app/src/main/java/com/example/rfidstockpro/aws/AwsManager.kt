@@ -272,7 +272,7 @@ object AwsManager {
         return "https://$BUCKET_NAME.s3.amazonaws.com/$key"
     }
 
-    fun deleteMediaFromS3(imageUrls: List<String>, videoUrl: String?) {
+    /*fun deleteMediaFromS3(imageUrls: List<String>, videoUrl: String?) {
         try {
             val s3Client = s3Client // your initialized S3 client
 
@@ -292,11 +292,104 @@ object AwsManager {
         } catch (e: Exception) {
             Log.e("AWS_CLEANUP", "❌ Failed to clean up uploaded media: ${e.message}", e)
         }
+    }*/
+
+    /*fun deleteMediaFromS3(
+        imageUrls: List<String>,
+        videoUrl: String?
+    ): List<String> {
+        val deletedMedia = mutableListOf<String>()
+        val failedDeletions = mutableListOf<String>()
+
+        try {
+            val s3Client = s3Client // your initialized S3 client
+
+            // Handle image deletions
+            for (url in imageUrls) {
+                try {
+                    val key = extractKeyFromUrl(url)
+                    s3Client.deleteObject { it.bucket(BUCKET_NAME).key(key) }
+                    Log.d("AWS_CLEANUP", "✅ Deleted image from S3: $url (key: $key)")
+                    deletedMedia.add(url)
+                } catch (ex: Exception) {
+                    Log.e("AWS_CLEANUP", "❌ Failed to delete image: $url — ${ex.message}")
+                    failedDeletions.add(url)
+                }
+            }
+
+            // Handle video deletion
+            videoUrl?.let { video ->
+                try {
+                    val key = extractKeyFromUrl(video)
+                    s3Client.deleteObject { it.bucket(BUCKET_NAME).key(key) }
+                    Log.d("AWS_CLEANUP", "✅ Deleted video from S3: $video (key: $key)")
+                    deletedMedia.add(video)
+                } catch (ex: Exception) {
+                    Log.e("AWS_CLEANUP", "❌ Failed to delete video: $video — ${ex.message}")
+                    failedDeletions.add(video)
+                }
+            }
+
+            if (failedDeletions.isEmpty()) {
+                Log.d("AWS_CLEANUP", "🧹 All media deleted successfully.")
+            } else {
+                Log.w("AWS_CLEANUP", "⚠️ Some media failed to delete: $failedDeletions")
+            }
+
+        } catch (e: Exception) {
+            Log.e("AWS_CLEANUP", "🔥 Unexpected error during media cleanup: ${e.message}", e)
+        }
+
+        return deletedMedia
+    }*/
+
+    fun deleteMediaFromS3(imageUrls: List<String>, videoUrl: String?) {
+        try {
+            val s3Client = s3Client // Initialized S3 client
+
+            Log.d("AWS_DELETE_DEBUG", "🧹 Attempting to delete media from S3...")
+
+            if (imageUrls.isEmpty() && videoUrl.isNullOrEmpty()) {
+                Log.w("AWS_DELETE_DEBUG", "⚠️ No media URLs provided for deletion")
+                return
+            }
+
+            imageUrls.forEach { url ->
+                val key = extractKeyFromUrl(url)
+                Log.d("AWS_DELETE_DEBUG", "🗑️ Deleting image with key: $key")
+                try {
+                    s3Client.deleteObject { it.bucket(BUCKET_NAME).key(key) }
+                    Log.d("AWS_DELETE_DEBUG", "✅ Successfully deleted: $key")
+                } catch (e: Exception) {
+                    Log.e("AWS_DELETE_DEBUG", "❌ Failed to delete image: $key - ${e.message}")
+                }
+            }
+
+            videoUrl?.let {
+                val key = extractKeyFromUrl(it)
+                Log.d("AWS_DELETE_DEBUG", "🗑️ Deleting video with key: $key")
+                try {
+                    s3Client.deleteObject { it.bucket(BUCKET_NAME).key(key) }
+                    Log.d("AWS_DELETE_DEBUG", "✅ Successfully deleted video: $key")
+                } catch (e: Exception) {
+                    Log.e("AWS_DELETE_DEBUG", "❌ Failed to delete video: $key - ${e.message}")
+                }
+            }
+
+            Log.d("AWS_DELETE_DEBUG", "🧹 All media delete operations attempted.")
+        } catch (e: Exception) {
+            Log.e("AWS_DELETE_DEBUG", "❌ deleteMediaFromS3() failed: ${e.message}", e)
+        }
     }
 
+
+
     private fun extractKeyFromUrl(url: String): String {
-        return Uri.parse(url).lastPathSegment ?: ""
+            val uri = Uri.parse(url)
+            return uri.path?.removePrefix("/") ?: ""
     }
+
+
     fun uriToFile(context: Context, uri: Uri): File {
         val inputStream = context.contentResolver.openInputStream(uri)
             ?: throw IllegalArgumentException("Cannot open URI")

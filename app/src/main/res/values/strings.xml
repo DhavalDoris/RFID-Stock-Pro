@@ -147,5 +147,7 @@
     <string name="change_underline"><u>Change</u></string>
     <string name="oops_product_id_not_found">Oops! Product ID not found</string>
     <string name="active">Active</string>
+    <string name="update">Update</string>
+    <string name="update_tag">Update Tag</string>
 
 </resources>

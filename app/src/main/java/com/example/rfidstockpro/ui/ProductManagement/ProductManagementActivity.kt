@@ -1,6 +1,7 @@
 package com.example.rfidstockpro.ui.ProductManagement
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -17,6 +18,7 @@ import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.databinding.ActivityProductManagementBinding
 import com.example.rfidstockpro.ui.ProductManagement.adapters.ProductPagerAdapter
+import com.example.rfidstockpro.ui.activities.DashboardActivity
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
 import com.google.android.material.tabs.TabLayoutMediator
@@ -57,7 +59,6 @@ class ProductManagementActivity : AppCompatActivity() {
             }
         )
 
-
         val adapter = ProductPagerAdapter(this)
         binding.viewPager.adapter = adapter
 
@@ -83,5 +84,10 @@ class ProductManagementActivity : AppCompatActivity() {
         toolbarFilter.setOnClickListener {
             Toast.makeText(this, "Filter", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        startActivity(Intent(this, DashboardActivity::class.java))
     }
 }

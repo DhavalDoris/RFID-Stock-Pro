@@ -402,24 +402,7 @@
         android:orientation="horizontal"
         android:paddingHorizontal="@dimen/_15sdp">
 
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/btnAdd"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/_5sdp"
-            android:layout_marginTop="@dimen/_15sdp"
-            android:layout_marginBottom="@dimen/_15sdp"
-            android:layout_weight="1"
-            android:background="@drawable/button_selector"
-            android:backgroundTint="@color/colorActive"
-            android:fontFamily="@font/rethinksans_variablefont_wght"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:gravity="center"
-            android:padding="@dimen/_10sdp"
-            android:text="Add"
-            android:textColor="@android:color/white"
-            android:textSize="@dimen/_12ssp"
-            android:visibility="gone" />
+
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/btnAddScan"
@@ -438,6 +421,45 @@
             android:text="Add &amp; Scan"
             android:textColor="@android:color/white"
             android:textSize="@dimen/_12ssp" />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/btnUpdate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/_5sdp"
+            android:layout_marginTop="@dimen/_15sdp"
+            android:layout_marginBottom="@dimen/_15sdp"
+            android:layout_weight="1"
+            android:background="@drawable/button_selector"
+            android:backgroundTint="@color/appMainColor"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:padding="@dimen/_10sdp"
+            android:text="@string/update"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/_12ssp"
+            android:visibility="gone"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/btnUpdateWithTag"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/_5sdp"
+            android:layout_marginTop="@dimen/_15sdp"
+            android:layout_marginBottom="@dimen/_15sdp"
+            android:layout_weight="1"
+            android:background="@drawable/button_selector"
+            android:backgroundTint="@color/appMainColor"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:padding="@dimen/_10sdp"
+            android:text="@string/update_tag"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/_12ssp"
+            android:visibility="gone"/>
 
     </LinearLayout>
 

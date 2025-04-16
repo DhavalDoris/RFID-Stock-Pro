@@ -4,6 +4,8 @@ import UHFConnectionManager
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
@@ -43,6 +45,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.DataSource
 
 class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
 
@@ -50,7 +57,8 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
 
     private lateinit var binding: ActivityAddItemBinding
     private val addItemViewModel: AddItemViewModel by viewModels()
-    private var isImageSelected: Boolean = false // Add this flag
+
+    //    private var isImageSelected: Boolean = false // Add this flag
     private var selectedImage: Uri? = null  // Global Image URI
     private var selectedVideo: Uri? = null  // Global Video URI
 
@@ -64,6 +72,11 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
     private lateinit var captureImageLauncher: ActivityResultLauncher<Intent>
     private lateinit var captureVideoLauncher: ActivityResultLauncher<Intent>
     var isMediaUpdated: Boolean = false
+
+    companion object {
+        var previewImageUrls: List<String> = emptyList()
+        var previewVideoUrl: String? = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,7 +110,8 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             it.selectedImages.forEachIndexed { index, image ->
                 Log.d("ProductAdd", "Image $index: $image")
             }
-
+            previewImageUrls = it.selectedImages
+            previewVideoUrl = it.selectedVideo
             Log.d("ProductAdd", "Selected Video: ${it.selectedVideo ?: "None"}")
         } ?: run {
             Log.e("ProductAdd", "No product data available!")
@@ -107,19 +121,90 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
         if (source == "EditScreen") {
 
             product?.let {
-                Glide.with(this).load(it.selectedImages.get(0)).into(binding.selectedImagesContainer)
-                val videoToLoad = it.selectedVideo.takeIf { !it.isNullOrEmpty() } ?: R.drawable.select_video
+
+                Glide.with(this).load(it.selectedImages.get(0))
+                    .into(binding.selectedImagesContainer)
+
+
 
                 Glide.with(this)
+                    .load(it.selectedImages.get(0))
+                    .listener(object : RequestListener<Drawable> {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Drawable>,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            binding.selectedImagesContainer.setImageResource(R.drawable.loading_placeholder)
+                            return true
+                        }
+
+                        override fun onResourceReady(
+                            resource: Drawable,
+                            model: Any,
+                            target: Target<Drawable>?,
+                            dataSource: DataSource,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            return false
+                        }
+                    })
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(binding.selectedImagesContainer)
+
+
+                val videoToLoad =
+                    it.selectedVideo.takeIf { !it.isNullOrEmpty() } ?: R.drawable.select_video
+
+                Glide.with(this)
+                    .asBitmap() // Needed to extract frame from video
                     .load(videoToLoad)
+                    .frame(1000000) // 1st second (adjust as needed)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .listener(object : RequestListener<Bitmap> {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Bitmap>,
+                            isFirstResource: Boolean
+                        ): Boolean {
+
+                            binding.selectedImagesContainer.setImageResource(R.drawable.loading_placeholder)
+                            return true
+                        }
+
+                        override fun onResourceReady(
+                            resource: Bitmap,
+                            model: Any,
+                            target: Target<Bitmap>?,
+                            dataSource: DataSource,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            return false
+                        }
+                    })
                     .into(binding.selectedVideoContainer)
 
-                isImageSelected = true
+                selectedProduct?.isImageSelected = true
                 binding.etProductName.setText(it.productName)
                 binding.etCategory.setText(it.productCategory)
                 binding.etSku.setText(it.sku)
                 binding.etPrice.setText(it.price)
                 binding.etDescription.setText(it.description)
+
+
+                binding.btnAddScan.visibility = View.GONE
+                binding.btnUpdate.visibility = View.VISIBLE
+                binding.btnUpdateWithTag.visibility = View.VISIBLE
+            }
+
+
+            binding.btnUpdate.setOnClickListener {
+
+            }
+            binding.btnUpdateWithTag.setOnClickListener {
+                validateAndLogFields()
             }
 
         }
@@ -144,10 +229,6 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             }
         )
 
-        // Button Click Listeners
-        binding.btnAdd.setOnClickListener {
-            validateAndLogFields()
-        }
 
         binding.btnAddScan.setOnClickListener {
             validateAndLogFields()
@@ -280,7 +361,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
 
                     if (selectedImageFiles.isNotEmpty()) {
                         binding.selectedImagesContainer.setImageURI(Uri.fromFile(selectedImageFiles[0]))
-                        isImageSelected = true
+                        selectedProduct?.isImageSelected = true
                         isMediaUpdated = true
                         binding.changeImage.visibility = View.VISIBLE
                     }
@@ -293,13 +374,13 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
                     val data = result.data
                     selectedVideo = data?.data ?: selectedVideo
                     selectedVideo?.let { uri ->
-                        val isValid = addItemViewModel.validateFileSize(this, uri, false, binding.root)
+                        val isValid =
+                            addItemViewModel.validateFileSize(this, uri, false, binding.root)
                         if (isValid) {
                             val retriever = MediaMetadataRetriever()
                             retriever.setDataSource(this, uri)
                             val bitmap = retriever.frameAtTime
                             binding.selectedVideoContainer.setImageBitmap(bitmap)
-                            isImageSelected = true
                             isMediaUpdated = true
                             binding.changeVideo.visibility = View.VISIBLE
                         } else {
@@ -320,7 +401,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
                         if (isValid) {
                             selectedImageFiles.add(file)
                             binding.selectedImagesContainer.setImageURI(Uri.fromFile(file))
-                            isImageSelected = true
+                            selectedProduct?.isImageSelected = true
                             isMediaUpdated = true
                             binding.changeImage.visibility = View.VISIBLE
                         }
@@ -339,7 +420,6 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
                             retriever.setDataSource(this, uri)
                             val bitmap = retriever.frameAtTime
                             binding.selectedVideoContainer.setImageBitmap(bitmap)
-                            isImageSelected = true
                             isMediaUpdated = true
                             binding.changeVideo.visibility = View.VISIBLE
                         }
@@ -347,173 +427,6 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
                 }
             }
     }
-
-    /*private fun validateAndLogFields() {
-        val productName = binding.etProductName.text.toString().trim()
-        val productCategory = binding.etCategory.text.toString().trim()
-        val priceStr = binding.etPrice.text.toString().trim()
-        val etSku = binding.etSku.text.toString().trim()
-        val tagId = "" // Replace this with actual tag ID logic
-        val status = "Active"
-
-        var selectedImagePaths: List<String> = emptyList()
-        var selectedVideoPath: String? = null
-        val selectedProduct = ProductHolder.selectedProduct
-        val source = intent.getStringExtra("source")
-
-        if (source == "EditScreen") {
-
-//            selectedImagePaths = product!!.selectedImages
-            selectedImagePaths = selectedProduct?.selectedImages ?: emptyList()
-            if (selectedImageFiles.isNotEmpty()) {
-                selectedImageFiles.forEachIndexed { index, file ->
-                    Log.d("ADD_ITEM", "Image $index: ${file.absolutePath}")
-                }
-            } else {
-                Log.d("ADD_ITEM", "No images selected")
-                selectedImagePaths.forEachIndexed { index, image ->
-                    Log.d("ProductDetails", "Image $index: $image")
-                }
-            }
-            selectedVideoPath = selectedVideo?.let { addItemViewModel.getRealPathFromUriNew(this, it) }
-        } else {
-            // Extract image paths
-            selectedImagePaths = selectedImageFiles.map { it.absolutePath }
-
-            // Extract video path (if selected)
-            selectedVideoPath = selectedVideo?.let { addItemViewModel.getRealPathFromUriNew(this, it) }
-
-        }
-        val description = binding.etDescription.text.toString().trim()
-        val currentTime = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(Date())
-        val input = ProductModel(
-            id = UUID.randomUUID().toString(),
-            selectedImages = selectedImagePaths,
-            selectedVideo = selectedVideoPath,
-            productName = productName,
-            productCategory = productCategory,
-            sku = etSku,
-            price = priceStr,
-            description = description,
-            isImageSelected = isImageSelected,
-            isMediaUpdated = isMediaUpdated,
-            tagId = tagId,
-            status = status,
-            currentTime
-        )
-
-        val isValid = addItemViewModel.validateProductInput(input)
-
-        // Logging entered data
-        Log.d("ADD_ITEM", "---- Logging Entered Data ----")
-        Log.d("ADD_ITEM", "Product Name: $productName")
-        Log.d("ADD_ITEM", "Category: $productCategory")
-        Log.d("ADD_ITEM", "sku: $etSku")
-        Log.d("ADD_ITEM", "Price: $priceStr")
-        Log.d("ADD_ITEM", "Description: $description")
-        Log.d("ADD_ITEM", "TagId: $tagId")
-        Log.d("ADD_ITEM", "Status: $status")
-        Log.d("ADD_ITEM", "selectedImageFiles: $selectedImagePaths")
-        Log.d("ADD_ITEM", "input: $input")
-
-
-        if (selectedImageFiles.isNotEmpty()) {
-            selectedImageFiles.forEachIndexed { index, file ->
-                Log.d("ADD_ITEM", "Image $index: ${file.absolutePath}")
-            }
-        } else {
-            Log.d("ADD_ITEM", "No images selected")
-        }
-
-        selectedVideo?.let {
-            Log.d("ADD_ITEM", "Selected Video: ${addItemViewModel.getRealPathFromUriNew(this, it)}")
-        } ?: Log.d("ADD_ITEM", "No video selected")
-
-        if (isValid) {
-            Log.d("ADD_ITEM", "✅ Validation Passed! Ready to upload.")
-
-            if (uhfDevice.connectStatus == ConnectionStatus.CONNECTED) {
-                openTagListFragment(input)
-            } else {
-                binding.connectRFID.rlStatScan.visibility = View.VISIBLE
-                Log.d("ADD_ITEM", "Show Connecting screen===>>>===>>>")
-            }
-        } else {
-            Log.d("ADD_ITEM", "❌ Validation Failed! Fix errors before proceeding.")
-        }
-    }*/
-
-    /*private fun validateAndLogFields() {
-        val productName = binding.etProductName.text.toString().trim()
-        val productCategory = binding.etCategory.text.toString().trim()
-        val priceStr = binding.etPrice.text.toString().trim()
-        val etSku = binding.etSku.text.toString().trim()
-        val tagId = "" // TODO: Update with actual tagId from UHF scanner
-        val status = "Active"
-        val description = binding.etDescription.text.toString().trim()
-        val currentTime = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault()).format(Date())
-        val source = intent.getStringExtra("source")
-        val isEditMode = source == "EditScreen"
-
-        val product = ProductHolder.selectedProduct
-
-        val existingImageUrls = product?.selectedImages ?: emptyList()
-        val newImagePaths = selectedImageFiles.map { it.absolutePath }
-        val newVideoPath = selectedVideo?.let { addItemViewModel.getRealPathFromUriNew(this, it) }
-        val existingVideoUrl = product?.selectedVideo
-
-        val finalImageUrls = if (newImagePaths.isNotEmpty()) emptyList() else existingImageUrls
-        val finalVideoUrl = if (newVideoPath != null) null else existingVideoUrl
-
-        val updatedProduct = ProductModel(
-            id = product?.id ?: UUID.randomUUID().toString(),
-            selectedImages = finalImageUrls,
-            selectedVideo = finalVideoUrl,
-            newImageFiles = newImagePaths,
-            newVideoFile = newVideoPath,
-            productName = productName,
-            productCategory = productCategory,
-            sku = etSku,
-            price = priceStr,
-            description = description,
-            isImageSelected = isImageSelected,
-            isMediaUpdated = newImagePaths.isNotEmpty() || newVideoPath != null,
-            tagId = tagId,
-            status = status,
-            createdAt = currentTime
-        )
-
-        val isValid = addItemViewModel.validateProductInput(updatedProduct)
-
-        // ✅ Logging for testing
-        Log.d("ADD_ITEM", "---- Logging Entered Data ----")
-        Log.d("ADD_ITEM", "Edit Mode: $isEditMode")
-        Log.d("ADD_ITEM", "Product Name: $productName")
-        Log.d("ADD_ITEM", "Category: $productCategory")
-        Log.d("ADD_ITEM", "SKU: $etSku")
-        Log.d("ADD_ITEM", "Price: $priceStr")
-        Log.d("ADD_ITEM", "Description: $description")
-        Log.d("ADD_ITEM", "TagId: $tagId")
-        Log.d("ADD_ITEM", "Status: $status")
-        Log.d("ADD_ITEM", "New Image Files: $newImagePaths")
-        Log.d("ADD_ITEM", "Old Image URLs: $existingImageUrls")
-        Log.d("ADD_ITEM", "New Video File: $newVideoPath")
-        Log.d("ADD_ITEM", "Old Video URL: $existingVideoUrl")
-        Log.d("ADD_ITEM", "Final Product Model: $updatedProduct")
-
-        if (isValid) {
-            Log.d("ADD_ITEM", "✅ Validation Passed! Ready to upload.")
-
-            if (uhfDevice.connectStatus == ConnectionStatus.CONNECTED) {
-                openTagListFragment(updatedProduct)
-            } else {
-                binding.connectRFID.rlStatScan.visibility = View.VISIBLE
-                Log.d("ADD_ITEM", "🔄 RFID not connected — showing connect UI")
-            }
-        } else {
-            Log.d("ADD_ITEM", "❌ Validation Failed! Fix errors before proceeding.")
-        }
-    }*/
 
     private fun validateAndLogFields() {
         val productName = binding.etProductName.text.toString().trim()
@@ -529,6 +442,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
         var selectedVideoPath: String? = null
 
         if (source == "EditScreen") {
+
             selectedImagePaths = selectedProduct?.selectedImages ?: emptyList()
             if (selectedImageFiles.isNotEmpty()) {
                 selectedImagePaths = selectedImageFiles.map { it.absolutePath }
@@ -543,7 +457,8 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             }
         }
         val tagId = ""
-        val currentTime = SimpleDateFormat("dd-MM-yyyy hh:mm:ss a", Locale.getDefault()).format(Date())
+        val currentTime =
+            SimpleDateFormat("dd-MM-yyyy hh:mm:ss a", Locale.getDefault()).format(Date())
         val createdAt = selectedProduct?.createdAt ?: currentTime
         val productModel = ProductModel(
             id = selectedProduct?.id ?: UUID.randomUUID().toString(),
@@ -557,12 +472,14 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             tagId = tagId, // Will be updated in UHFReadFragment
             status = "Active",
             createdAt = createdAt,
+//            isImageSelected = selectedProduct?.isImageSelected ?: selectedImagePaths.isNotEmpty(),
             isImageSelected = selectedProduct?.isImageSelected ?: selectedImagePaths.isNotEmpty(),
             isMediaUpdated = selectedProduct?.isMediaUpdated ?: true,
             updatedAt = currentTime
         )
 
         Log.d("ADD_ITEM", "ProductModel: $productModel")
+        Log.d("ADD_ITEM", "oldImageUrls: $previewImageUrls")
 
         val isValid = addItemViewModel.validateProductInput(productModel)
         if (isValid) {

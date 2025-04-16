@@ -13,8 +13,9 @@ import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.data.UHFTagModel
 import com.example.rfidstockpro.repository.UHFRepository
 import com.example.rfidstockpro.ui.ProductManagement.RFIDTagManager
+import com.example.rfidstockpro.ui.activities.AddProductActivity.Companion.previewImageUrls
+import com.example.rfidstockpro.ui.activities.AddProductActivity.Companion.previewVideoUrl
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
-import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.rscja.deviceapi.entity.UHFTAGInfo
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import kotlinx.coroutines.CoroutineScope
@@ -416,8 +417,10 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
             }
 
             // Separate URLs and local files
-            val oldImageUrls = product.selectedImages.filter { it.startsWith("http") }
-            val oldVideoUrl = product.selectedVideo?.takeIf { it.startsWith("http") }
+            val originalImageUrls  = product.selectedImages.filter { it.startsWith("http") }
+            val originalVideoUrl  = product.selectedVideo?.takeIf { it.startsWith("http") }
+            Log.e("AWS_DELETE_DEBUG", "originalImageUrls: " + originalImageUrls )
+            Log.e("AWS_DELETE_DEBUG", "originalImage: " + product.selectedImages )
 
             val imageFiles = product.selectedImages
                 .filter { it.startsWith("/") || it.startsWith("content://") }
@@ -449,7 +452,7 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
 
                     // Merge old + new media
                     val updatedProduct = product.copy(
-                        selectedImages = oldImageUrls + newImageUrls,
+                        selectedImages = originalImageUrls  + newImageUrls,
                         selectedVideo = newVideoUrl ?: product.selectedVideo,
                         isMediaUpdated = false
                     )
@@ -463,11 +466,13 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
                                 // 🧹 Delete old media only if replaced
                                 scope.launch {
                                     if (newImageUrls.isNotEmpty() || newVideoUrl != null) {
+                                        Log.e("AWS_DELETE_DEBUG", "imageUrls: " + previewImageUrls )
+                                        Log.e("AWS_DELETE_DEBUG", "videoUrl: " + originalVideoUrl )
+                                        Log.i("AWS_DELETE_DEBUG", "🧹 Cleaned old media from S3.")
                                         AwsManager.deleteMediaFromS3(
-                                            imageUrls = if (newImageUrls.isNotEmpty()) oldImageUrls else emptyList(),
-                                            videoUrl = if (newVideoUrl != null) oldVideoUrl else null
+                                            imageUrls = if (newImageUrls.isNotEmpty()) previewImageUrls  else emptyList(),
+                                            videoUrl = if (newVideoUrl != null) previewVideoUrl else null
                                         )
-                                        Log.i("AWS_UPDATE", "🧹 Cleaned old media from S3.")
                                     }
                                 }
                                 onSuccess()
