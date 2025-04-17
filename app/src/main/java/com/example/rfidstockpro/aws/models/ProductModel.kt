@@ -8,6 +8,7 @@ data class ProductModel(
     val selectedVideo: String?,
     val productName: String,
     val productCategory: String,
+    val styleNo: String,
     val sku: String,                   // SKU (Stock Keeping Unit)
     val price: String,
     val description: String,
@@ -30,6 +31,7 @@ fun ProductModel.toMap(): Map<String, AttributeValue> {
         "productName" to AttributeValue.builder().s(productName).build(),
         "productCategory" to AttributeValue.builder().s(productCategory).build(),
         "sku" to AttributeValue.builder().s(sku).build(),
+        "styleNo" to AttributeValue.builder().s(styleNo).build(),
         "price" to AttributeValue.builder().s(price).build(),
         "description" to AttributeValue.builder().s(description).build(),
         "isImageSelected" to AttributeValue.builder().bool(isImageSelected).build(),
@@ -53,6 +55,7 @@ fun Map<String, AttributeValue>.toProductModel(): ProductModel {
         productName = this["productName"]?.s() ?: "",
         productCategory = this["productCategory"]?.s() ?: "",
         sku = this["sku"]?.s() ?: "",
+        styleNo = this["styleNo"]?.s() ?: "",
         price = this["price"]?.s() ?: "",
         description = this["description"]?.s() ?: "",
         isImageSelected = this["isImageSelected"]?.bool() ?: false,

@@ -11,7 +11,8 @@ import com.example.rfidstockpro.databinding.ItemInventoryBinding
 
 class InventoryAdapter(
     private var productList: List<ProductModel>,
-    private val onItemClick: (product: ProductModel, anchorView: View) -> Unit
+    private val onItemClick: (product: ProductModel, anchorView: View) -> Unit,
+    private val onItemViewClick: (product: ProductModel) -> Unit // 👈 Add this
 ) : RecyclerView.Adapter<InventoryAdapter.InventoryViewHolder>() {
 
     inner class InventoryViewHolder(val binding: ItemInventoryBinding) :
@@ -36,7 +37,9 @@ class InventoryAdapter(
                 onItemClick(product, it)
             }
 
-
+            binding.root.setOnClickListener {
+                onItemViewClick(product) // 👈 Full item click
+            }
         }
     }
 

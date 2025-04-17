@@ -193,6 +193,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
                 binding.etSku.setText(it.sku)
                 binding.etPrice.setText(it.price)
                 binding.etDescription.setText(it.description)
+                binding.textStyleNo.setText(it.styleNo)
 
 
                 binding.btnAddScan.visibility = View.GONE
@@ -201,7 +202,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             }
         }
 
-//        mBtAdapter = BluetoothAdapter.getDefaultAdapter()
+//      mBtAdapter = BluetoothAdapter.getDefaultAdapter()
         binding.commonToolbar.tvToolbarTitle.text = getString(R.string.add_item)
 
         dashboardViewModel = ViewModelProvider(this)[DashboardViewModel::class.java]
@@ -239,6 +240,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
         binding.selectVideo.setOnClickListener {
             showMediaPickerDialog(isImage = false)
         }
+
         val btnConnectScanner = binding.connectRFID.btnConnectScannerAdd
         btnConnectScanner.setOnClickListener {
             if (dashboardViewModel.isConnected.value == true) {
@@ -261,7 +263,6 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
                 binding.connectRFID.rlStatScan.visibility = View.VISIBLE
             }
         }
-
 
     }
 
@@ -433,6 +434,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
         val priceStr = binding.etPrice.text.toString().trim()
         val etSku = binding.etSku.text.toString().trim()
         val description = binding.etDescription.text.toString().trim()
+        val styleNo = binding.textStyleNo.text.toString().trim()
 
         val source = intent.getStringExtra("source")
         val selectedProduct = ProductHolder.selectedProduct
@@ -464,6 +466,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             id = selectedProduct?.id ?: UUID.randomUUID().toString(),
             productName = productName,
             productCategory = productCategory,
+            styleNo = styleNo,
             sku = etSku,
             price = priceStr,
             description = description,
@@ -498,6 +501,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
         val priceStr = binding.etPrice.text.toString().trim()
         val etSku = binding.etSku.text.toString().trim()
         val description = binding.etDescription.text.toString().trim()
+        val styleNo = binding.textStyleNo.text.toString().trim()
 
         val source = intent.getStringExtra("source")
         val selectedProduct = ProductHolder.selectedProduct
@@ -529,6 +533,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             productName = productName,
             productCategory = productCategory,
             sku = etSku,
+            styleNo = styleNo,
             price = priceStr,
             description = description,
             selectedImages = selectedImagePaths,

@@ -88,6 +88,6 @@ class ProductManagementActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        startActivity(Intent(this, DashboardActivity::class.java))
+//        startActivity(Intent(this, DashboardActivity::class.java))
     }
 }

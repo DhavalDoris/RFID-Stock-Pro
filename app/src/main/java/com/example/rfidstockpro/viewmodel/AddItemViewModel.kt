@@ -59,10 +59,10 @@ class AddItemViewModel : ViewModel() {
 
 
         // Validate Description
-        if (input.description.isEmpty()) {
+       /* if (input.description.isEmpty()) {
             _validationError.value = "Description is required"
             return false
-        }
+        }*/
 
 
         if (!input.isImageSelected) {

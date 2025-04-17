@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 
-class ScannedProductsViewModel : ViewModel() {
+class InventoryProductsViewModel : ViewModel() {
 
     private val _pagedProducts = MutableLiveData<List<ProductModel>>()
     val pagedProducts: LiveData<List<ProductModel>> get() = _pagedProducts

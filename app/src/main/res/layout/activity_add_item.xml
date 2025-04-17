@@ -250,6 +250,16 @@
                 android:hint="@string/sku"
                 android:padding="@dimen/_10sdp" />
 
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/textStyleNo"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:background="@drawable/edittext_bg"
+                android:drawablePadding="@dimen/_5sdp"
+                android:hint="@string/styleno"
+                android:padding="@dimen/_10sdp" />
+
             <!--<LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_40sdp"

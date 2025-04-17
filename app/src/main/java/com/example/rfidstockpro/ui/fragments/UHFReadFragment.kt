@@ -1,6 +1,6 @@
 package com.example.rfidstockpro.ui.fragments
 
-import ScannedProductsViewModel
+import InventoryProductsViewModel
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -41,7 +41,7 @@ class UHFReadFragment : Fragment() {
     private var isProductSuccessfullyAdded = false
 
     private lateinit var sharedProductViewModel: SharedProductViewModel
-    private lateinit var scannedProductsViewModel: ScannedProductsViewModel
+    private lateinit var inventoryProductsViewModel: InventoryProductsViewModel
 
 
     // Interface for UHF device provider
@@ -52,7 +52,7 @@ class UHFReadFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedProductViewModel = ViewModelProvider(requireActivity()).get(SharedProductViewModel::class.java)
-        scannedProductsViewModel = ViewModelProvider(requireActivity())[ScannedProductsViewModel::class.java]
+        inventoryProductsViewModel = ViewModelProvider(requireActivity())[InventoryProductsViewModel::class.java]
 
     }
 

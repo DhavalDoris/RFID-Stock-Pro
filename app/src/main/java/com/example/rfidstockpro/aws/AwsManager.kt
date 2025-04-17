@@ -50,6 +50,7 @@ import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload
 import software.amazon.awssdk.services.s3.model.CompletedPart
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.UploadPartRequest
 import software.amazon.awssdk.services.ses.SesClient
 import java.io.File
@@ -151,7 +152,7 @@ object AwsManager {
                         s3Client,
                         imageFile,
                         imageKey,
-                        5* 1024 * 1024
+                        5 * 1024 * 1024
                     ) { progress ->
                         // Update progress on main thread
                         scope.launch(Dispatchers.Main) {
@@ -166,7 +167,8 @@ object AwsManager {
                 var videoUrl: String? = null
                 if (videoFile != null) {
                     val videoExtension = videoFile.extension.ifEmpty { "mp4" }
-                    val videoKey = "videos/${UUID.randomUUID()}_${System.currentTimeMillis()}.$videoExtension"
+                    val videoKey =
+                        "videos/${UUID.randomUUID()}_${System.currentTimeMillis()}.$videoExtension"
 
                     videoUrl = multipartUpload(
                         s3Client,
@@ -190,8 +192,9 @@ object AwsManager {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressDialog?.dismiss()
-                    Toast.makeText(context, "Upload Failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                    Log.e("AWS_TAG",  "Upload Failed: ${e.message}"  )
+                    Toast.makeText(context, "Upload Failed: ${e.message}", Toast.LENGTH_SHORT)
+                        .show()
+                    Log.e("AWS_TAG", "Upload Failed: ${e.message}")
                     onError(e.message ?: "Unknown error")
                 }
             }
@@ -405,12 +408,12 @@ object AwsManager {
                 it.startsWith("/") && File(it).exists() && File(it).length() > 0
             }?.let { File(it) }
 
-         /*   if (imageFiles.isEmpty() && videoFile == null) {
-                withContext(Dispatchers.Main) {
-                    onError("No valid media selected to upload.")
-                }
-                return@launch
-            }*/
+            /*   if (imageFiles.isEmpty() && videoFile == null) {
+                   withContext(Dispatchers.Main) {
+                       onError("No valid media selected to upload.")
+                   }
+                   return@launch
+               }*/
 
             Log.d("AWS_UPDATE", "⬆️ Uploading media to S3...")
 
@@ -425,7 +428,7 @@ object AwsManager {
                     Log.d("AWS_UPDATE", "🎥 Video URL: $uploadedVideoUrl")
 
                     val finalProduct = product.copy(
-                        selectedImages =  if (uploadedImageUrls.isNotEmpty()) uploadedImageUrls else product.selectedImages,
+                        selectedImages = if (uploadedImageUrls.isNotEmpty()) uploadedImageUrls else product.selectedImages,
                         selectedVideo = uploadedVideoUrl ?: product.selectedVideo,
                         isMediaUpdated = true
                     )
@@ -440,11 +443,17 @@ object AwsManager {
                                 Log.i("AWS_UPDATE", "$previewImageUrls")
                                 Log.i("AWS_UPDATE", "$previewVideoUrl")
 
-                                Log.i("AWS_UPDATE","-> " + if (uploadedImageUrls.isNotEmpty()) previewImageUrls else emptyList())
-                                Log.i("AWS_UPDATE", "~> " + if (uploadedVideoUrl != null) previewVideoUrl else null)
+                                Log.i(
+                                    "AWS_UPDATE",
+                                    "-> " + if (uploadedImageUrls.isNotEmpty()) previewImageUrls else emptyList()
+                                )
+                                Log.i(
+                                    "AWS_UPDATE",
+                                    "~> " + if (uploadedVideoUrl != null) previewVideoUrl else null
+                                )
                                 scope.launch {
                                     deleteMediaFromS3(
-                                        imageUrls =  if (uploadedImageUrls.isNotEmpty()) previewImageUrls else emptyList(),
+                                        imageUrls = if (uploadedImageUrls.isNotEmpty()) previewImageUrls else emptyList(),
                                         videoUrl = if (uploadedVideoUrl != null) previewVideoUrl else null
                                     )
                                 }
@@ -466,15 +475,15 @@ object AwsManager {
                 },
                 onError = { errorMessage ->
                     Log.e("AWS_UPDATE", "❌ Upload error: $errorMessage")
-                        onError(errorMessage)
+                    onError(errorMessage)
                 }
             )
         }
     }
 
     private fun extractKeyFromUrl(url: String): String {
-            val uri = Uri.parse(url)
-            return uri.path?.removePrefix("/") ?: ""
+        val uri = Uri.parse(url)
+        return uri.path?.removePrefix("/") ?: ""
     }
 
 
@@ -509,30 +518,30 @@ object AwsManager {
         return context.contentResolver.getType(uri)
     }
 
-/*    fun getAllImageUrls(callback: (List<String>?) -> Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val listObjectsRequest = ListObjectsV2Request.builder()
-                    .bucket(BUCKET_NAME)
-                    .build()
+    /*    fun getAllImageUrls(callback: (List<String>?) -> Unit) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val listObjectsRequest = ListObjectsV2Request.builder()
+                        .bucket(BUCKET_NAME)
+                        .build()
 
-                val listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest)
+                    val listObjectsResponse = s3Client.listObjectsV2(listObjectsRequest)
 
-                val imageUrls = listObjectsResponse.contents().map { obj: S3Object ->
-                    "https://$BUCKET_NAME.s3.amazonaws.com/${obj.key()}"
-                }
+                    val imageUrls = listObjectsResponse.contents().map { obj: S3Object ->
+                        "https://$BUCKET_NAME.s3.amazonaws.com/${obj.key()}"
+                    }
 
-                withContext(Dispatchers.Main) {
-                    callback(imageUrls) // Return the list of URLs to the UI thread
-                }
-            } catch (e: Exception) {
-                Log.e("AWS_TAG", "Error fetching images: ${e.message}", e)
-                withContext(Dispatchers.Main) {
-                    callback(null)
+                    withContext(Dispatchers.Main) {
+                        callback(imageUrls) // Return the list of URLs to the UI thread
+                    }
+                } catch (e: Exception) {
+                    Log.e("AWS_TAG", "Error fetching images: ${e.message}", e)
+                    withContext(Dispatchers.Main) {
+                        callback(null)
+                    }
                 }
             }
-        }
-    }*/
+        }*/
 
     fun close() {
         sesClient.close()
@@ -550,7 +559,8 @@ object AwsManager {
                     callback.invoke("creating")
 
                     val attributeDefinitions = mutableListOf(
-                        AttributeDefinition.builder().attributeName(primaryKey).attributeType(ScalarAttributeType.S).build()
+                        AttributeDefinition.builder().attributeName(primaryKey)
+                            .attributeType(ScalarAttributeType.S).build()
                     )
 
                     val createTableBuilder = CreateTableRequest.builder()
@@ -567,14 +577,16 @@ object AwsManager {
                     // ✅ If it's the product table, add GSI on tagId
                     if (tableName == PRODUCT_TABLE) {
                         attributeDefinitions.add(
-                            AttributeDefinition.builder().attributeName("tagId").attributeType(ScalarAttributeType.S).build()
+                            AttributeDefinition.builder().attributeName("tagId")
+                                .attributeType(ScalarAttributeType.S).build()
                         )
 
                         createTableBuilder.globalSecondaryIndexes(
                             GlobalSecondaryIndex.builder()
                                 .indexName("tagId-index")
                                 .keySchema(
-                                    KeySchemaElement.builder().attributeName("tagId").keyType(KeyType.HASH).build()
+                                    KeySchemaElement.builder().attributeName("tagId")
+                                        .keyType(KeyType.HASH).build()
                                 )
                                 .projection(
                                     Projection.builder().projectionType(ProjectionType.ALL).build()
@@ -799,7 +811,7 @@ object AwsManager {
         return withContext(Dispatchers.IO) {
             try {
 
-                Log.i("AWS_UPDATE","==> "+ product.toString())
+                Log.i("AWS_UPDATE", "==> " + product.toString())
 
                 val expressionAttributeNames = mutableMapOf(
                     "#status" to "status"
@@ -807,11 +819,13 @@ object AwsManager {
 
                 val expressionAttributeValues = mutableMapOf(
                     ":productName" to AttributeValue.builder().s(product.productName).build(),
-                    ":productCategory" to AttributeValue.builder().s(product.productCategory).build(),
+                    ":productCategory" to AttributeValue.builder().s(product.productCategory)
+                        .build(),
                     ":sku" to AttributeValue.builder().s(product.sku).build(),
                     ":price" to AttributeValue.builder().s(product.price).build(),
                     ":description" to AttributeValue.builder().s(product.description).build(),
-                    ":isImageSelected" to AttributeValue.builder().bool(product.isImageSelected).build(),
+                    ":isImageSelected" to AttributeValue.builder().bool(product.isImageSelected)
+                        .build(),
                     ":tagId" to AttributeValue.builder().s(product.tagId).build(),
                     ":status" to AttributeValue.builder().s(product.status).build(),
                     ":createdAt" to AttributeValue.builder().s(product.createdAt).build(),
@@ -865,7 +879,6 @@ object AwsManager {
     }
 
 
-
     suspend fun checkIfTagIdExists(tableName: String, tagId: String): Pair<Boolean, String> {
         return withContext(Dispatchers.IO) {
             try {
@@ -873,9 +886,11 @@ object AwsManager {
                     .tableName(tableName)
                     .indexName("tagId-index") // 🔥 Must match your GSI
                     .keyConditionExpression("tagId = :tagVal")
-                    .expressionAttributeValues(mapOf(
-                        ":tagVal" to AttributeValue.builder().s(tagId).build()
-                    ))
+                    .expressionAttributeValues(
+                        mapOf(
+                            ":tagVal" to AttributeValue.builder().s(tagId).build()
+                        )
+                    )
                     .build()
 
                 val result = dynamoDBClient.query(queryRequest)
@@ -904,23 +919,23 @@ object AwsManager {
     }
 
 
-   /* suspend fun getPaginatedProducts(
-        lastKey: Map<String, AttributeValue>? = null
-    ): Triple<List<ProductModel>, Map<String, AttributeValue>?,Int> {
-        val requestBuilder = ScanRequest.builder()
-            .tableName(PRODUCT_TABLE)
-            .limit(5)
+    /* suspend fun getPaginatedProducts(
+         lastKey: Map<String, AttributeValue>? = null
+     ): Triple<List<ProductModel>, Map<String, AttributeValue>?,Int> {
+         val requestBuilder = ScanRequest.builder()
+             .tableName(PRODUCT_TABLE)
+             .limit(5)
 
-        lastKey?.let {
-            requestBuilder.exclusiveStartKey(it)
-        }
+         lastKey?.let {
+             requestBuilder.exclusiveStartKey(it)
+         }
 
-        val result = dynamoDBClient.scan(requestBuilder.build())
-        val items = result.items().map { it.toProductModel() }
-        val newLastKey = result.lastEvaluatedKey()
+         val result = dynamoDBClient.scan(requestBuilder.build())
+         val items = result.items().map { it.toProductModel() }
+         val newLastKey = result.lastEvaluatedKey()
 
-        return Pair(items, if (newLastKey.isEmpty()) null else newLastKey)
-    }*/
+         return Pair(items, if (newLastKey.isEmpty()) null else newLastKey)
+     }*/
 
 
     fun getPaginatedProducts(
@@ -979,7 +994,6 @@ object AwsManager {
         }
     }
 
-
     class NoCompressionInterceptor : ExecutionInterceptor {
         override fun modifyHttpRequest(
             context: software.amazon.awssdk.core.interceptor.Context.ModifyHttpRequest,
@@ -1024,4 +1038,48 @@ object AwsManager {
         }
     }
 
+    suspend fun deleteProduct(product: ProductModel): Boolean {
+        return try {
+
+            // Delete all images from S3
+            product.selectedImages.forEach { url ->
+                val key = extractS3KeyFromUrl(url)
+                deleteFileFromS3(key)
+            }
+
+            // Delete video if present
+            product.selectedVideo?.let { videoUrl ->
+                val key = extractS3KeyFromUrl(videoUrl)
+                deleteFileFromS3(key)
+            }
+
+            val deleteRequest = DeleteItemRequest.builder()
+                .tableName(PRODUCT_TABLE) // Use your actual DynamoDB table name here
+                .key(
+                    mapOf(
+                        "id" to AttributeValue.builder().s(product.id).build()
+                    )
+                ) // Assuming "id" is your partition key
+                .build()
+
+            dynamoDBClient.deleteItem(deleteRequest)
+            true // Return true if deletion is successful
+        } catch (e: Exception) {
+            Log.e("AwsManager", "Failed to delete product", e)
+            false // Return false if there was an error
+        }
+    }
+
+    fun extractS3KeyFromUrl(url: String): String {
+        return url.substringAfter(".amazonaws.com/") // This gives you just the S3 object key
+    }
+
+    fun deleteFileFromS3(key: String) {
+        val deleteRequest = DeleteObjectRequest.builder()
+            .bucket(BUCKET_NAME) // Replace with your actual bucket
+            .key(key)
+            .build()
+
+        s3Client.deleteObject(deleteRequest)
+    }
 }

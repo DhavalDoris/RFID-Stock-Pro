@@ -1,8 +1,9 @@
 package com.example.rfidstockpro.ui.ProductManagement.fragments
 
-import ScannedProductsViewModel
+import InventoryProductsViewModel
 import UHFConnectionManager
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -11,17 +12,19 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.aws.models.ProductModel
-import com.example.rfidstockpro.databinding.FragmentInventoryBinding
+import com.example.rfidstockpro.databinding.FragmentStockBinding
 import com.example.rfidstockpro.factores.UHFViewModelFactory
 import com.example.rfidstockpro.repository.UHFRepository
 import com.example.rfidstockpro.ui.ProductManagement.BluetoothConnectionManager
 import com.example.rfidstockpro.ui.ProductManagement.ProductPopupMenu
+import com.example.rfidstockpro.ui.ProductManagement.helper.ProductHolder
+import com.example.rfidstockpro.ui.activities.AddProductActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
 import com.example.rfidstockpro.ui.inventory.InventoryAdapter
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
@@ -32,11 +35,10 @@ import com.rscja.deviceapi.interfaces.KeyEventCallback
 
 class InventoryProductsFragment : Fragment() {
 
-    private lateinit var binding: FragmentInventoryBinding
-    private lateinit var scannedProductsViewModel: ScannedProductsViewModel
+    private lateinit var binding: FragmentStockBinding
+    private lateinit var inventoryProductsViewModel: InventoryProductsViewModel
     private lateinit var uhfReadViewModel: UHFReadViewModel
     private lateinit var inventoryAdapter: InventoryAdapter
-
     var latestTotal = 0
     var latestIsLoading = false
     private lateinit var dashboardViewModel: DashboardViewModel
@@ -48,8 +50,8 @@ class InventoryProductsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentInventoryBinding.inflate(inflater, container, false)
-        scannedProductsViewModel = ViewModelProvider(this)[ScannedProductsViewModel::class.java]
+        binding = FragmentStockBinding.inflate(inflater, container, false)
+        inventoryProductsViewModel = ViewModelProvider(this)[InventoryProductsViewModel::class.java]
         return binding.root
     }
 
@@ -72,6 +74,9 @@ class InventoryProductsFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun initView() {
+
+        binding.swipeRefreshLayout.isRefreshing = false
+
         val rfidConnectionView = binding.connectRFID.rlStatScan
         if (UHFConnectionManager.getConnectionStatus() == ConnectionStatus.CONNECTED) {
             rfidConnectionView.visibility = View.GONE
@@ -87,97 +92,53 @@ class InventoryProductsFragment : Fragment() {
                 BluetoothConnectionManager.showBluetoothDevice(requireActivity())
             }
         }
+
+
     }
 
-   /* private fun registerActivityResultLaunchers() {
-        enableBluetoothLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                if (it.resultCode == Activity.RESULT_OK) {
-                    showBluetoothDevice()
-                }
-            }
+    private fun openProductDetails(productModel: ProductModel) {
+        ProductHolder.selectedProduct = productModel
+        val fragment = ProductDetailsFragment()
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentProductDetail, fragment)
+            .addToBackStack(null)
+            .commit()
 
-        selectDeviceLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    val data = result.data
-                    data?.getStringExtra(BluetoothDevice.EXTRA_DEVICE)?.let { deviceAddress ->
-                        if (deviceAddress.isNotEmpty()) {
-                            mDevice =
-                                BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress)
-                            connectToDevice(deviceAddress)
-                        }
-                    }
-                }
-            }
     }
 
-    private fun connectToDevice(deviceAddress: String) {
-        if (uhfDevice.connectStatus == ConnectionStatus.CONNECTING) {
-            showToast(requireActivity(), getString(R.string.connecting))
-        } else {
-            uhfDevice.connect(deviceAddress, object : ConnectionStatusCallback<Any?> {
-                override fun getStatus(connectionStatus: ConnectionStatus, device: Any?) {
-                    lifecycleScope.launch {
-                        if (connectionStatus == ConnectionStatus.CONNECTED) {
-                            Log.e("ConetionTAG", "getStatus: " + "IF")
-                            UHFConnectionManager.updateConnectionStatus(connectionStatus, device)
-                            val rfidConnectionView = binding.connectRFID.rlStatScan
-                            rfidConnectionView.visibility = View.GONE
-                        } else {
-                            UHFConnectionManager.updateConnectionStatus(ConnectionStatus.DISCONNECTED, device)
-                            Log.e("ConetionTAG", "getStatus: " + "ELSE")
-                        }
-                    }
-                }
-            })
-        }
-    }
-
-    var mBtAdapter: BluetoothAdapter? = null
-    private lateinit var enableBluetoothLauncher: ActivityResultLauncher<Intent>
-    private lateinit var selectDeviceLauncher: ActivityResultLauncher<Intent>
-    private var mDevice: BluetoothDevice? = null
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private fun showBluetoothDevice() {
-        if (mBtAdapter == null) {
-            return
-        }
-        if (!mBtAdapter!!.isEnabled) {
-            val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            enableBluetoothLauncher.launch(enableIntent)
-        } else {
-            val newIntent = Intent(requireActivity(), DeviceListActivity::class.java)
-            newIntent.putExtra(SHOW_HISTORY_CONNECTED_LIST, false)
-            selectDeviceLauncher.launch(newIntent)
-            dashboardViewModel.cancelDisconnectTimer()
-        }
-    }*/
 
     private fun setupRecyclerView() {
         binding.noItemsText.visibility = View.VISIBLE
 
-        inventoryAdapter = InventoryAdapter(emptyList()) { product, anchorView ->
-            ProductPopupMenu(
-                requireContext(),
-                anchorView,
-                product,
-                object : ProductPopupMenu.PopupActionListener {
-                    override fun onViewClicked(product: ProductModel) {
-                        Toast.makeText(
-                            requireContext(),
-                            "View: ${product.productName}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+        inventoryAdapter = InventoryAdapter(
+            emptyList(),
+            onItemClick = { product, anchorView ->
+                ProductPopupMenu(
+                    requireContext(),
+                    anchorView,
+                    product,
+                    object : ProductPopupMenu.PopupActionListener {
+                        override fun onViewClicked(product: ProductModel) {
+                            openProductDetails(product)
+                        }
 
-                    override fun onEditClicked(product: ProductModel) {}
-                    override fun onLocateClicked(product: ProductModel) {}
-                    override fun onUpdateClicked(product: ProductModel) {}
-                    override fun onDeleteClicked(product: ProductModel) {}
-                }).show()
-        }
+                        override fun onEditClicked(product: ProductModel) {
+                            val intent = Intent(requireContext(), AddProductActivity::class.java)
+                            intent.putExtra("source", "EditScreen")
+//                            editProductLauncher.launch(intent)
+                            startActivity(intent)
+                        }
+                        override fun onLocateClicked(product: ProductModel) {}
+                        override fun onUpdateClicked(product: ProductModel) {}
+                        override fun onDeleteClicked(product: ProductModel) {}
+                    }
+                ).show()
+            },
+            onItemViewClick = { product -> // 👈 This gets called on full item click
+                // Or: do something like navigate to product details, etc.
+                openProductDetails(product)
+            }
+        )
 
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -187,7 +148,7 @@ class InventoryProductsFragment : Fragment() {
         binding.btnLoadMore.setOnClickListener {
             binding.btnLoadMore.visibility = View.GONE
             binding.loadMoreProgress.visibility = View.VISIBLE
-            scannedProductsViewModel.loadNextPage()
+            inventoryProductsViewModel.loadNextPage()
         }
     }
 
@@ -208,17 +169,17 @@ class InventoryProductsFragment : Fragment() {
             if (newTagsAdded) {
                 // 🔄 Pass the updated list to ViewModel
                 // Show progress while scanning & matching
-                scannedProductsViewModel.setMatchedTagIds(uniqueTagSet.toList())
+                inventoryProductsViewModel.setMatchedTagIds(uniqueTagSet.toList())
             }
         }
 
-        scannedProductsViewModel.pagedProducts.observe(viewLifecycleOwner) { products ->
+        inventoryProductsViewModel.pagedProducts.observe(viewLifecycleOwner) { products ->
             inventoryAdapter.updateList(products)
 
             // Hide loading when items are received
 //            binding.scanProgressBar.visibility = View.VISIBLE
 
-            val total = scannedProductsViewModel.totalCount.value ?: 0
+            val total = inventoryProductsViewModel.totalCount.value ?: 0
             val currentCount = products.size
             binding.itemCountText.text = "$currentCount of $total"
 
@@ -231,15 +192,15 @@ class InventoryProductsFragment : Fragment() {
         }
 
 
-        scannedProductsViewModel.isPageLoading.observe(viewLifecycleOwner) { isLoading ->
+        inventoryProductsViewModel.isPageLoading.observe(viewLifecycleOwner) { isLoading ->
             latestIsLoading = isLoading
-            val currentCount = scannedProductsViewModel.pagedProducts.value?.size ?: 0
+            val currentCount = inventoryProductsViewModel.pagedProducts.value?.size ?: 0
             updateLoadMoreUI(isLoading, currentCount, latestTotal)
         }
 
-        scannedProductsViewModel.totalCount.observe(viewLifecycleOwner) { total ->
+        inventoryProductsViewModel.totalCount.observe(viewLifecycleOwner) { total ->
             latestTotal = total
-            val currentCount = scannedProductsViewModel.pagedProducts.value?.size ?: 0
+            val currentCount = inventoryProductsViewModel.pagedProducts.value?.size ?: 0
             updateLoadMoreUI(latestIsLoading, currentCount, total)
         }
 

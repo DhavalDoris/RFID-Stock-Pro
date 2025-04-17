@@ -6,25 +6,27 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.aws.models.ProductModel
-import com.example.rfidstockpro.databinding.FragmentInventoryBinding
+import com.example.rfidstockpro.databinding.FragmentStockBinding
 import com.example.rfidstockpro.ui.ProductManagement.ProductPopupMenu
 import com.example.rfidstockpro.ui.ProductManagement.helper.ProductHolder
-import com.example.rfidstockpro.ui.ProductManagement.viewmodels.InventoryViewModel
+import com.example.rfidstockpro.ui.ProductManagement.viewmodels.StockViewModel
 import com.example.rfidstockpro.ui.activities.AddProductActivity
 import com.example.rfidstockpro.ui.inventory.InventoryAdapter
 
 
 class StockFragment : Fragment() {
-    private lateinit var binding: FragmentInventoryBinding
-    private lateinit var viewModel: InventoryViewModel
+    private lateinit var binding: FragmentStockBinding
+    private lateinit var viewModel: StockViewModel
     private lateinit var inventoryAdapter: InventoryAdapter
     private lateinit var editProductLauncher: ActivityResultLauncher<Intent>
 
@@ -45,8 +47,8 @@ class StockFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentInventoryBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(this)[InventoryViewModel::class.java]
+        binding = FragmentStockBinding.inflate(inflater, container, false)
+        viewModel = ViewModelProvider(this)[StockViewModel::class.java]
 
         init()
         setupRecyclerView()
@@ -63,11 +65,21 @@ class StockFragment : Fragment() {
         binding.swipeRefreshLayout.setOnRefreshListener {
             viewModel.refreshData()
         }
+
+        viewModel.isDeleting.observe(viewLifecycleOwner) { isDeleting ->
+            binding.scanProgressBar.visibility = if (isDeleting) View.VISIBLE else View.GONE
+        }
+
+        viewModel.deletionError.observe(viewLifecycleOwner) { errorMessage ->
+            if (errorMessage != null) {
+                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun setupRecyclerView() {
 
-        inventoryAdapter = InventoryAdapter(emptyList()) { product, anchorView ->
+        /*inventoryAdapter = InventoryAdapter(emptyList()) { product, anchorView ->
             ProductHolder.selectedProduct = product
             ProductPopupMenu(requireContext(), anchorView, product, object : ProductPopupMenu.PopupActionListener {
                 override fun onViewClicked(product: ProductModel) {
@@ -83,7 +95,46 @@ class StockFragment : Fragment() {
                 override fun onUpdateClicked(product: ProductModel) {}
                 override fun onDeleteClicked(product: ProductModel) {}
             }).show()
-        }
+        }*/
+
+        inventoryAdapter = InventoryAdapter(
+            emptyList(),
+            onItemClick = { product, anchorView ->
+                ProductPopupMenu(
+                    requireContext(),
+                    anchorView,
+                    product,
+                    object : ProductPopupMenu.PopupActionListener {
+                        override fun onViewClicked(product: ProductModel) {
+                            openProductDetails(product)
+                        }
+
+                        override fun onEditClicked(product: ProductModel) {
+                            val intent = Intent(requireContext(), AddProductActivity::class.java)
+                            intent.putExtra("source", "EditScreen")
+                            editProductLauncher.launch(intent)
+//                    startActivity(intent)
+                        }
+                        override fun onLocateClicked(product: ProductModel) {}
+                        override fun onUpdateClicked(product: ProductModel) {}
+                        override fun onDeleteClicked(product: ProductModel) {
+                            AlertDialog.Builder(requireContext())
+                                .setTitle("Delete Product")
+                                .setMessage("Are you sure you want to delete this product and its media?")
+                                .setPositiveButton("Delete") { _, _ ->
+                                    viewModel.deleteProduct(product)
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                        }
+                    }
+                ).show()
+            },
+            onItemViewClick = { product -> // 👈 This gets called on full item click
+                // Or: do something like navigate to product details, etc.
+                openProductDetails(product)
+            }
+        )
 
         val layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.layoutManager = layoutManager
