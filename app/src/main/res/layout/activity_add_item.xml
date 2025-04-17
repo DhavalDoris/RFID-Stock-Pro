@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -470,88 +469,6 @@
         android:layout_below="@id/commonToolbar"
         android:visibility="visible" />
 
-    <!--<RelativeLayout
-        android:id="@+id/rlStatScan"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/main_bg_color"
-        android:elevation="2dp"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <androidx.appcompat.widget.AppCompatImageView
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/_150sdp"
-                app:srcCompat="@drawable/scanner_img" />
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/tvUserName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/rethinksans_bold"
-                android:paddingTop="@dimen/_1sdp"
-                android:text="@string/start_scanning"
-                android:textColor="@color/appMainColor"
-                android:textSize="@dimen/_19sdp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@id/tvWelcome"
-                app:layout_constraintTop_toTopOf="@id/tvWelcome" />
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/_30sdp"
-                android:layout_marginTop="@dimen/_15sdp"
-                android:fontFamily="@font/rethinksans_variablefont_wght"
-                android:gravity="center"
-                android:paddingTop="@dimen/_1sdp"
-                android:text="@string/with_rfid_boosting_efficiency_n_one_tag_at_a_time"
-                android:textColor="@color/gray"
-                android:textSize="@dimen/_12sdp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@id/tvWelcome"
-                app:layout_constraintTop_toTopOf="@id/tvWelcome" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/footerViewScan"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/edittext_bg"
-            android:orientation="vertical"
-            android:layout_alignParentBottom="true">
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/btnConnectScannerAdd"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/_20sdp"
-                android:layout_marginTop="@dimen/_15sdp"
-                android:layout_marginBottom="@dimen/_15sdp"
-                android:background="@drawable/continue_btn_bg"
-                android:fontFamily="@font/rethinksans_variablefont_wght"
-                android:gravity="center"
-                android:padding="12dp"
-                android:text="@string/connect_scanner"
-                android:foreground="?android:attr/selectableItemBackground"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/_15ssp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
-
-        </LinearLayout>
-
-
-
-    </RelativeLayout>-->
 
     <include
         android:id="@+id/connectRFID"

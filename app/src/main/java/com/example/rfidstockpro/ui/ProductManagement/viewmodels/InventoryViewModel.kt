@@ -38,7 +38,6 @@ class InventoryViewModel : ViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-
 //                val (newItems, newLastKey, totalC ountFromDb) = getPaginatedProducts(lastEvaluatedKey)
                 val (newItems, newLastKey) = getPaginatedProducts(lastEvaluatedKey)
                 Log.d("DynamoDB", "Fetched items: ${newItems.size}")
@@ -65,4 +64,16 @@ class InventoryViewModel : ViewModel() {
     }
 
 
+    fun refreshData() {
+        lastEvaluatedKey = null
+        // Reset pagination state
+        allProducts.clear()
+        isLastPage = false
+
+        // Clear the current list immediately (optional)
+        _products.postValue(emptyList())
+
+        // Load first page again
+        loadNextPage()
+    }
 }

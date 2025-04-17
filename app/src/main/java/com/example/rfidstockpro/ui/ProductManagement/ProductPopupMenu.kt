@@ -3,6 +3,7 @@ package com.example.rfidstockpro.ui.ProductManagement
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -70,7 +71,33 @@ class ProductPopupMenu(
             popupWindow.dismiss()
         }
 
-        popupWindow.showAsDropDown(anchor, 0, 0)
+//      popupWindow.showAsDropDown(anchor, 0, 0)
+
+        // Measure the popup content to determine its height
+        binding.root.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+        val popupHeight = binding.root.measuredHeight
+
+        // Get screen height and anchor position
+        val displayMetrics = DisplayMetrics()
+        (context as? android.app.Activity)?.windowManager?.defaultDisplay?.getMetrics(displayMetrics)
+        val screenHeight = displayMetrics.heightPixels
+        val anchorLocation = IntArray(2)
+        anchor.getLocationOnScreen(anchorLocation)
+        val anchorY = anchorLocation[1]
+        val anchorHeight = anchor.measuredHeight
+
+        // Calculate available space below and above the anchor
+        val spaceBelow = screenHeight - (anchorY + anchorHeight)
+        val spaceAbove = anchorY
+
+        // Determine the offset: show below if enough space, otherwise above
+        val offsetY = if (spaceBelow >= popupHeight) 0 else if (spaceAbove >= popupHeight) -popupHeight else 0
+
+        // Show the popup with adjusted position
+        popupWindow.showAsDropDown(anchor, 0, offsetY)
+
+        // Optional: Set a maximum height to prevent overflow
+        popupWindow.height = minOf(popupHeight, (screenHeight * 0.5).toInt()) // Limit to 50% of screen height
     }
 }
 

@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -50,6 +51,7 @@ import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.DataSource
+import com.example.rfidstockpro.aws.AwsManager
 
 class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
 
@@ -118,14 +120,13 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
         }
 
         val source = intent.getStringExtra("source")
+        Log.e("sourceTAG", "initUI:~~> " + source )
         if (source == "EditScreen") {
 
             product?.let {
 
                 Glide.with(this).load(it.selectedImages.get(0))
                     .into(binding.selectedImagesContainer)
-
-
 
                 Glide.with(this)
                     .load(it.selectedImages.get(0))
@@ -198,15 +199,6 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
                 binding.btnUpdate.visibility = View.VISIBLE
                 binding.btnUpdateWithTag.visibility = View.VISIBLE
             }
-
-
-            binding.btnUpdate.setOnClickListener {
-
-            }
-            binding.btnUpdateWithTag.setOnClickListener {
-                validateAndLogFields()
-            }
-
         }
 
 //        mBtAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -229,6 +221,12 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             }
         )
 
+        binding.btnUpdate.setOnClickListener {
+            validateAndLogFieldsForUpdate()
+        }
+        binding.btnUpdateWithTag.setOnClickListener {
+            validateAndLogFields()
+        }
 
         binding.btnAddScan.setOnClickListener {
             validateAndLogFields()
@@ -250,7 +248,6 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             }
         }
 
-
         dashboardViewModel.deviceConnected.observe(this) { device ->
             device?.let {
                 Log.d("Bluetooth", "Connected to: ${device.name}")
@@ -264,6 +261,8 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
                 binding.connectRFID.rlStatScan.visibility = View.VISIBLE
             }
         }
+
+
     }
 
     fun updateToolbarTitleAddItem(title: String) {
@@ -450,7 +449,8 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             selectedVideoPath = selectedVideo?.let {
                 addItemViewModel.getRealPathFromUriNew(this, it)
             } ?: selectedProduct?.selectedVideo
-        } else {
+        }
+        else {
             selectedImagePaths = selectedImageFiles.map { it.absolutePath }
             selectedVideoPath = selectedVideo?.let {
                 addItemViewModel.getRealPathFromUriNew(this, it)
@@ -491,6 +491,87 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             }
         }
     }
+
+    private fun validateAndLogFieldsForUpdate() {
+        val productName = binding.etProductName.text.toString().trim()
+        val productCategory = binding.etCategory.text.toString().trim()
+        val priceStr = binding.etPrice.text.toString().trim()
+        val etSku = binding.etSku.text.toString().trim()
+        val description = binding.etDescription.text.toString().trim()
+
+        val source = intent.getStringExtra("source")
+        val selectedProduct = ProductHolder.selectedProduct
+
+        var selectedImagePaths: List<String> = emptyList()
+        var selectedVideoPath: String? = null
+        var tagId = ""
+        if (source == "EditScreen") {
+            tagId =  selectedProduct!!.tagId
+            selectedImagePaths = selectedProduct?.selectedImages ?: emptyList()
+            if (selectedImageFiles.isNotEmpty()) {
+                selectedImagePaths = selectedImageFiles.map { it.absolutePath }
+            }
+            selectedVideoPath = selectedVideo?.let {
+                addItemViewModel.getRealPathFromUriNew(this, it)
+            } ?: selectedProduct?.selectedVideo
+        } else {
+            selectedImagePaths = selectedImageFiles.map { it.absolutePath }
+            selectedVideoPath = selectedVideo?.let {
+                addItemViewModel.getRealPathFromUriNew(this, it)
+            }
+        }
+
+        val currentTime =
+            SimpleDateFormat("dd-MM-yyyy hh:mm:ss a", Locale.getDefault()).format(Date())
+        val createdAt = selectedProduct?.createdAt ?: currentTime
+        val productModel = ProductModel(
+            id = selectedProduct?.id ?: UUID.randomUUID().toString(),
+            productName = productName,
+            productCategory = productCategory,
+            sku = etSku,
+            price = priceStr,
+            description = description,
+            selectedImages = selectedImagePaths,
+            selectedVideo = selectedVideoPath,
+            tagId = tagId, // Will be updated in UHFReadFragment
+            status = "Active",
+            createdAt = createdAt,
+//            isImageSelected = selectedProduct?.isImageSelected ?: selectedImagePaths.isNotEmpty(),
+            isImageSelected = selectedProduct?.isImageSelected ?: selectedImagePaths.isNotEmpty(),
+            isMediaUpdated = selectedProduct?.isMediaUpdated ?: true,
+            updatedAt = currentTime
+        )
+
+        Log.d("ADD_ITEM", "ProductModel: $productModel")
+        Log.d("ADD_ITEM", "oldImageUrls: $previewImageUrls")
+
+        val isValid = addItemViewModel.validateProductInput(productModel)
+        if (isValid) {
+/*
+            if (isUpdateTag) {
+                if (uhfDevice.connectStatus == ConnectionStatus.CONNECTED) {
+                    openTagListFragment(productModel)
+                } else {
+                    binding.connectRFID.rlStatScan.visibility = View.VISIBLE
+                    Log.d("ADD_ITEM", "🔄 RFID not connected — showing connect UI")
+                }
+            } else {*/
+                AwsManager.OnlyUpdateProductToAWS(
+                    context = this,
+                    product = productModel,
+                    onSuccess = {
+                        Toast.makeText(this, "Product Updated successfully!", Toast.LENGTH_SHORT).show()
+                        setResult(Activity.RESULT_OK)
+                        finish()
+                    },
+                    onError = { error ->
+                        Toast.makeText(this, "$error", Toast.LENGTH_LONG).show()
+                    }
+                )
+//            }
+        }
+    }
+
 
 
     private fun openTagListFragment(input: ProductModel) {

@@ -64,8 +64,8 @@ class ProductManagementActivity : AppCompatActivity() {
 
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = when (position) {
-                0 -> "Inventory"
-                1 -> "Scan"
+                0 -> "Stock"
+                1 -> "Inventory"
                 else -> ""
             }
         }.attach()

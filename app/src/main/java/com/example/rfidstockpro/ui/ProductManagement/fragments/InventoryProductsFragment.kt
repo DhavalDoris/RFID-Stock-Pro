@@ -30,7 +30,7 @@ import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.KeyEventCallback
 
 
-class ScannedProductsFragment : Fragment() {
+class InventoryProductsFragment : Fragment() {
 
     private lateinit var binding: FragmentInventoryBinding
     private lateinit var scannedProductsViewModel: ScannedProductsViewModel

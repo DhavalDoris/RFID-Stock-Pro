@@ -13,6 +13,8 @@ import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.aws.models.toMap
 import com.example.rfidstockpro.aws.models.toProductModel
+import com.example.rfidstockpro.ui.activities.AddProductActivity.Companion.previewImageUrls
+import com.example.rfidstockpro.ui.activities.AddProductActivity.Companion.previewVideoUrl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,6 +44,7 @@ import software.amazon.awssdk.services.dynamodb.model.QueryRequest
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest
 import software.amazon.awssdk.services.dynamodb.model.ScanResponse
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload
@@ -339,7 +342,6 @@ object AwsManager {
         } catch (e: Exception) {
             Log.e("AWS_CLEANUP", "🔥 Unexpected error during media cleanup: ${e.message}", e)
         }
-
         return deletedMedia
     }*/
 
@@ -382,7 +384,93 @@ object AwsManager {
         }
     }
 
+    fun OnlyUpdateProductToAWS(
+        context: Context,
+        product: ProductModel,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val scope = CoroutineScope(Dispatchers.IO)
 
+        scope.launch {
+            Log.d("AWS_UPDATE", "🆕 Starting product add for ID: ${product.id}")
+            Log.d("AWS_UPDATE", "product: ${product.toString()}")
+
+            val imageFiles = product.selectedImages
+                .filter { it.startsWith("/") || it.startsWith("content://") }
+                .map { File(it) }
+                .filter { it.exists() && it.length() > 0 }
+
+            val videoFile = product.selectedVideo?.takeIf {
+                it.startsWith("/") && File(it).exists() && File(it).length() > 0
+            }?.let { File(it) }
+
+         /*   if (imageFiles.isEmpty() && videoFile == null) {
+                withContext(Dispatchers.Main) {
+                    onError("No valid media selected to upload.")
+                }
+                return@launch
+            }*/
+
+            Log.d("AWS_UPDATE", "⬆️ Uploading media to S3...")
+
+            uploadMediaToS3(
+                scope = scope,
+                context = context,
+                imageFiles = imageFiles,
+                videoFile = videoFile,
+                onSuccess = { uploadedImageUrls, uploadedVideoUrl ->
+                    Log.d("AWS_UPDATE", "✅ Media uploaded.")
+                    Log.d("AWS_UPDATE", "🖼️ Image URLs: $uploadedImageUrls")
+                    Log.d("AWS_UPDATE", "🎥 Video URL: $uploadedVideoUrl")
+
+                    val finalProduct = product.copy(
+                        selectedImages =  if (uploadedImageUrls.isNotEmpty()) uploadedImageUrls else product.selectedImages,
+                        selectedVideo = uploadedVideoUrl ?: product.selectedVideo,
+                        isMediaUpdated = true
+                    )
+
+                    scope.launch {
+                        val (isSuccess, saveMessage) = updateProduct(PRODUCT_TABLE, finalProduct)
+                        withContext(Dispatchers.Main) {
+                            if (isSuccess) {
+                                Log.i("AWS_UPDATE", "✅ Product saved to DynamoDB.")
+                                onSuccess()
+
+                                Log.i("AWS_UPDATE", "$previewImageUrls")
+                                Log.i("AWS_UPDATE", "$previewVideoUrl")
+
+                                Log.i("AWS_UPDATE","-> " + if (uploadedImageUrls.isNotEmpty()) previewImageUrls else emptyList())
+                                Log.i("AWS_UPDATE", "~> " + if (uploadedVideoUrl != null) previewVideoUrl else null)
+                                scope.launch {
+                                    deleteMediaFromS3(
+                                        imageUrls =  if (uploadedImageUrls.isNotEmpty()) previewImageUrls else emptyList(),
+                                        videoUrl = if (uploadedVideoUrl != null) previewVideoUrl else null
+                                    )
+                                }
+
+                            } else {
+                                Log.e("AWS_UPDATE", "❌ Failed to save product: $saveMessage")
+                                onError("Failed to save product: $saveMessage")
+
+                                // 🔁 Rollback uploaded media
+                                scope.launch {
+                                    deleteMediaFromS3(
+                                        imageUrls = uploadedImageUrls,
+                                        videoUrl = uploadedVideoUrl
+                                    )
+                                }
+                            }
+                        }
+                    }
+                },
+                onError = { errorMessage ->
+                    Log.e("AWS_UPDATE", "❌ Upload error: $errorMessage")
+                        onError(errorMessage)
+                }
+            )
+        }
+    }
 
     private fun extractKeyFromUrl(url: String): String {
             val uri = Uri.parse(url)
@@ -641,6 +729,142 @@ object AwsManager {
         }
 
     }
+
+    /*suspend fun updateProduct(tableName: String, product: ProductModel): Pair<Boolean, String> {
+        return withContext(Dispatchers.IO) {
+            try {
+
+                Log.i("AWS_UPDATE","==> "+ product.toString())
+
+                val updateRequest = UpdateItemRequest.builder()
+                    .tableName(tableName)
+                    .key(mapOf("id" to AttributeValue.builder().s(product.id ?: "").build()))
+                    .updateExpression(
+                        """
+                    SET 
+                        selectedImages = :selectedImages,
+                        selectedVideo = :selectedVideo,
+                        productName = :productName,
+                        productCategory = :productCategory,
+                        sku = :sku,
+                        price = :price,
+                        description = :description,
+                        isImageSelected = :isImageSelected,
+                        tagId = :tagId,
+                         #status = :status,
+                        createdAt = :createdAt,
+                        updatedAt = :updatedAt
+                    """.trimIndent()
+                    ).expressionAttributeNames(
+                        mapOf(
+                            "#status" to "status"
+                        )
+                    )
+                    .expressionAttributeValues(
+                        mapOf(
+                            ":selectedImages" to AttributeValue.builder().l(
+                                product.selectedImages.map { AttributeValue.builder().s(it).build() }
+                            ).build(),
+                            ":selectedVideo" to AttributeValue.builder().s(product.selectedVideo ?: "").build(),
+                            ":productName" to AttributeValue.builder().s(product.productName).build(),
+                            ":productCategory" to AttributeValue.builder().s(product.productCategory).build(),
+                            ":sku" to AttributeValue.builder().s(product.sku).build(),
+                            ":price" to AttributeValue.builder().s(product.price).build(),
+                            ":description" to AttributeValue.builder().s(product.description).build(),
+                            ":isImageSelected" to AttributeValue.builder().bool(product.isImageSelected).build(),
+                            ":tagId" to AttributeValue.builder().s(product.tagId).build(),
+                            ":status" to AttributeValue.builder().s(product.status).build(),
+                            ":createdAt" to AttributeValue.builder().s(product.createdAt).build(),
+                            ":updatedAt" to AttributeValue.builder().s(product.updatedAt).build()
+                        )
+                    )
+                    .build()
+
+                dynamoDBClient.updateItem(updateRequest)
+
+                val successMsg = "✅ Product '${product.productName}' updated successfully."
+                Log.i("AWS_UPDATE", successMsg)
+                Pair(true, successMsg)
+
+            } catch (e: Exception) {
+                val errorMsg = "❌ Error updating product: ${e.message}"
+                Log.e("AWS_UPDATE", errorMsg, e)
+                Pair(false, errorMsg)
+            }
+        }
+    }*/
+
+
+    suspend fun updateProduct(tableName: String, product: ProductModel): Pair<Boolean, String> {
+        return withContext(Dispatchers.IO) {
+            try {
+
+                Log.i("AWS_UPDATE","==> "+ product.toString())
+
+                val expressionAttributeNames = mutableMapOf(
+                    "#status" to "status"
+                )
+
+                val expressionAttributeValues = mutableMapOf(
+                    ":productName" to AttributeValue.builder().s(product.productName).build(),
+                    ":productCategory" to AttributeValue.builder().s(product.productCategory).build(),
+                    ":sku" to AttributeValue.builder().s(product.sku).build(),
+                    ":price" to AttributeValue.builder().s(product.price).build(),
+                    ":description" to AttributeValue.builder().s(product.description).build(),
+                    ":isImageSelected" to AttributeValue.builder().bool(product.isImageSelected).build(),
+                    ":tagId" to AttributeValue.builder().s(product.tagId).build(),
+                    ":status" to AttributeValue.builder().s(product.status).build(),
+                    ":createdAt" to AttributeValue.builder().s(product.createdAt).build(),
+                    ":updatedAt" to AttributeValue.builder().s(product.updatedAt).build()
+                )
+
+                val updateExpressionParts = mutableListOf(
+                    "productName = :productName",
+                    "productCategory = :productCategory",
+                    "sku = :sku",
+                    "price = :price",
+                    "description = :description",
+                    "isImageSelected = :isImageSelected",
+                    "tagId = :tagId",
+                    "#status = :status",
+                    "createdAt = :createdAt",
+                    "updatedAt = :updatedAt"
+                )
+
+                if (product.isMediaUpdated) {
+                    expressionAttributeValues[":selectedImages"] = AttributeValue.builder().l(
+                        product.selectedImages.map { AttributeValue.builder().s(it).build() }
+                    ).build()
+                    expressionAttributeValues[":selectedVideo"] =
+                        AttributeValue.builder().s(product.selectedVideo ?: "").build()
+
+                    updateExpressionParts += listOf(
+                        "selectedImages = :selectedImages",
+                        "selectedVideo = :selectedVideo"
+                    )
+                }
+
+                val updateRequest = UpdateItemRequest.builder()
+                    .tableName(tableName)
+                    .key(mapOf("id" to AttributeValue.builder().s(product.id ?: "").build()))
+                    .updateExpression("SET ${updateExpressionParts.joinToString(", ")}")
+                    .expressionAttributeNames(expressionAttributeNames)
+                    .expressionAttributeValues(expressionAttributeValues)
+                    .build()
+
+                dynamoDBClient.updateItem(updateRequest)
+
+                Log.i("AWS_UPDATE", "✅ Product '${product.productName}' updated successfully.")
+                Pair(true, "Product updated successfully")
+            } catch (e: Exception) {
+                val errorMsg = "❌ Error updating product: ${e.message}"
+                Log.e("AWS_UPDATE", errorMsg, e)
+                Pair(false, errorMsg)
+            }
+        }
+    }
+
+
 
     suspend fun checkIfTagIdExists(tableName: String, tagId: String): Pair<Boolean, String> {
         return withContext(Dispatchers.IO) {

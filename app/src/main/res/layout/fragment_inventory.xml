@@ -1,93 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipeRefreshLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.ProductManagement.fragments.InventoryFragment">
+    android:layout_height="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/loadMoreContainer"
-        android:padding="@dimen/_7sdp"/>
+        tools:context=".ui.ProductManagement.fragments.StockFragment">
 
-    <!-- ProgressBar for loading state -->
-    <ProgressBar
-        android:id="@+id/scanProgressBar"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        android:layout_above="@+id/loadMoreContainer"
-        android:indeterminateTint="@color/appMainColor"
-        android:layout_centerInParent="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/loadMoreContainer"
+            android:padding="@dimen/_7sdp" />
 
-    <!-- No items text -->
-    <TextView
-        android:id="@+id/noItemsText"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        android:fontFamily="@font/rethinksans_variablefont_wght"
-        android:layout_centerInParent="true"
-        android:text="No items found"
-        android:textColor="#999"
-        android:textSize="16sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <!-- ProgressBar for loading state -->
+        <ProgressBar
+            android:id="@+id/scanProgressBar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/loadMoreContainer"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/appMainColor"
+            android:visibility="gone" />
 
-    <LinearLayout
-        android:id="@+id/loadMoreContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone"
-        android:padding="12dp">
+        <!-- No items text -->
+        <TextView
+            android:id="@+id/noItemsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:text="No items found"
+            android:textColor="#999"
+            android:textSize="16sp"
+            android:visibility="gone" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:id="@+id/loadMoreContainer"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_alignParentBottom="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:visibility="gone">
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/btnLoadMore"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:paddingHorizontal="@dimen/_12sdp"
-                android:paddingVertical="@dimen/_7sdp"
-                android:fontFamily="@font/rethinksans_variablefont_wght"
-                android:background="@drawable/continue_btn_bg"
-                android:text="@string/load_more" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <ProgressBar
-                android:id="@+id/loadMoreProgress"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginStart="12dp"
-                android:visibility="gone"
-                android:indeterminateTint="@color/appMainColor" />
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/btnLoadMore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/continue_btn_bg"
+                    android:fontFamily="@font/rethinksans_variablefont_wght"
+                    android:paddingHorizontal="@dimen/_12sdp"
+                    android:paddingVertical="@dimen/_7sdp"
+                    android:text="@string/load_more"
+                    android:textColor="@color/white" />
+
+                <ProgressBar
+                    android:id="@+id/loadMoreProgress"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="12dp"
+                    android:indeterminateTint="@color/appMainColor"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/itemCountText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/rethinksans_bold"
+                android:paddingTop="8dp"
+                android:text="0 of 0"
+                android:textColor="@color/black" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/itemCountText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0 of 0"
-            android:paddingTop="8dp"
-            android:fontFamily="@font/rethinksans_bold"
-            android:textColor="@color/black"/>
-    </LinearLayout>
-
-    <include
-        android:id="@+id/connectRFID"
-        layout="@layout/connect_rfid"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        <include
+            android:id="@+id/connectRFID"
+            layout="@layout/connect_rfid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
 
-</RelativeLayout>
+    </RelativeLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

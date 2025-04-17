@@ -1,22 +1,17 @@
 package com.example.rfidstockpro.ui.ProductManagement.fragments
 
-import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.PopupWindow
-import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.FragmentInventoryBinding
@@ -27,10 +22,23 @@ import com.example.rfidstockpro.ui.activities.AddProductActivity
 import com.example.rfidstockpro.ui.inventory.InventoryAdapter
 
 
-class InventoryFragment : Fragment() {
+class StockFragment : Fragment() {
     private lateinit var binding: FragmentInventoryBinding
     private lateinit var viewModel: InventoryViewModel
     private lateinit var inventoryAdapter: InventoryAdapter
+    private lateinit var editProductLauncher: ActivityResultLauncher<Intent>
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        editProductLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == AppCompatActivity.RESULT_OK) {
+                viewModel.refreshData() // You can create this method to re-fetch products from the beginning
+            }
+        }
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,7 +47,6 @@ class InventoryFragment : Fragment() {
     ): View {
         binding = FragmentInventoryBinding.inflate(inflater, container, false)
         viewModel = ViewModelProvider(this)[InventoryViewModel::class.java]
-
 
         init()
         setupRecyclerView()
@@ -52,6 +59,9 @@ class InventoryFragment : Fragment() {
     fun init() {
         binding.btnLoadMore.setOnClickListener {
             viewModel.loadNextPage()
+        }
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            viewModel.refreshData()
         }
     }
 
@@ -66,7 +76,8 @@ class InventoryFragment : Fragment() {
                 override fun onEditClicked(product: ProductModel) {
                     val intent = Intent(requireContext(), AddProductActivity::class.java)
                     intent.putExtra("source", "EditScreen")
-                    startActivity(intent)
+                    editProductLauncher.launch(intent)
+//                    startActivity(intent)
                 }
                 override fun onLocateClicked(product: ProductModel) {}
                 override fun onUpdateClicked(product: ProductModel) {}
@@ -77,7 +88,6 @@ class InventoryFragment : Fragment() {
         val layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.layoutManager = layoutManager
         binding.recyclerView.adapter = inventoryAdapter
-
 
     }
 
@@ -118,18 +128,18 @@ class InventoryFragment : Fragment() {
 
         viewModel.products.observe(viewLifecycleOwner) { productList ->
             inventoryAdapter.updateList(productList)
-            binding.recyclerView.visibility =
-                if (productList.isNotEmpty()) View.VISIBLE else View.GONE
+
+            binding.recyclerView.visibility = if (productList.isNotEmpty()) View.VISIBLE else View.GONE
             binding.noItemsText.visibility = if (productList.isEmpty()) View.VISIBLE else View.GONE
+            binding.swipeRefreshLayout.isRefreshing = false // ✅ Stop refresh here
+
 
             // Update count
             val total = viewModel.totalCount.value ?: 0
             Log.e("TOTAL_TAG", "observeViewModel:==>> $total")
             binding.itemCountText.text = "${productList.size} of $total"
-
             // Show/hide load more
-            binding.loadMoreContainer.visibility =
-                if (productList.size < total) View.VISIBLE else View.GONE
+            binding.loadMoreContainer.visibility = if (productList.size < total) View.VISIBLE else View.GONE
         }
 
         viewModel.totalCount.observe(viewLifecycleOwner) { total ->
