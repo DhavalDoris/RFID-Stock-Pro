@@ -320,7 +320,7 @@
                 android:background="@drawable/edittext_bg"
                 android:drawablePadding="@dimen/_5sdp"
                 android:hint="@string/total_price"
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 android:padding="@dimen/_10sdp" />
 
             <!-- <LinearLayout
@@ -329,7 +329,6 @@
                  android:layout_marginTop="@dimen/_5sdp"
                  android:gravity="center"
                  android:orientation="horizontal">
-
 
                  <EditText
                      android:id="@+id/etTotalGrossWt"
@@ -410,8 +409,6 @@
         android:background="@drawable/edittext_bg"
         android:orientation="horizontal"
         android:paddingHorizontal="@dimen/_15sdp">
-
-
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/btnAddScan"

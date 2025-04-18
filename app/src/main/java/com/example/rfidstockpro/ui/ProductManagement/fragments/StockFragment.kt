@@ -113,18 +113,18 @@ class StockFragment : Fragment() {
                             val intent = Intent(requireContext(), AddProductActivity::class.java)
                             intent.putExtra("source", "EditScreen")
                             editProductLauncher.launch(intent)
-//                    startActivity(intent)
+//                          startActivity(intent)
                         }
                         override fun onLocateClicked(product: ProductModel) {}
                         override fun onUpdateClicked(product: ProductModel) {}
                         override fun onDeleteClicked(product: ProductModel) {
                             AlertDialog.Builder(requireContext())
-                                .setTitle("Delete Product")
-                                .setMessage("Are you sure you want to delete this product and its media?")
-                                .setPositiveButton("Delete") { _, _ ->
+                                .setTitle(getString(R.string.delete_product))
+                                .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product_and_its_media))
+                                .setPositiveButton(getString(R.string.delete)) { _, _ ->
                                     viewModel.deleteProduct(product)
                                 }
-                                .setNegativeButton("Cancel", null)
+                                .setNegativeButton(getString(R.string.cancel), null)
                                 .show()
                         }
                     }

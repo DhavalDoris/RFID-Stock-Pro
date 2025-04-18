@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/_10sdp"
+    android:background="@color/main_bg_color"
+    tools:context=".ui.fragments.LocateFragment">
+
+    <TextView
+        android:id="@+id/tvLabelTag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/rethinksans_variablefont_wght"
+        android:layout_centerInParent="true"
+        android:textColor="@color/gray"
+        android:text="Tag - 12121212121212121212"
+        android:textStyle="bold" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/btStartLocating"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_40sdp"
+        android:layout_margin="@dimen/_2sdp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/continue_btn_bg"
+        android:backgroundTint="@color/appMainColor"
+        android:enabled="false"
+        android:fontFamily="@font/rethinksans_variablefont_wght"
+        android:gravity="center"
+        android:text="@string/start_locating"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_11ssp"
+        android:textStyle="bold" />
+
+</RelativeLayout>

@@ -17,6 +17,7 @@ import com.example.rfidstockpro.databinding.ItemProductRowBinding
 import com.example.rfidstockpro.ui.ProductManagement.adapters.MediaPagerAdapter
 import com.example.rfidstockpro.ui.ProductManagement.helper.ProductHolder
 import com.example.rfidstockpro.ui.activities.AddProductActivity
+import com.example.rfidstockpro.ui.fragments.LocateFragment
 import com.google.android.material.snackbar.Snackbar
 
 
@@ -105,6 +106,21 @@ class ProductDetailsFragment : Fragment() {
             }
         }
 
+        binding.btnLocate.setOnClickListener {
+            openProductDetails(product)
+        }
+
+    }
+
+
+    private fun openProductDetails(productModel: ProductModel) {
+        ProductHolder.selectedProduct = productModel
+        val fragment = LocateFragment()
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.locationFrame, fragment)
+            .addToBackStack(null)
+            .commit()
+
     }
 
     private fun refreshProductDetails() {
@@ -115,7 +131,7 @@ class ProductDetailsFragment : Fragment() {
         binding.shimmerLayout.startShimmer()
 
 
-        val productId =  ProductHolder.selectedProduct?.id
+        val productId = ProductHolder.selectedProduct?.id
         if (productId.isNullOrEmpty()) {
             showError("Product ID not found")
             return

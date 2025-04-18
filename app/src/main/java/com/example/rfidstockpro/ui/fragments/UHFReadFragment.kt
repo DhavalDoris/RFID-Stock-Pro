@@ -51,8 +51,10 @@ class UHFReadFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sharedProductViewModel = ViewModelProvider(requireActivity()).get(SharedProductViewModel::class.java)
-        inventoryProductsViewModel = ViewModelProvider(requireActivity())[InventoryProductsViewModel::class.java]
+        sharedProductViewModel =
+            ViewModelProvider(requireActivity()).get(SharedProductViewModel::class.java)
+        inventoryProductsViewModel =
+            ViewModelProvider(requireActivity())[InventoryProductsViewModel::class.java]
 
     }
 
@@ -90,9 +92,12 @@ class UHFReadFragment : Fragment() {
     }
 
     private fun setupUI() {
+
+        uhfDevice.setPower(1)
         isExit = false
         // Initialize adapter with callback
         adapter = UHFTagAdapter(requireContext()) { selectedTag ->
+            viewModel.stopInventory()
             Log.d("UHFReadFragment", "Selected Tag: ${selectedTag.generateTagString()}")
 //            Toast.makeText(requireContext(), "Selected: ${selectedTag.generateTagString()}", Toast.LENGTH_SHORT).show()
             binding.centerLine.visibility = View.VISIBLE
@@ -105,7 +110,6 @@ class UHFReadFragment : Fragment() {
             // ✅ Update tagId via ViewModel function
             sharedProductViewModel.updateTagId(selectedTag.generateTagString())
 
-
             sharedProductViewModel.product.observe(viewLifecycleOwner) { product ->
                 Log.d("UHFReadFragment", "✅ Received Product: $product")
             }
@@ -117,21 +121,25 @@ class UHFReadFragment : Fragment() {
             btStartScan.setOnClickListener { startInventory() }
             btStop.setOnClickListener { viewModel.stopInventory() }
             btClear.setOnClickListener { viewModel.clearData() }
-            btCancel.setOnClickListener { requireActivity().supportFragmentManager.popBackStack() }
+            btCancel.setOnClickListener {
+                viewModel.stopInventory()
+                requireActivity().supportFragmentManager.popBackStack()
+            }
 
 
             LvTags.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
                 // Handle tag selection
-                Log.e(TAG, "item clicked $position "   )
-                Toast.makeText(requireActivity(), "item clicked $position ", Toast.LENGTH_SHORT).show()
+                Log.e(TAG, "item clicked $position ")
+                Toast.makeText(requireActivity(), "item clicked $position ", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
         binding.btAdd.setOnClickListener {
             AddProductToAWS()
+            viewModel.stopInventory()
             Log.d("S3Upload", "btAdd")
         }
-
 
         uhfDevice.setKeyEventCallback(object : KeyEventCallback {
             override fun onKeyDown(keycode: Int) {
@@ -149,6 +157,7 @@ class UHFReadFragment : Fragment() {
 
         binding.btnProductList.setOnClickListener {
             Log.d("HELLO_TAG", "keycode")
+            viewModel.stopInventory()
             startActivity(Intent(requireActivity(), ProductManagementActivity::class.java))
             requireActivity().finish()
         }
@@ -162,6 +171,7 @@ class UHFReadFragment : Fragment() {
                 context = requireContext(),
                 product = product,
                 onSuccess = {
+                    uhfDevice.setPower(30)
                     binding.rlSuccessFullAdded.visibility = View.VISIBLE
                     isProductSuccessfullyAdded = true
                     (activity as? AddProductActivity)?.updateToolbarTitleAddItem("")
@@ -211,7 +221,7 @@ class UHFReadFragment : Fragment() {
 
             connectionStatus.observe(viewLifecycleOwner) { status ->
                 updateUIForConnectionStatus(status)
-                Log.e("KEY_TAG", "observeViewModel: " + status )
+                Log.e("KEY_TAG", "observeViewModel: " + status)
             }
         }
     }
@@ -247,7 +257,6 @@ class UHFReadFragment : Fragment() {
                     cbFilter.isChecked = false
                     cbFilter.isEnabled = false
                 }
-
                 else -> {}
             }
         }
@@ -260,14 +269,16 @@ class UHFReadFragment : Fragment() {
                 when (event.action) {
                     KeyEvent.ACTION_DOWN -> {
                         viewModel.handleKeyDown(keyCode)
-                        Log.e("KEY_TAG", "onResume: ACTION_DOWN"   )
+                        Log.e("KEY_TAG", "onResume: ACTION_DOWN")
                         true
                     }
+
                     KeyEvent.ACTION_UP -> {
                         viewModel.handleKeyUp(keyCode)
-                        Log.e("KEY_TAG", "onResume: ACTION_UP"   )
+                        Log.e("KEY_TAG", "onResume: ACTION_UP")
                         true
                     }
+
                     else -> false
                 }
             }
@@ -276,10 +287,12 @@ class UHFReadFragment : Fragment() {
             override fun handleOnBackPressed() {
                 if (binding.rlSuccessFullAdded.visibility == View.VISIBLE) {
                     // Finish the current activity and go to Dashboard
+                    viewModel.stopInventory()
                     startActivity(Intent(requireContext(), DashboardActivity::class.java))
                     requireActivity().finish()
                 } else {
                     // Pop the fragment back stack
+                    viewModel.stopInventory()
                     requireActivity().supportFragmentManager.popBackStack()
                 }
             }

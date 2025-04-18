@@ -149,5 +149,11 @@
     <string name="active">Active</string>
     <string name="update">Update</string>
     <string name="update_tag">Update Tag</string>
+    <string name="styleno">StyleNo</string>
+    <string name="delete_product">Delete Product</string>
+    <string name="are_you_sure_you_want_to_delete_this_product_and_its_media">Are you sure you want to delete this product and its media?</string>
+    <string name="delete">Delete</string>
+    <string name="start_locating">Start Locating</string>
+    <string name="locate_tag">"Locate Tag "</string>
 
 </resources>
