@@ -41,24 +41,37 @@
         android:theme="@style/Base.Theme.RFIDStockPro"
         tools:targetApi="31">
         <activity
-            android:name=".ui.ProductManagement.ProductManagementActivity"
-            android:exported="true"
+            android:name=".inouttracker.activity.CreateCollectionActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme"
-            android:screenOrientation="portrait">
-           <!-- <intent-filter>
+            android:exported="false" />
+        <activity
+            android:name=".inouttracker.activity.InOutTrackerActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme"
+            android:exported="false" />
+        <activity
+            android:name=".ui.ProductManagement.activity.ProductManagementActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme">
+
+            <!--
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
+            </intent-filter>
+            -->
         </activity>
         <activity
             android:name=".ui.activities.AddProductActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme">
-        </activity>
+            android:theme="@style/AppTheme"></activity>
         <activity
             android:name=".ui.activities.DemoActivity"
             android:exported="true">
+
             <!--
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -78,8 +91,7 @@
         </activity>
         <activity
             android:name=".ui.activities.VerificationActivity"
-            android:screenOrientation="portrait"
-            />
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activities.AuthActivity"
             android:screenOrientation="portrait"

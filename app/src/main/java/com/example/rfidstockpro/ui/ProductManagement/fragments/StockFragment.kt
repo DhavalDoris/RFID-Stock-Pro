@@ -79,24 +79,6 @@ class StockFragment : Fragment() {
 
     private fun setupRecyclerView() {
 
-        /*inventoryAdapter = InventoryAdapter(emptyList()) { product, anchorView ->
-            ProductHolder.selectedProduct = product
-            ProductPopupMenu(requireContext(), anchorView, product, object : ProductPopupMenu.PopupActionListener {
-                override fun onViewClicked(product: ProductModel) {
-                    openProductDetails(product)
-                }
-                override fun onEditClicked(product: ProductModel) {
-                    val intent = Intent(requireContext(), AddProductActivity::class.java)
-                    intent.putExtra("source", "EditScreen")
-                    editProductLauncher.launch(intent)
-//                    startActivity(intent)
-                }
-                override fun onLocateClicked(product: ProductModel) {}
-                override fun onUpdateClicked(product: ProductModel) {}
-                override fun onDeleteClicked(product: ProductModel) {}
-            }).show()
-        }*/
-
         inventoryAdapter = InventoryAdapter(
             emptyList(),
             onItemClick = { product, anchorView ->

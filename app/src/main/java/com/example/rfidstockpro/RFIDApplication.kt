@@ -15,6 +15,7 @@ class RFIDApplication : Application() {
         private const val TAG = "AppContext"
         const val USER_TABLE = "user"
         const val PRODUCT_TABLE = "product"
+        const val IN_OUT_COLLECTIONS_TABLE = "in_out_collections"
         var instance: RFIDApplication? = null
 
         init {

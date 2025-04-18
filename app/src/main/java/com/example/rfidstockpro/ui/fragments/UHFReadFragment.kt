@@ -19,7 +19,7 @@ import com.example.rfidstockpro.adapter.UHFTagAdapter
 import com.example.rfidstockpro.databinding.FragmentUhfreadTagBinding
 import com.example.rfidstockpro.factores.UHFViewModelFactory
 import com.example.rfidstockpro.repository.UHFRepository
-import com.example.rfidstockpro.ui.ProductManagement.ProductManagementActivity
+import com.example.rfidstockpro.ui.ProductManagement.activity.ProductManagementActivity
 
 import com.example.rfidstockpro.ui.activities.AddProductActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity

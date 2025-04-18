@@ -155,5 +155,10 @@
     <string name="delete">Delete</string>
     <string name="start_locating">Start Locating</string>
     <string name="locate_tag">"Locate Tag "</string>
+    <string name="in_out_ntracker">In/Out\nTracker</string>
+    <string name="in_out_ntracker_header">In/Out Tracker</string>
+    <string name="collection_name">Collection Name</string>
+    <string name="create_collection">Create Collection</string>
+    <string name="creating_collection">Creating Collection</string>
 
 </resources>

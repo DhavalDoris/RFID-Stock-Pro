@@ -328,6 +328,65 @@
                     </RelativeLayout>
 
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_75sdp"
+                    android:layout_marginTop="@dimen/_5sdp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <RelativeLayout
+                        android:id="@+id/btnInOut"
+                        style="@style/DashboardButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/_70sdp"
+                        android:layout_weight="1"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:backgroundTint="#DBE6FF">
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            style="@style/DashboardTextStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/in_out_ntracker"
+                            android:textColor="#5D78B8" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            style="@style/DashboardImageStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/btn_in_out" />
+
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="@dimen/_10sdp"
+                        android:layout_height="wrap_content" />
+
+                    <RelativeLayout
+                        style="@style/DashboardButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/_70sdp"
+                        android:layout_weight="1"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:backgroundTint="#FBF2CD">
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            style="@style/DashboardTextStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Settings"
+                            android:textColor="#CBA505" />
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            style="@style/DashboardImageStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/import_icon" />
+
+                    </RelativeLayout>
+
+                </LinearLayout>
 
             </LinearLayout>
 

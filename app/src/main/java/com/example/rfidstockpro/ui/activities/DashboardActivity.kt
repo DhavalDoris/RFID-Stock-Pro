@@ -33,8 +33,10 @@ import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
 import com.example.rfidstockpro.databinding.ActivityDashboardBinding
+import com.example.rfidstockpro.inouttracker.activity.CreateCollectionActivity
+import com.example.rfidstockpro.inouttracker.activity.InOutTrackerActivity
 import com.example.rfidstockpro.sharedpref.SessionManager
-import com.example.rfidstockpro.ui.ProductManagement.ProductManagementActivity
+import com.example.rfidstockpro.ui.ProductManagement.activity.ProductManagementActivity
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.ui.fragments.UHFReadFragment
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
@@ -150,8 +152,11 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         binding.productManagement.setOnClickListener {
             startActivity(Intent(this, ProductManagementActivity::class.java))
         }
-    }
 
+        binding.btnInOut.setOnClickListener {
+            startActivity(Intent(this, InOutTrackerActivity::class.java))
+        }
+    }
 
     private fun setupUI() {
         dashboardViewModel.checkBluetoothConnection()
@@ -168,7 +173,9 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         binding.btnDisconnect.setOnClickListener {
             dashboardViewModel.disconnect(true)
         }
+        binding.btnInOut.setOnClickListener {
 
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

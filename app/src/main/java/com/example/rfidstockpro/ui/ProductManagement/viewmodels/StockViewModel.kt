@@ -42,7 +42,6 @@ class StockViewModel : ViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-//                val (newItems, newLastKey, totalC ountFromDb) = getPaginatedProducts(lastEvaluatedKey)
                 val (newItems, newLastKey) = getPaginatedProducts(lastEvaluatedKey)
                 Log.d("DynamoDB", "Fetched items: ${newItems.size}")
                 newItems.forEach { product ->

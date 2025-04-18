@@ -1,24 +1,20 @@
-package com.example.rfidstockpro.ui.ProductManagement
+package com.example.rfidstockpro.ui.ProductManagement.activity
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.databinding.ActivityProductManagementBinding
+import com.example.rfidstockpro.ui.ProductManagement.BluetoothConnectionManager
 import com.example.rfidstockpro.ui.ProductManagement.adapters.ProductPagerAdapter
-import com.example.rfidstockpro.ui.activities.DashboardActivity
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
 import com.google.android.material.tabs.TabLayoutMediator
@@ -48,13 +44,13 @@ class ProductManagementActivity : AppCompatActivity() {
             onDeviceConnected = { device ->
                 Log.d("Bluetooth", "Connected to device: ${device.name}")
                 dashboardViewModel.notifyDeviceConnected(device)
-                UHFConnectionManager.updateConnectionStatus( ConnectionStatus.CONNECTED, device)
+                UHFConnectionManager.updateConnectionStatus(ConnectionStatus.CONNECTED, device)
             },
             onStatusUpdate = { status, _ ->
                 if (status == ConnectionStatus.DISCONNECTED) {
                     showToast(this, "Disconnected")
                     dashboardViewModel.notifyConnectionStatus(status)
-                    UHFConnectionManager.updateConnectionStatus( ConnectionStatus.DISCONNECTED, null)
+                    UHFConnectionManager.updateConnectionStatus(ConnectionStatus.DISCONNECTED, null)
                 }
             }
         )

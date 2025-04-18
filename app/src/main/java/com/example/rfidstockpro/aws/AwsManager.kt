@@ -7,12 +7,14 @@ import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import com.example.rfidstockpro.RFIDApplication
+import com.example.rfidstockpro.RFIDApplication.Companion.IN_OUT_COLLECTIONS_TABLE
 import com.example.rfidstockpro.RFIDApplication.Companion.PRODUCT_TABLE
 import com.example.rfidstockpro.RFIDApplication.Companion.USER_TABLE
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.aws.models.toMap
 import com.example.rfidstockpro.aws.models.toProductModel
+import com.example.rfidstockpro.inouttracker.model.CollectionModel
 import com.example.rfidstockpro.ui.activities.AddProductActivity.Companion.previewImageUrls
 import com.example.rfidstockpro.ui.activities.AddProductActivity.Companion.previewVideoUrl
 import kotlinx.coroutines.CoroutineScope
@@ -65,6 +67,7 @@ object AwsManager {
     private val AWS_SECRET_KEY = RFIDApplication.getAwsSecretKeyFromNdk()
     const val BUCKET_NAME = "rfid-stock-pro"
     private val AWS_REGION = Region.US_EAST_1
+
 
     fun init(context: Context) {
         try {
@@ -742,71 +745,6 @@ object AwsManager {
 
     }
 
-    /*suspend fun updateProduct(tableName: String, product: ProductModel): Pair<Boolean, String> {
-        return withContext(Dispatchers.IO) {
-            try {
-
-                Log.i("AWS_UPDATE","==> "+ product.toString())
-
-                val updateRequest = UpdateItemRequest.builder()
-                    .tableName(tableName)
-                    .key(mapOf("id" to AttributeValue.builder().s(product.id ?: "").build()))
-                    .updateExpression(
-                        """
-                    SET 
-                        selectedImages = :selectedImages,
-                        selectedVideo = :selectedVideo,
-                        productName = :productName,
-                        productCategory = :productCategory,
-                        sku = :sku,
-                        price = :price,
-                        description = :description,
-                        isImageSelected = :isImageSelected,
-                        tagId = :tagId,
-                         #status = :status,
-                        createdAt = :createdAt,
-                        updatedAt = :updatedAt
-                    """.trimIndent()
-                    ).expressionAttributeNames(
-                        mapOf(
-                            "#status" to "status"
-                        )
-                    )
-                    .expressionAttributeValues(
-                        mapOf(
-                            ":selectedImages" to AttributeValue.builder().l(
-                                product.selectedImages.map { AttributeValue.builder().s(it).build() }
-                            ).build(),
-                            ":selectedVideo" to AttributeValue.builder().s(product.selectedVideo ?: "").build(),
-                            ":productName" to AttributeValue.builder().s(product.productName).build(),
-                            ":productCategory" to AttributeValue.builder().s(product.productCategory).build(),
-                            ":sku" to AttributeValue.builder().s(product.sku).build(),
-                            ":price" to AttributeValue.builder().s(product.price).build(),
-                            ":description" to AttributeValue.builder().s(product.description).build(),
-                            ":isImageSelected" to AttributeValue.builder().bool(product.isImageSelected).build(),
-                            ":tagId" to AttributeValue.builder().s(product.tagId).build(),
-                            ":status" to AttributeValue.builder().s(product.status).build(),
-                            ":createdAt" to AttributeValue.builder().s(product.createdAt).build(),
-                            ":updatedAt" to AttributeValue.builder().s(product.updatedAt).build()
-                        )
-                    )
-                    .build()
-
-                dynamoDBClient.updateItem(updateRequest)
-
-                val successMsg = "✅ Product '${product.productName}' updated successfully."
-                Log.i("AWS_UPDATE", successMsg)
-                Pair(true, successMsg)
-
-            } catch (e: Exception) {
-                val errorMsg = "❌ Error updating product: ${e.message}"
-                Log.e("AWS_UPDATE", errorMsg, e)
-                Pair(false, errorMsg)
-            }
-        }
-    }*/
-
-
     suspend fun updateProduct(tableName: String, product: ProductModel): Pair<Boolean, String> {
         return withContext(Dispatchers.IO) {
             try {
@@ -878,7 +816,6 @@ object AwsManager {
         }
     }
 
-
     suspend fun checkIfTagIdExists(tableName: String, tagId: String): Pair<Boolean, String> {
         return withContext(Dispatchers.IO) {
             try {
@@ -918,7 +855,6 @@ object AwsManager {
         return result.count()
     }
 
-
     /* suspend fun getPaginatedProducts(
          lastKey: Map<String, AttributeValue>? = null
      ): Triple<List<ProductModel>, Map<String, AttributeValue>?,Int> {
@@ -936,7 +872,6 @@ object AwsManager {
 
          return Pair(items, if (newLastKey.isEmpty()) null else newLastKey)
      }*/
-
 
     fun getPaginatedProducts(
         lastEvaluatedKey: Map<String, AttributeValue>? = null
@@ -1082,4 +1017,82 @@ object AwsManager {
 
         s3Client.deleteObject(deleteRequest)
     }
+
+    fun addCollectionToDynamoDB(collection: CollectionModel) {
+
+        CoroutineScope(Dispatchers.IO).launch {
+            ensureUserTableExists(IN_OUT_COLLECTIONS_TABLE, "collectionId") { status ->
+                when (status) {
+                    "creating" -> Log.e(
+                        "AWS_TAG",
+                        "$IN_OUT_COLLECTIONS_TABLE Creating DynamoDB Table..."
+                    )
+
+                    "created", "exists" -> {
+                        Log.e("AWS_TAG", "$IN_OUT_COLLECTIONS_TABLE DynamoDB Table Ready!")
+
+                        val itemValues = mutableMapOf<String, AttributeValue>(
+                            "collectionId" to AttributeValue.builder().s(collection.collectionId).build(),
+                            "collectionName" to AttributeValue.builder().s(collection.collectionName).build(),
+                            "description" to AttributeValue.builder().s(collection.description).build(),
+                            "createdDateTime" to AttributeValue.builder().s(collection.createdDateTime).build(),
+                            "updatedDateTime" to AttributeValue.builder().s(collection.updatedDateTime).build(),
+                            "userId" to AttributeValue.builder().s(collection.userId).build(),
+                            "productIds" to AttributeValue.builder()
+                                .s(if (collection.productIds.isEmpty()) "[]" else collection.productIds.joinToString(","))
+                                .build()
+                        )
+
+                        val request = PutItemRequest.builder()
+                            .tableName(IN_OUT_COLLECTIONS_TABLE)
+                            .item(itemValues)
+                            .build()
+
+                        dynamoDBClient.putItem(request)
+                    }
+
+                    else -> Log.e("AWS_TAG", "$IN_OUT_COLLECTIONS_TABLE Error: $status")
+                }
+            }
+        }
+
+    }
+
+
+    fun checkIfCollectionNameExists(
+        tableName: String,
+        collectionName: String,
+        onResult: (Boolean) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val expressionAttributeValues = mapOf(
+                    ":val1" to AttributeValue.builder().s(collectionName).build()
+                )
+
+                val scanRequest = ScanRequest.builder()
+                    .tableName(tableName)
+                    .filterExpression("collectionName = :val1")
+                    .expressionAttributeValues(expressionAttributeValues)
+                    .limit(1)
+                    .build()
+
+                val result = dynamoDBClient.scan(scanRequest)
+                val exists = result.count() > 0
+
+                withContext(Dispatchers.Main) {
+                    onResult(exists)
+                }
+            } catch (e: Exception) {
+                Log.e("AWSManager", "Error checking collection name: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    onResult(false)
+                }
+            }
+        }
+    }
+
+
+
+
 }

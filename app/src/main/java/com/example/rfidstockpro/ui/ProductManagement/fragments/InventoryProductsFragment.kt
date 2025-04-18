@@ -92,8 +92,6 @@ class InventoryProductsFragment : Fragment() {
                 BluetoothConnectionManager.showBluetoothDevice(requireActivity())
             }
         }
-
-
     }
 
     private fun openProductDetails(productModel: ProductModel) {
