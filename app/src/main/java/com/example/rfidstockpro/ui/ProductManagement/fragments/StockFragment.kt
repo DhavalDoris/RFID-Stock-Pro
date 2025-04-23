@@ -30,8 +30,25 @@ class StockFragment : Fragment() {
     private lateinit var inventoryAdapter: InventoryAdapter
     private lateinit var editProductLauncher: ActivityResultLauncher<Intent>
 
+    private var comesFrom: String? = null
+    private var collectionName: String? = null
+    private var description: String? = null
+    private var productIds: List<String> = emptyList()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        arguments?.let {
+            comesFrom = it.getString("comesFrom")
+            collectionName = it.getString("collectionName")
+            description = it.getString("description")
+            productIds = it.getStringArrayList("productIds") ?: emptyList()
+        }
+
+        Log.e("comesFromTAG", "onCreate: "  + comesFrom )
+      /*  if (comesFrom == "InOutTracker") {
+            binding.btnLoadMore.visibility = View.GONE
+        }*/
 
         editProductLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == AppCompatActivity.RESULT_OK) {
@@ -40,7 +57,24 @@ class StockFragment : Fragment() {
         }
     }
 
-
+    companion object {
+        fun newInstance(
+            comesFrom: String?,
+            collectionName: String?,
+            description: String?,
+            productIds: List<String>?
+        ): StockFragment {
+            val fragment = StockFragment()
+            val args = Bundle().apply {
+                putString("comesFrom", comesFrom)
+                putString("collectionName", collectionName)
+                putString("description", description)
+                putStringArrayList("productIds", ArrayList(productIds ?: emptyList()))
+            }
+            fragment.arguments = args
+            return fragment
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,13 +87,26 @@ class StockFragment : Fragment() {
         setupRecyclerView()
         observeViewModel()
 
-        viewModel.loadNextPage()
+//        viewModel.loadNextPage()
+        if (comesFrom == "InOutTracker") {
+            viewModel.loadFilteredPage(productIds) // Initial load
+            Log.e("productIds_TAG", "onCreateView: " + productIds )
+
+        } else {
+            viewModel.loadNextPage()
+        }
         return binding.root
     }
 
     fun init() {
         binding.btnLoadMore.setOnClickListener {
-            viewModel.loadNextPage()
+//            viewModel.loadNextPage()
+            if (comesFrom == "InOutTracker") {
+                viewModel.loadFilteredPage(productIds)
+                Log.e("productIds_TAG", "btnLoadMore: " + productIds )
+            } else {
+                viewModel.loadNextPage()
+            }
         }
         binding.swipeRefreshLayout.setOnRefreshListener {
             viewModel.refreshData()
@@ -139,6 +186,17 @@ class StockFragment : Fragment() {
 
     private fun observeViewModel() {
 
+        viewModel.filteredProducts.observe(viewLifecycleOwner) { filteredList ->
+            inventoryAdapter.updateList(filteredList)
+
+            binding.recyclerView.visibility = if (filteredList.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.noItemsText.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
+            binding.swipeRefreshLayout.isRefreshing = false
+
+            binding.itemCountText.text = "${filteredList.size} of ${productIds.size}"
+            binding.loadMoreContainer.visibility = if (filteredList.size < productIds.size) View.VISIBLE else View.GONE
+        }
+
         viewModel.isLoading.observe(viewLifecycleOwner) {                                                                                                          isLoading ->
 
             val productList = viewModel.products.value ?: emptyList()
@@ -163,19 +221,26 @@ class StockFragment : Fragment() {
         }
 
         viewModel.products.observe(viewLifecycleOwner) { productList ->
-            inventoryAdapter.updateList(productList)
 
-            binding.recyclerView.visibility = if (productList.isNotEmpty()) View.VISIBLE else View.GONE
-            binding.noItemsText.visibility = if (productList.isEmpty()) View.VISIBLE else View.GONE
+            val filteredList = if (comesFrom == "InOutTracker" && productIds.isNotEmpty()) {
+                productList.filter { productIds.contains(it.id) }
+            } else {
+                productList
+            }
+
+            inventoryAdapter.updateList(filteredList)
+
+            binding.recyclerView.visibility = if (filteredList.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.noItemsText.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
             binding.swipeRefreshLayout.isRefreshing = false // ✅ Stop refresh here
 
 
             // Update count
             val total = viewModel.totalCount.value ?: 0
             Log.e("TOTAL_TAG", "observeViewModel:==>> $total")
-            binding.itemCountText.text = "${productList.size} of $total"
+            binding.itemCountText.text = "${filteredList.size} of $total"
             // Show/hide load more
-            binding.loadMoreContainer.visibility = if (productList.size < total) View.VISIBLE else View.GONE
+            binding.loadMoreContainer.visibility = if (filteredList.size < total) View.VISIBLE else View.GONE
         }
 
         viewModel.totalCount.observe(viewLifecycleOwner) { total ->

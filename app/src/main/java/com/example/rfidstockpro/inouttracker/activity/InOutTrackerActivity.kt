@@ -10,17 +10,23 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.Utils.FragmentManagerHelper
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.databinding.ActivityInOutBinding
+import com.example.rfidstockpro.inouttracker.CollectionUtils
 import com.example.rfidstockpro.inouttracker.adapter.CollectionAdapter
+import com.example.rfidstockpro.inouttracker.fragment.CollectionDetailListFragment
+import com.example.rfidstockpro.inouttracker.model.CollectionModel
 import com.example.rfidstockpro.inouttracker.viewmodel.CreateCollectionViewModel
 import com.example.rfidstockpro.sharedpref.SessionManager
 import com.example.rfidstockpro.ui.ProductManagement.activity.ProductManagementActivity
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.ShowCheckBoxinProduct
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isShowDuplicateTagId
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
+
 
 class InOutTrackerActivity : AppCompatActivity() {
 
@@ -34,8 +40,9 @@ class InOutTrackerActivity : AppCompatActivity() {
         binding = ActivityInOutBinding.inflate(layoutInflater)
         setContentView(binding.root)
         StatusBarUtils.setStatusBarColor(this)
-        updateToolbarTitleAddItem(getString(R.string.in_out_ntracker_header))
 
+
+        updateToolbarTitleAddItem(getString(R.string.in_out_ntracker_header))
         init()
         setupRecyclerView()
     }
@@ -58,18 +65,15 @@ class InOutTrackerActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
 
         adapter = CollectionAdapter { selectedCollection ->
-            // You can open a detail screen or show a toast etc.
-          /*  Toast.makeText(
-                this,
-                "Clicked: ${selectedCollection.collectionName}",
-                Toast.LENGTH_SHORT
-            ).show()*/
+            val intent = Intent(this, ProductManagementActivity::class.java).apply {
+                putExtra("comesFrom", "InOutTracker")
+                putExtra("collection_name", selectedCollection.collectionName)
+                putExtra("description", selectedCollection.description)
+                putStringArrayListExtra("productIds", ArrayList(selectedCollection.productIds)) // assuming productIds: List<String>
 
-            // Example: Navigate to CollectionDetailsActivity
-             /* val intent = Intent(this, ProductManagementActivity::class.java).apply {
-                  putExtra("collection_id", selectedCollection.collectionId)
-              }
-              startActivity(intent)*/
+            }
+            startActivity(intent)
+//            openFragment(selectedCollection)
         }
         binding.ListOfCollections.layoutManager = LinearLayoutManager(this)
         binding.ListOfCollections.adapter = adapter
@@ -90,7 +94,17 @@ class InOutTrackerActivity : AppCompatActivity() {
         userId = userName
 
         viewModel.fetchCollections(userId!!)
+
     }
+
+    private fun openFragment(selectedCollection: CollectionModel) {
+        CollectionUtils.selectedCollection = selectedCollection
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.FrameForFragment, CollectionDetailListFragment())
+            .addToBackStack(null)
+            .commit()
+    }
+
 
     fun updateToolbarTitleAddItem(title: String) {
         val toolbarTitle = findViewById<AppCompatTextView>(R.id.tvToolbarTitle)
@@ -105,6 +119,24 @@ class InOutTrackerActivity : AppCompatActivity() {
         toolbarFilter.setOnClickListener {
             Toast.makeText(this, "Filter", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        /*supportFragmentManager.addOnBackStackChangedListener {
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.FrameForFragment)
+            if (currentFragment is CollectionDetailListFragment) {
+                // 👉 User just navigated back from your fragment!
+                Log.d("BackNavigation", "User came back from CollectionDetailListFragment")
+                // Do something here
+                updateToolbarTitleAddItem(getString(R.string.in_out_ntracker_header))
+            }
+        }*/
     }
 
 

@@ -8,7 +8,11 @@ import com.example.rfidstockpro.ui.ProductManagement.fragments.InventoryProducts
 
 class ProductPagerAdapter(
     activity: AppCompatActivity,
-    private val showBothTabs: Boolean
+    private val showBothTabs: Boolean,
+    private val comesFrom: String?,
+    private val collectionName: String?,
+    private val description: String?,
+    private val productIds: List<String>? // 👈 Pass selected product IDs
 ) : FragmentStateAdapter(activity) {
 
     override fun getItemCount(): Int = if (showBothTabs) 2 else 1
@@ -16,12 +20,32 @@ class ProductPagerAdapter(
     override fun createFragment(position: Int): Fragment {
         return if (showBothTabs) {
             when (position) {
-                0 -> StockFragment()
-                1 -> InventoryProductsFragment()
+               /* 0 -> StockFragment()
+                1 -> InventoryProductsFragment()*/
+                0 -> StockFragment.newInstance(
+                    comesFrom = comesFrom,
+                    collectionName = collectionName,
+                    description = description,
+                    productIds = productIds
+                )
+                1 -> InventoryProductsFragment.newInstance(
+                    tabType = "Inventory",
+                    comesFrom = comesFrom,
+                    collectionName = collectionName,
+                    description = description,
+                    productIds = productIds
+                )
                 else -> Fragment()
             }
         } else {
-            InventoryProductsFragment() // Only show Inventory
+//            InventoryProductsFragment() // Only show Inventory
+            InventoryProductsFragment.newInstance(
+                tabType = "Inventory",
+                comesFrom = comesFrom,
+                collectionName = collectionName,
+                description = description,
+                productIds = productIds
+            )
         }
     }
 }

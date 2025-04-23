@@ -54,4 +54,13 @@
         android:contentDescription="@string/add"
         app:backgroundTint="@color/appMainColor"
         app:srcCompat="@drawable/plus_sign" />
+
+    <FrameLayout
+        android:id="@+id/FrameForFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="@dimen/_5sdp"
+        android:visibility="visible"
+        android:layout_below="@id/commonToolbar"/>
+
 </RelativeLayout>

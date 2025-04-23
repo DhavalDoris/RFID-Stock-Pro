@@ -5,9 +5,10 @@ import android.widget.Toast
 import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.sharedpref.SessionManager
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.inouttracker.model.CollectionModel
 
 object CollectionUtils {
-
+    var selectedCollection: CollectionModel? = null
     fun handleCreateCollection(
         context: Context,
         collectionName: String,

@@ -34,7 +34,8 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
     private lateinit var dashboardViewModel: DashboardViewModel
     var collectionName: String = ""
     var description: String = ""
-//    var productIds: MutableList<String> = mutableListOf()
+
+    //    var productIds: MutableList<String> = mutableListOf()
     private var productIds: List<String>? = null
     private lateinit var viewModel: ProductManagementViewModel
 
@@ -70,8 +71,8 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             }
         )
         val isFromCollection = intent.getStringExtra("collection") != null
-        val adapter = ProductPagerAdapter(this, showBothTabs = !isFromCollection)
-        binding.viewPager.adapter = adapter
+//        val adapter = ProductPagerAdapter(this, showBothTabs = !isFromCollection)
+
 
         if (isFromCollection) {
             // Hide tabs and disable swiping
@@ -82,6 +83,27 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             collectionName = intent.getStringExtra("collection_name")!!
             description = intent.getStringExtra("description")!!
         } else {
+
+
+            val comesFrom = intent.getStringExtra("comesFrom")
+            if (comesFrom == "InOutTracker") {
+                // 👉 Handle logic specifically for InOutTracker case
+                Log.d("IntentCheck", "Came " + comesFrom)
+                val comesFrom = intent.getStringExtra("comesFrom")
+                val collectionName = intent.getStringExtra("collectionName")
+                val description = intent.getStringExtra("description")
+                val productIds = intent.getStringArrayListExtra("productIds") ?: arrayListOf()
+                val adapter = ProductPagerAdapter(
+                    this,
+                    showBothTabs = !isFromCollection,
+                    comesFrom = comesFrom,
+                    collectionName = collectionName,
+                    description = description,
+                    productIds = productIds
+                )
+                binding.viewPager.adapter = adapter
+            }
+
             TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
                 tab.text = when (position) {
                     0 -> "Stock"
@@ -91,6 +113,8 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             }.attach()
             binding.viewPager.isUserInputEnabled = true
             updateToolbarTitleAddItem(getString(R.string.product_management), true)
+
+
         }
         viewModel = ViewModelProvider(
             this,
@@ -99,6 +123,7 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
 
         observeViewModel()
     }
+
     private fun observeViewModel() {
         viewModel.isCollectionCreated.observe(this) { isCreated ->
             if (isCreated) {
@@ -110,6 +135,7 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             }
         }
     }
+
     fun updateToolbarTitleAddItem(title: String, showFilter: Boolean?) {
         val toolbarTitle = findViewById<AppCompatTextView>(R.id.tvToolbarTitle)
         val toolbarSearch = findViewById<AppCompatImageView>(R.id.ivSearch)
@@ -135,7 +161,7 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
 
         toolbarDone.setOnClickListener {
 
-            Log.e("ToolbarCallback", "updateToolbarTitleAddItem: " + productIds )
+            Log.e("ToolbarCallback", "updateToolbarTitleAddItem: " + productIds)
 
             CollectionUtils.handleCreateCollection(
                 context = this,

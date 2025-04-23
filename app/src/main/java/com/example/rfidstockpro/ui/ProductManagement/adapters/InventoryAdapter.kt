@@ -1,5 +1,6 @@
 package com.example.rfidstockpro.ui.inventory
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,11 +41,11 @@ class InventoryAdapter(
             binding.productPrice.text = "$" + product.price
             binding.tagIdTextView.text = product.tagId
 
+            Log.e("SHOWCHECKBOXINPRODUCT_TAG", "bind: " +  ShowCheckBoxinProduct )
             if (ShowCheckBoxinProduct!!) {
                 binding.productCheckBox.visibility = View.VISIBLE
                 binding.productCheckBox.isChecked = selectedProductIds.contains(product.id)
                 binding.productCheckBox.isVisible = ShowCheckBoxinProduct == true
-
             }
             if (product.selectedImages.isNotEmpty()) {
                 Glide.with(binding.productImage.context)

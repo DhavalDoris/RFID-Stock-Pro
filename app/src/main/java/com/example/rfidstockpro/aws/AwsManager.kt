@@ -940,6 +940,33 @@ object AwsManager {
         }
     }
 
+    suspend fun getProductById(
+        tableName: String,
+        productId: String
+    ): ProductModel? {
+        return withContext(Dispatchers.IO) {
+            try {
+                Log.e("productIds_TAG", "getProductById(): " + productId )
+                val request = GetItemRequest.builder()
+                    .tableName(tableName)
+                    .key(mapOf("id" to AttributeValue.builder().s(productId).build()))
+                    .build()
+
+                val response = dynamoDBClient.getItem(request)
+
+                if (response.hasItem()) {
+                    response.item().toProductModel()
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
+                Log.e("DynamoDB", "getProductById error: ${e.message}")
+                null
+            }
+        }
+    }
+
+
     fun getProductById(
         tableName: String,
         productId: String,

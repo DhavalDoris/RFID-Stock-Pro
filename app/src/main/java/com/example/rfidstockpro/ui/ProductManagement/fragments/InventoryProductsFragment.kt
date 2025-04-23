@@ -47,6 +47,34 @@ class InventoryProductsFragment : Fragment() {
     private val uniqueTagSet = mutableSetOf<String>()
     private var callback: ToolbarCallback? = null
 
+    private var tabType: String? = null
+    private var comesFrom: String? = null
+    private var collectionName: String? = null
+    private var description: String? = null
+    private var productIds: List<String> = emptyList()
+
+    companion object {
+        fun newInstance(
+            tabType: String,
+            comesFrom: String?,
+            collectionName: String?,
+            description: String?,
+            productIds: List<String>?
+        ): InventoryProductsFragment {
+            val fragment = InventoryProductsFragment()
+            val args = Bundle().apply {
+                putString("tabType", tabType)
+                putString("comesFrom", comesFrom)
+                putString("collectionName", collectionName)
+                putString("description", description)
+                putStringArrayList("productIds", ArrayList(productIds ?: emptyList()))
+            }
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
+
     interface ToolbarCallback {
         fun updateToolbar(selectedIds: List<String>)
     }
@@ -55,6 +83,17 @@ class InventoryProductsFragment : Fragment() {
         super.onAttach(context)
         if (context is ToolbarCallback) {
             callback = context
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            tabType = it.getString("tabType")
+            comesFrom = it.getString("comesFrom")
+            collectionName = it.getString("collectionName")
+            description = it.getString("description")
+            productIds = it.getStringArrayList("productIds") ?: emptyList()
         }
     }
 
@@ -222,7 +261,7 @@ class InventoryProductsFragment : Fragment() {
             Handler(Looper.getMainLooper()).postDelayed({
                 binding.scanProgressBar.visibility = View.GONE
                 if (totalScans != 0) {
-                    binding.noItemsText.visibility = View.GONE
+//                    binding.noItemsText.visibility = View.GONE
                 }
                 binding.recyclerView.visibility = View.VISIBLE
             }, 2000) // you can adjust this delay

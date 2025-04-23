@@ -97,7 +97,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
     private fun initUI() {
         isShowDuplicateTagId = false
         ShowCheckBoxinProduct = false
-        val product = ProductHolder.selectedProduct
+        val product = selectedProduct
         product?.let {
             Log.d("ProductAdd", "ID: ${it.id}")
             Log.d("ProductAdd", "Name: ${it.productName}")
@@ -478,14 +478,10 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             tagId = tagId, // Will be updated in UHFReadFragment
             status = "Active",
             createdAt = createdAt,
-//            isImageSelected = selectedProduct?.isImageSelected ?: selectedImagePaths.isNotEmpty(),
             isImageSelected = selectedProduct?.isImageSelected ?: selectedImagePaths.isNotEmpty(),
             isMediaUpdated = selectedProduct?.isMediaUpdated ?: true,
             updatedAt = currentTime
         )
-
-        Log.d("ADD_ITEM", "ProductModel: $productModel")
-        Log.d("ADD_ITEM", "oldImageUrls: $previewImageUrls")
 
         val isValid = addItemViewModel.validateProductInput(productModel)
         if (isValid) {

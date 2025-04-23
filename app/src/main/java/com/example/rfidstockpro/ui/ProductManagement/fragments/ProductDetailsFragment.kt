@@ -215,6 +215,5 @@ class ProductDetailsFragment : Fragment() {
     }
 
     companion object {
-        private const val ARG_PRODUCT = "product"
     }
 }
