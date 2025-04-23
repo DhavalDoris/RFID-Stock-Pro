@@ -39,11 +39,26 @@
 
         </LinearLayout>
 
+        <!-- No items text -->
+        <TextView
+            android:id="@+id/noItemsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:text="@string/no_items_found"
+            android:textColor="#999"
+            android:textSize="16sp"
+            android:layout_below="@+id/llSelectAll"
+            android:layout_marginVertical="@dimen/_10sdp"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
-            android:layout_below="@+id/llSelectAll"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_below="@+id/noItemsText"
             android:layout_above="@+id/loadMoreContainer"
             android:padding="@dimen/_7sdp" />
 
@@ -59,18 +74,7 @@
             android:indeterminateTint="@color/appMainColor"
             android:visibility="gone" />
 
-        <!-- No items text -->
-        <TextView
-            android:id="@+id/noItemsText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_gravity="center"
-            android:fontFamily="@font/rethinksans_variablefont_wght"
-            android:text="@string/no_items_found"
-            android:textColor="#999"
-            android:textSize="16sp"
-            android:visibility="gone" />
+
 
 
         <LinearLayout
