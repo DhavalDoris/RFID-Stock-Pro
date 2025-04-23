@@ -23,8 +23,6 @@ data class ProductModel(
     var previewVideoUrl: String? = null
 )
 
-
-
 fun ProductModel.toMap(): Map<String, AttributeValue> {
     return mapOf(
         "id" to AttributeValue.builder().s(id).build(),

@@ -52,6 +52,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.DataSource
 import com.example.rfidstockpro.aws.AwsManager
+import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.ShowCheckBoxinProduct
+import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isShowDuplicateTagId
 
 class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
 
@@ -93,7 +95,8 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
 
     @SuppressLint("MissingPermission")
     private fun initUI() {
-
+        isShowDuplicateTagId = false
+        ShowCheckBoxinProduct = false
         val product = ProductHolder.selectedProduct
         product?.let {
             Log.d("ProductAdd", "ID: ${it.id}")

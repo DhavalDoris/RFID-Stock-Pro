@@ -3,6 +3,7 @@ package com.example.rfidstockpro.ui.ProductManagement.fragments
 import InventoryProductsViewModel
 import UHFConnectionManager
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -31,6 +32,7 @@ import com.example.rfidstockpro.viewmodel.DashboardViewModel
 import com.example.rfidstockpro.viewmodel.UHFReadViewModel
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.KeyEventCallback
+import androidx.core.view.isVisible
 
 
 class InventoryProductsFragment : Fragment() {
@@ -43,7 +45,18 @@ class InventoryProductsFragment : Fragment() {
     var latestIsLoading = false
     private lateinit var dashboardViewModel: DashboardViewModel
     private val uniqueTagSet = mutableSetOf<String>()
+    private var callback: ToolbarCallback? = null
 
+    interface ToolbarCallback {
+        fun updateToolbar(selectedIds: List<String>)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is ToolbarCallback) {
+            callback = context
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,19 +76,19 @@ class InventoryProductsFragment : Fragment() {
             ViewModelProvider(this, UHFViewModelFactory(repository))[UHFReadViewModel::class.java]
         dashboardViewModel = ViewModelProvider(requireActivity())[DashboardViewModel::class.java]
 
-
         initView()
         setupRecyclerView()
         observeActions()
         setupRFIDGunTrigger()
-
-
     }
 
     @SuppressLint("MissingPermission")
     private fun initView() {
-
+        binding.swipeRefreshLayout.setOnRefreshListener(null)
         binding.swipeRefreshLayout.isRefreshing = false
+
+        binding.noItemsText.text = "Scan with RFID"
+        binding.noItemsText.visibility = View.VISIBLE
 
         val rfidConnectionView = binding.connectRFID.rlStatScan
         if (UHFConnectionManager.getConnectionStatus() == ConnectionStatus.CONNECTED) {
@@ -126,6 +139,7 @@ class InventoryProductsFragment : Fragment() {
 //                            editProductLauncher.launch(intent)
                             startActivity(intent)
                         }
+
                         override fun onLocateClicked(product: ProductModel) {}
                         override fun onUpdateClicked(product: ProductModel) {}
                         override fun onDeleteClicked(product: ProductModel) {}
@@ -135,8 +149,28 @@ class InventoryProductsFragment : Fragment() {
             onItemViewClick = { product -> // 👈 This gets called on full item click
                 // Or: do something like navigate to product details, etc.
                 openProductDetails(product)
+            },
+            onCheckboxClick = { selectedIds ->
+                Log.d("SelectedProductIDs", "Selected IDs: $selectedIds")
+                // You can store or use this list as needed
+                callback?.updateToolbar(selectedIds.toList())
+                binding.llSelectAll.visibility = View.VISIBLE
+
+                binding.selectAllCheckBox.setOnCheckedChangeListener(null)
+                binding.selectAllCheckBox.isChecked =
+                    selectedIds.size == inventoryAdapter.getAllItemIds().size
+                binding.selectAllCheckBox.setOnCheckedChangeListener { _, isChecked ->
+                    inventoryAdapter.selectAllItems(isChecked)
+                    callback?.updateToolbar(if (isChecked) inventoryAdapter.getAllItemIds() else emptyList())
+                }
             }
+
         )
+
+        binding.selectAllCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            inventoryAdapter.selectAllItems(isChecked)
+            callback?.updateToolbar(if (isChecked) inventoryAdapter.getAllItemIds() else emptyList())
+        }
 
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -152,8 +186,11 @@ class InventoryProductsFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun observeActions() {
+
+
         uhfReadViewModel.tagList.observe(viewLifecycleOwner) { tagList ->
             var newTagsAdded = false
+            binding.noItemsText.visibility = View.VISIBLE
 
             tagList.forEach { tag ->
                 val tagId = tag.generateTagString()
@@ -163,19 +200,36 @@ class InventoryProductsFragment : Fragment() {
                     newTagsAdded = true
                 }
             }
+            // Update tag count
+
+            // ✅ Compute stats
+            val totalScans = tagList.sumOf { it.count } // total scans including duplicates
+            val uniqueCount = tagList.size              // unique tags only
+
+            // ✅ Update your stats TextView
 
             if (newTagsAdded) {
                 // 🔄 Pass the updated list to ViewModel
                 // Show progress while scanning & matching
+//                binding.scanProgressBar.visibility = View.VISIBLE
+//                binding.noItemsText.text = "Scanning..."
+                binding.noItemsText.text = "Total: $totalScans, Unique: $uniqueCount"
+                binding.noItemsText.visibility = View.VISIBLE
                 inventoryProductsViewModel.setMatchedTagIds(uniqueTagSet.toList())
             }
+
+            // Optional: Hide scanning UI after a delay
+            Handler(Looper.getMainLooper()).postDelayed({
+                binding.scanProgressBar.visibility = View.GONE
+                if (totalScans != 0) {
+                    binding.noItemsText.visibility = View.GONE
+                }
+                binding.recyclerView.visibility = View.VISIBLE
+            }, 2000) // you can adjust this delay
         }
 
         inventoryProductsViewModel.pagedProducts.observe(viewLifecycleOwner) { products ->
             inventoryAdapter.updateList(products)
-
-            // Hide loading when items are received
-//            binding.scanProgressBar.visibility = View.VISIBLE
 
             val total = inventoryProductsViewModel.totalCount.value ?: 0
             val currentCount = products.size

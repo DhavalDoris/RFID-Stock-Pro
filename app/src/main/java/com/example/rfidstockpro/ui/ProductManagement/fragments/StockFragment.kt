@@ -30,7 +30,6 @@ class StockFragment : Fragment() {
     private lateinit var inventoryAdapter: InventoryAdapter
     private lateinit var editProductLauncher: ActivityResultLauncher<Intent>
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -115,6 +114,10 @@ class StockFragment : Fragment() {
             onItemViewClick = { product -> // 👈 This gets called on full item click
                 // Or: do something like navigate to product details, etc.
                 openProductDetails(product)
+            },
+            onCheckboxClick = { selectedIds ->
+                Log.d("SelectedProductIDs", "Selected IDs:~> $selectedIds")
+                // You can store or use this list as needed
             }
         )
 

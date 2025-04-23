@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/swipeRefreshLayout"
     android:layout_width="match_parent"
@@ -10,8 +11,37 @@
         android:layout_height="match_parent"
         tools:context=".ui.ProductManagement.fragments.StockFragment">
 
+        <LinearLayout
+            android:id="@+id/llSelectAll"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:layout_marginRight="@dimen/_10sdp">
+
+            <CheckBox
+                android:id="@+id/selectAllCheckBox"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_25sdp"
+                android:layout_gravity="center_vertical"
+                android:button="@drawable/custom_checkbox"
+                android:background="@null"
+                android:focusable="true"
+                android:clickable="true"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Select all"
+                android:gravity="center_vertical"
+                android:fontFamily="@font/rethinksans_bold"/>
+
+        </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
+            android:layout_below="@+id/llSelectAll"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/loadMoreContainer"
@@ -37,10 +67,11 @@
             android:layout_centerInParent="true"
             android:layout_gravity="center"
             android:fontFamily="@font/rethinksans_variablefont_wght"
-            android:text="No items found"
+            android:text="@string/no_items_found"
             android:textColor="#999"
             android:textSize="16sp"
             android:visibility="gone" />
+
 
         <LinearLayout
             android:id="@+id/loadMoreContainer"
@@ -96,4 +127,5 @@
 
 
     </RelativeLayout>
+
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

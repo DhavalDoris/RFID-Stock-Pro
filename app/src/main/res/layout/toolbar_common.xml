@@ -39,6 +39,16 @@
         android:tint="@color/white"
         android:visibility="visible"/>
 
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/ivDone"
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="@dimen/_20sdp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"
+        app:srcCompat="@drawable/mark"
+        android:tint="@color/white"
+        android:visibility="gone"/>
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/ivInvoice"

@@ -185,7 +185,6 @@ class UHFReadFragment : Fragment() {
         }
     }
 
-
     private fun startInventory() {
         val time = binding.etTime.text.toString()
         val maxRunTime = if (time.isNotEmpty()) {

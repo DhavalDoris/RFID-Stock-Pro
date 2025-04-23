@@ -1,5 +1,6 @@
 package com.example.rfidstockpro.inouttracker.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -14,7 +15,7 @@ import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.databinding.ActivityCreateCollectionBinding
 import com.example.rfidstockpro.inouttracker.viewmodel.CreateCollectionViewModel
-import com.example.rfidstockpro.sharedpref.SessionManager
+import com.example.rfidstockpro.ui.ProductManagement.activity.ProductManagementActivity
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 
 class CreateCollectionActivity : AppCompatActivity() {
@@ -50,9 +51,8 @@ class CreateCollectionActivity : AppCompatActivity() {
         binding.btnCreateCollction.setOnClickListener {
             val collectionName = binding.etCollectionName.text.toString().trim()
             val description = binding.etDescription.text.toString().trim()
-            val productIds = listOf<String>() // you will fill this dynamically
 
-            val sessionManager = SessionManager.getInstance(this) // Get Singleton Instance
+         /*   val sessionManager = SessionManager.getInstance(this) // Get Singleton Instance
             val userName = sessionManager.getUserName()
 
             val userId = userName
@@ -75,7 +75,49 @@ class CreateCollectionActivity : AppCompatActivity() {
                     // not a duplicate — go ahead and create it
                     viewModel.createCollection(collectionName, description, productIds, userId)
                 }
+            }*/
+
+           /* CollectionUtils.handleCreateCollection(
+                context = this,
+                collectionName = collectionName,
+                description = description,
+                productIds = productIds,
+                onStart = { binding.btnCreateCollction.isEnabled = false },
+                onEnd = { binding.btnCreateCollction.isEnabled = true },
+                onSuccess = {
+                    val userId = SessionManager.getInstance(this).getUserName()
+                    viewModel.createCollection(collectionName, description, productIds, userId)
+                },
+                onFailure = {
+                    // Optional: log or UI changes
+                }
+            )*/
+
+            if (collectionName.isEmpty()) {
+                Toast.makeText(this, "Collection name cannot be empty", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+
+            AwsManager.checkIfCollectionNameExists(
+                tableName       = IN_OUT_COLLECTIONS_TABLE,
+                collectionName  = collectionName
+            ) { exists ->
+                // Back on the main thread already
+                binding.btnCreateCollction.isEnabled = true
+
+                if (exists) {
+                    Toast.makeText(this, "Collection “$collectionName” already exists", Toast.LENGTH_LONG).show()
+                } else {
+                    // not a duplicate — go ahead and create it
+                    val intent = Intent(this, ProductManagementActivity::class.java).apply {
+                        putExtra("collection", "collection")
+                        putExtra("collection_name", collectionName)
+                        putExtra("description", description)
+                    }
+                    startActivity(intent)
+                }
+            }
+
         }
 
         viewModel.isCollectionCreated.observe(this) { success ->

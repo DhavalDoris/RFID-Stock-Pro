@@ -36,6 +36,18 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/_7sdp"
                 app:srcCompat="@drawable/right_tag" />
+
+            <CheckBox
+                android:id="@+id/productCheckBox"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_30sdp"
+                android:layout_marginLeft="@dimen/_5sdp"
+                android:layout_gravity="center_vertical"
+                android:button="@drawable/custom_checkbox"
+                android:background="@null"
+                android:visibility="gone"
+                android:focusable="true"
+                android:clickable="true"/>
         </RelativeLayout>
 
 

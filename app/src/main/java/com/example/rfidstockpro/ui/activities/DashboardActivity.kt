@@ -72,6 +72,8 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
     companion object {
         lateinit var uhfDevice: RFIDWithUHFBLE
         var isKeyDownUP: Boolean = false
+        var isShowDuplicateTagId: Boolean? = true
+        var ShowCheckBoxinProduct: Boolean? = false
     }
 
 

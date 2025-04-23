@@ -61,7 +61,6 @@ class StockViewModel : ViewModel() {
                 Log.e("DynamoDB", "Error loading products", e)
             } finally {
                 _isLoading.postValue(false)
-
             }
         }
     }

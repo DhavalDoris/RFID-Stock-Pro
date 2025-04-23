@@ -15,6 +15,7 @@ import com.example.rfidstockpro.repository.UHFRepository
 import com.example.rfidstockpro.ui.ProductManagement.RFIDTagManager
 import com.example.rfidstockpro.ui.activities.AddProductActivity.Companion.previewImageUrls
 import com.example.rfidstockpro.ui.activities.AddProductActivity.Companion.previewVideoUrl
+import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isShowDuplicateTagId
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.uhfDevice
 import com.rscja.deviceapi.entity.UHFTAGInfo
 import com.rscja.deviceapi.interfaces.ConnectionStatus
@@ -25,7 +26,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.concurrent.CopyOnWriteArrayList
 
-class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
+class UHFReadViewModel(private val uhfRepository: UHFRepository ) : ViewModel() {
     var isKeyDownUP = false
     private val _tagList = MutableLiveData<List<UHFTagModel>>(CopyOnWriteArrayList())
     val tagList: LiveData<List<UHFTagModel>> = _tagList
@@ -41,6 +42,13 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
 
     private val _connectionStatus = MutableLiveData<ConnectionStatus>()
     val connectionStatus: LiveData<ConnectionStatus> = _connectionStatus
+
+    private val _uniqueTagCount = MutableLiveData<Int>(0)
+    val uniqueTagCount: LiveData<Int> = _uniqueTagCount
+
+
+    private val _tagStats = MutableLiveData<String>("Total: 0, Unique: 0")
+    val tagStats: LiveData<String> = _tagStats
 
     fun startInventory(maxRunTime: Int = 30000, needPhase: Boolean = false) {
         viewModelScope.launch {
@@ -119,16 +127,20 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
         }
     }
 
-    private suspend fun addTagToList(uhfTagInfo: UHFTAGInfo) {
+    private suspend fun addTagToList(uhfTagInfo: UHFTAGInfo)
+    {
         val epc = uhfTagInfo.epc ?: return
 
-        // Check with DynamoDB if this tag already exists
-        val (exists, message) = AwsManager.checkIfTagIdExists(PRODUCT_TABLE, epc)
-        if (exists) {
-            Log.d("TAG_FILTER", "Skipping tag $epc: $message")
-            return
+        Log.e("ISSHOWDUPLICATETAGID_TAG", "addTagToList: ======> " + isShowDuplicateTagId   )
+        if (!isShowDuplicateTagId!!) {
+            // Check with DynamoDB if this tag already exists
+            val (exists, message) = AwsManager.checkIfTagIdExists(PRODUCT_TABLE, epc)
+            if (exists) {
+                Log.d("TAG_FILTER", "Skipping tag $epc: $message")
+                return
+            }
+//            isShowDuplicateTagId = true
         }
-
         // Ensure this runs on the main thread
         withContext(Dispatchers.Main) {
             val currentList = _tagList.value?.toMutableList() ?: mutableListOf()
@@ -159,7 +171,12 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository) : ViewModel() {
                 _tagList.value = currentList
             }
 
-            _totalTagCount.value = (_totalTagCount.value ?: 0) + 1
+            // Update both total and unique tag counts
+            val total = (_totalTagCount.value ?: 0) + 1
+            _totalTagCount.value = total
+            _uniqueTagCount.value = currentList.size
+//            _totalTagCount.value = (_totalTagCount.value ?: 0) + 1
+            _tagStats.value = "Total: $total, Unique: ${currentList.size}"
         }
     }
 

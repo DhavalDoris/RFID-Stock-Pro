@@ -1038,8 +1038,11 @@ object AwsManager {
                             "createdDateTime" to AttributeValue.builder().s(collection.createdDateTime).build(),
                             "updatedDateTime" to AttributeValue.builder().s(collection.updatedDateTime).build(),
                             "userId" to AttributeValue.builder().s(collection.userId).build(),
-                            "productIds" to AttributeValue.builder()
+                            /*"productIds" to AttributeValue.builder()
                                 .s(if (collection.productIds.isEmpty()) "[]" else collection.productIds.joinToString(","))
+                                .build()*/
+                            "productIds" to AttributeValue.builder()
+                                .l(collection.productIds.map { AttributeValue.builder().s(it).build() })
                                 .build()
                         )
 
@@ -1066,19 +1069,25 @@ object AwsManager {
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val expressionAttributeValues = mapOf(
-                    ":val1" to AttributeValue.builder().s(collectionName).build()
-                )
 
                 val scanRequest = ScanRequest.builder()
                     .tableName(tableName)
-                    .filterExpression("collectionName = :val1")
-                    .expressionAttributeValues(expressionAttributeValues)
-                    .limit(1)
                     .build()
 
                 val result = dynamoDBClient.scan(scanRequest)
-                val exists = result.count() > 0
+                val trimmedInput = collectionName.trim().lowercase()
+                val exists = result.items().any {
+                    it["collectionName"]?.s()?.trim()?.lowercase() == trimmedInput
+                }
+
+                if (exists) {
+                    Log.d("AWSManager", "✅ Collection name '$collectionName' exists in table '$tableName'")
+                    result.items().forEach { item ->
+                        Log.d("AWSManager", "Matched item: ${item["collectionName"]?.s()}")
+                    }
+                } else {
+                    Log.d("AWSManager", "❌ Collection name '$collectionName' does NOT exist in table '$tableName'")
+                }
 
                 withContext(Dispatchers.Main) {
                     onResult(exists)

@@ -67,7 +67,7 @@
             android:name=".ui.activities.AddProductActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme"/>
         <activity
             android:name=".ui.activities.DemoActivity"
             android:exported="true">
