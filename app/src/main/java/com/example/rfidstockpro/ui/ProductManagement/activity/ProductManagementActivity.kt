@@ -70,11 +70,12 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
                 }
             }
         )
-        val isFromCollection = intent.getStringExtra("collection") != null
+        var isFromCollection = false
 //        val adapter = ProductPagerAdapter(this, showBothTabs = !isFromCollection)
-
-
-        if (isFromCollection) {
+        val comesFrom = intent.getStringExtra("comesFrom")
+        Log.d("IntentCheck", "Came ~~~> " + comesFrom)
+        if (comesFrom == "collection") {
+            isFromCollection = true
             // Hide tabs and disable swiping
             binding.tabLayout.visibility = View.GONE
             binding.viewPager.setCurrentItem(0, false)
@@ -82,40 +83,36 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             updateToolbarTitleAddItem(getString(R.string.add_to_collection), null)
             collectionName = intent.getStringExtra("collection_name")!!
             description = intent.getStringExtra("description")!!
-        } else {
-
-
+        } else if (comesFrom == "InOutTracker") {
+            isFromCollection = false
+            // 👉 Handle logic specifically for InOutTracker case
+            Log.d("IntentCheck", "Came " + comesFrom)
             val comesFrom = intent.getStringExtra("comesFrom")
-            if (comesFrom == "InOutTracker") {
-                // 👉 Handle logic specifically for InOutTracker case
-                Log.d("IntentCheck", "Came " + comesFrom)
-                val comesFrom = intent.getStringExtra("comesFrom")
-                val collectionName = intent.getStringExtra("collectionName")
-                val description = intent.getStringExtra("description")
-                val productIds = intent.getStringArrayListExtra("productIds") ?: arrayListOf()
-                val adapter = ProductPagerAdapter(
-                    this,
-                    showBothTabs = !isFromCollection,
-                    comesFrom = comesFrom,
-                    collectionName = collectionName,
-                    description = description,
-                    productIds = productIds
-                )
-                binding.viewPager.adapter = adapter
-            }
+            collectionName = intent.getStringExtra("collectionName").toString()
+            description = intent.getStringExtra("description").toString()
+            productIds = intent.getStringArrayListExtra("productIds") ?: arrayListOf()
 
-            TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-                tab.text = when (position) {
-                    0 -> "Stock"
-                    1 -> "Inventory"
-                    else -> ""
-                }
-            }.attach()
-            binding.viewPager.isUserInputEnabled = true
             updateToolbarTitleAddItem(getString(R.string.product_management), true)
 
-
         }
+
+        val adapter = ProductPagerAdapter(
+            this,
+            showBothTabs = !isFromCollection,
+            comesFrom = comesFrom,
+            collectionName = collectionName,
+            description = description,
+            productIds = productIds
+        )
+        binding.viewPager.adapter = adapter
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            tab.text = when (position) {
+                0 -> "Stock"
+                1 -> "Inventory"
+                else -> ""
+            }
+        }.attach()
+        binding.viewPager.isUserInputEnabled = true
         viewModel = ViewModelProvider(
             this,
             ViewModelProvider.AndroidViewModelFactory.getInstance(application)

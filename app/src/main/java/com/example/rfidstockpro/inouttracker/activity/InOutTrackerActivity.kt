@@ -34,6 +34,7 @@ class InOutTrackerActivity : AppCompatActivity() {
     private val viewModel: CreateCollectionViewModel by viewModels()
     private var adapter: CollectionAdapter? = null
     private var userId: String? = null
+    private var isUpdatingSelectAll = false // prevent recursive trigger
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,13 +42,14 @@ class InOutTrackerActivity : AppCompatActivity() {
         setContentView(binding.root)
         StatusBarUtils.setStatusBarColor(this)
 
-
         updateToolbarTitleAddItem(getString(R.string.in_out_ntracker_header))
         init()
         setupRecyclerView()
     }
 
     fun init() {
+        binding.btnNext.isEnabled = false
+        binding.btnNext.alpha = 0.5f
         isShowDuplicateTagId = true
         ShowCheckBoxinProduct = true
         viewModel.isLoading.observe(this) { isLoading ->
@@ -60,21 +62,41 @@ class InOutTrackerActivity : AppCompatActivity() {
         binding.fabAdd.setOnClickListener {
             startActivity(Intent(this, CreateCollectionActivity::class.java))
         }
+        binding.selectAllCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            if (!isUpdatingSelectAll) {  // Avoid recursion
+                isUpdatingSelectAll = true
+                adapter?.selectAllItems(isChecked)  // Update selection in the adapter
+                isUpdatingSelectAll = false
+            }
+        }
+        binding.btnNext.setOnClickListener {
+
+        }
     }
 
     private fun setupRecyclerView() {
 
-        adapter = CollectionAdapter { selectedCollection ->
-            val intent = Intent(this, ProductManagementActivity::class.java).apply {
-                putExtra("comesFrom", "InOutTracker")
-                putExtra("collection_name", selectedCollection.collectionName)
-                putExtra("description", selectedCollection.description)
-                putStringArrayListExtra("productIds", ArrayList(selectedCollection.productIds)) // assuming productIds: List<String>
+        adapter = CollectionAdapter(
+            onItemClick = { selectedCollection ->
+                val intent = Intent(this, ProductManagementActivity::class.java).apply {
+                    putExtra("comesFrom", "InOutTracker")
+                    putExtra("collection_name", selectedCollection.collectionName)
+                    putExtra("description", selectedCollection.description)
+                    putStringArrayListExtra("productIds", ArrayList(selectedCollection.productIds))
+                }
+                startActivity(intent)
+            },
+            onSelectionChanged = { selectionState ->
+                updateSelectAllCheckbox()
+                Log.d("SelectedItems", "Selected Items: ${selectionState.selectedItems}")
+
+                val isListNotEmpty = selectionState.selectedItems.isNotEmpty()
+                binding.btnNext.isEnabled = isListNotEmpty
+                binding.btnNext.alpha = if (isListNotEmpty) 1.0f else 0.5f // Optional for visual feedback
 
             }
-            startActivity(intent)
-//            openFragment(selectedCollection)
-        }
+        )
+
         binding.ListOfCollections.layoutManager = LinearLayoutManager(this)
         binding.ListOfCollections.adapter = adapter
 
@@ -97,6 +119,15 @@ class InOutTrackerActivity : AppCompatActivity() {
 
     }
 
+    fun updateSelectAllCheckbox() {
+        val allSelected = adapter?.list?.all { it.isSelected } == true
+        if (!isUpdatingSelectAll) {
+            isUpdatingSelectAll = true
+            binding.selectAllCheckBox.isChecked = allSelected
+            isUpdatingSelectAll = false
+        }
+    }
+
     private fun openFragment(selectedCollection: CollectionModel) {
         CollectionUtils.selectedCollection = selectedCollection
         supportFragmentManager.beginTransaction()
@@ -104,7 +135,6 @@ class InOutTrackerActivity : AppCompatActivity() {
             .addToBackStack(null)
             .commit()
     }
-
 
     fun updateToolbarTitleAddItem(title: String) {
         val toolbarTitle = findViewById<AppCompatTextView>(R.id.tvToolbarTitle)
@@ -128,15 +158,6 @@ class InOutTrackerActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        /*supportFragmentManager.addOnBackStackChangedListener {
-            val currentFragment = supportFragmentManager.findFragmentById(R.id.FrameForFragment)
-            if (currentFragment is CollectionDetailListFragment) {
-                // 👉 User just navigated back from your fragment!
-                Log.d("BackNavigation", "User came back from CollectionDetailListFragment")
-                // Do something here
-                updateToolbarTitleAddItem(getString(R.string.in_out_ntracker_header))
-            }
-        }*/
     }
 
 

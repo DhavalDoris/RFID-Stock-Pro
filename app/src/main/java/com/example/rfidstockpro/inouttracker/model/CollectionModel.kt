@@ -10,7 +10,8 @@ data class CollectionModel(
     val productIds: List<String> = emptyList(),
     val createdDateTime: String = "",
     val updatedDateTime: String = "",
-    val userId: String = ""
+    val userId: String = "",
+    var isSelected: Boolean = false
 )
 fun Map<String, AttributeValue>.toCollectionModel(): CollectionModel {
     return CollectionModel(

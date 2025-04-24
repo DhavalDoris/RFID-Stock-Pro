@@ -165,5 +165,6 @@
     <string name="collection_already_exists">Collection already exists</string>
     <string name="no_items_found">No items found</string>
     <string name="no_product_found">No Product Found</string>
+    <string name="next">Next</string>
 
 </resources>

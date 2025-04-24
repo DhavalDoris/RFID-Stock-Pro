@@ -110,7 +110,7 @@ class CreateCollectionActivity : AppCompatActivity() {
                 } else {
                     // not a duplicate — go ahead and create it
                     val intent = Intent(this, ProductManagementActivity::class.java).apply {
-                        putExtra("collection", "collection")
+                        putExtra("comesFrom", "collection")
                         putExtra("collection_name", collectionName)
                         putExtra("description", description)
                     }
