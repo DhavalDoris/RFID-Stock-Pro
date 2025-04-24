@@ -17,6 +17,7 @@ import com.example.rfidstockpro.databinding.ActivityProductManagementBinding
 import com.example.rfidstockpro.inouttracker.CollectionUtils
 import com.example.rfidstockpro.inouttracker.activity.CreateCollectionActivity
 import com.example.rfidstockpro.inouttracker.activity.InOutTrackerActivity
+import com.example.rfidstockpro.inouttracker.model.CollectionModel
 import com.example.rfidstockpro.sharedpref.SessionManager
 import com.example.rfidstockpro.ui.ProductManagement.BluetoothConnectionManager
 import com.example.rfidstockpro.ui.ProductManagement.adapters.ProductPagerAdapter
@@ -34,6 +35,7 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
     private lateinit var dashboardViewModel: DashboardViewModel
     var collectionName: String = ""
     var description: String = ""
+    private var selectedItems: ArrayList<CollectionModel>? = null
 
     //    var productIds: MutableList<String> = mutableListOf()
     private var productIds: List<String>? = null
@@ -86,14 +88,19 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
         } else if (comesFrom == "InOutTracker") {
             isFromCollection = false
             // 👉 Handle logic specifically for InOutTracker case
-            Log.d("IntentCheck", "Came " + comesFrom)
             val comesFrom = intent.getStringExtra("comesFrom")
             collectionName = intent.getStringExtra("collectionName").toString()
             description = intent.getStringExtra("description").toString()
             productIds = intent.getStringArrayListExtra("productIds") ?: arrayListOf()
-
             updateToolbarTitleAddItem(getString(R.string.product_management), true)
-
+        } else if (comesFrom == "TrackCollection") {
+            isFromCollection = true // For Showing Only Scanning Tab
+            selectedItems = intent.getSerializableExtra("selected_items") as? ArrayList<CollectionModel>
+            Log.d("INVENTORYPRODUCTSFRAGMENT_TAG", "selectedItems " + selectedItems)
+            binding.tabLayout.visibility = View.GONE
+            binding.viewPager.setCurrentItem(0, false)
+            binding.viewPager.isUserInputEnabled = false
+            updateToolbarTitleAddItem("Track Collection", null)
         }
 
         val adapter = ProductPagerAdapter(
@@ -102,7 +109,8 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             comesFrom = comesFrom,
             collectionName = collectionName,
             description = description,
-            productIds = productIds
+            productIds = productIds,
+            selectedItems = selectedItems
         )
         binding.viewPager.adapter = adapter
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->

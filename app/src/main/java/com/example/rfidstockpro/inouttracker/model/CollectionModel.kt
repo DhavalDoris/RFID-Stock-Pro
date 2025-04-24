@@ -1,8 +1,10 @@
 package com.example.rfidstockpro.inouttracker.model
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import java.util.UUID
-
+@Parcelize
 data class CollectionModel(
     val collectionId : String = UUID.randomUUID().toString(),
     val collectionName: String = "",
@@ -12,7 +14,7 @@ data class CollectionModel(
     val updatedDateTime: String = "",
     val userId: String = "",
     var isSelected: Boolean = false
-)
+): Parcelable
 fun Map<String, AttributeValue>.toCollectionModel(): CollectionModel {
     return CollectionModel(
         collectionId = this["collectionId"]?.s() ?: "",

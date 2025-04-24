@@ -35,6 +35,7 @@ class InOutTrackerActivity : AppCompatActivity() {
     private var adapter: CollectionAdapter? = null
     private var userId: String? = null
     private var isUpdatingSelectAll = false // prevent recursive trigger
+    var selectedCollectionItems: List<CollectionModel> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +71,11 @@ class InOutTrackerActivity : AppCompatActivity() {
             }
         }
         binding.btnNext.setOnClickListener {
-
+            val intent = Intent(this, ProductManagementActivity::class.java).apply {
+                putExtra("comesFrom", "TrackCollection")
+                putExtra("selected_items", ArrayList(selectedCollectionItems)) // Must be Serializable or Parcelable
+            }
+            startActivity(intent)
         }
     }
 
@@ -90,7 +95,9 @@ class InOutTrackerActivity : AppCompatActivity() {
                 updateSelectAllCheckbox()
                 Log.d("SelectedItems", "Selected Items: ${selectionState.selectedItems}")
 
-                val isListNotEmpty = selectionState.selectedItems.isNotEmpty()
+                selectedCollectionItems = selectionState.selectedItems // store here
+
+                val isListNotEmpty = selectedCollectionItems.isNotEmpty()
                 binding.btnNext.isEnabled = isListNotEmpty
                 binding.btnNext.alpha = if (isListNotEmpty) 1.0f else 0.5f // Optional for visual feedback
 

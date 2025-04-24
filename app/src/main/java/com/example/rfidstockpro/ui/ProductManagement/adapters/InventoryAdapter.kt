@@ -20,17 +20,7 @@ class InventoryAdapter(
 ) : RecyclerView.Adapter<InventoryAdapter.InventoryViewHolder>() {
 
     private val selectedProductIds = mutableSetOf<String>()
-    var onSelectionChanged: ((List<String>) -> Unit)? = null
 
-    private fun toggleSelection(id: String) {
-        if (selectedProductIds.contains(id)) {
-            selectedProductIds.remove(id)
-        } else {
-            selectedProductIds.add(id)
-        }
-        onSelectionChanged?.invoke(selectedProductIds.toList())
-        notifyDataSetChanged()
-    }
     inner class InventoryViewHolder(val binding: ItemInventoryBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(product: ProductModel) {
@@ -69,7 +59,6 @@ class InventoryAdapter(
                     selectedProductIds.remove(product.id)
                 }
                 onCheckboxClick(selectedProductIds) // 👈 callback to fragment
-
             }
         }
     }
@@ -100,20 +89,10 @@ class InventoryAdapter(
         }
         notifyDataSetChanged()
     }
-   /* fun getAllItemIds(): List<String> {
-        return selectedProductIds.toList()
-    }*/
+
     fun getAllItemIds(): List<String> {
         return productList.mapNotNull { it.id } // Assuming `productList` holds current items
     }
 
-   /* fun deselectAll() {
-        selectedProductIds.clear()
-        notifyDataSetChanged()
-        onCheckboxClick?.invoke(emptyList().toSet())
-    }
-*/
-
-    fun getSelectedProductIds(): Set<String> = selectedProductIds // Optional getter
 
 }

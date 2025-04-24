@@ -3,6 +3,7 @@ package com.example.rfidstockpro.ui.ProductManagement.adapters
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.example.rfidstockpro.inouttracker.model.CollectionModel
 import com.example.rfidstockpro.ui.ProductManagement.fragments.StockFragment
 import com.example.rfidstockpro.ui.ProductManagement.fragments.InventoryProductsFragment
 
@@ -12,7 +13,8 @@ class ProductPagerAdapter(
     private val comesFrom: String?,
     private val collectionName: String?,
     private val description: String?,
-    private val productIds: List<String>? // 👈 Pass selected product IDs
+    private val productIds: List<String>?, // 👈 Pass selected product IDs
+    private val selectedItems: ArrayList<CollectionModel>? = null // Add this
 ) : FragmentStateAdapter(activity) {
 
     override fun getItemCount(): Int = if (showBothTabs) 2 else 1
@@ -33,7 +35,8 @@ class ProductPagerAdapter(
                     comesFrom = comesFrom,
                     collectionName = collectionName,
                     description = description,
-                    productIds = productIds
+                    productIds = productIds,
+                    selectedItems = selectedItems
                 )
                 else -> Fragment()
             }
@@ -44,7 +47,8 @@ class ProductPagerAdapter(
                 comesFrom = comesFrom,
                 collectionName = collectionName,
                 description = description,
-                productIds = productIds
+                productIds = productIds,
+                selectedItems = selectedItems
             )
         }
     }

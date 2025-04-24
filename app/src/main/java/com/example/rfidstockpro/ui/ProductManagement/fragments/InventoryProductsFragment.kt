@@ -33,6 +33,8 @@ import com.example.rfidstockpro.viewmodel.UHFReadViewModel
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.KeyEventCallback
 import androidx.core.view.isVisible
+import com.example.rfidstockpro.inouttracker.model.CollectionModel
+import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.ShowCheckBoxinProduct
 
 
 class InventoryProductsFragment : Fragment() {
@@ -53,13 +55,17 @@ class InventoryProductsFragment : Fragment() {
     private var description: String? = null
     private var productIds: List<String> = emptyList()
 
+    private var selectedItems: ArrayList<CollectionModel>? = null
+
+
     companion object {
         fun newInstance(
             tabType: String,
             comesFrom: String?,
             collectionName: String?,
             description: String?,
-            productIds: List<String>?
+            productIds: List<String>?,
+            selectedItems: ArrayList<CollectionModel>? = null
         ): InventoryProductsFragment {
             val fragment = InventoryProductsFragment()
             val args = Bundle().apply {
@@ -68,6 +74,7 @@ class InventoryProductsFragment : Fragment() {
                 putString("collectionName", collectionName)
                 putString("description", description)
                 putStringArrayList("productIds", ArrayList(productIds ?: emptyList()))
+                putSerializable("selectedItems", selectedItems)
             }
             fragment.arguments = args
             return fragment
@@ -94,7 +101,11 @@ class InventoryProductsFragment : Fragment() {
             collectionName = it.getString("collectionName")
             description = it.getString("description")
             productIds = it.getStringArrayList("productIds") ?: emptyList()
+            selectedItems = it.getSerializable("selectedItems") as? ArrayList<CollectionModel>
         }
+
+        Log.e("INVENTORYPRODUCTSFRAGMENT_TAG", "comesFrom: " + comesFrom)
+        Log.e("INVENTORYPRODUCTSFRAGMENT_TAG", "selectedItems: " + selectedItems)
     }
 
     override fun onCreateView(
@@ -123,8 +134,10 @@ class InventoryProductsFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun initView() {
+
         binding.swipeRefreshLayout.setOnRefreshListener(null)
         binding.swipeRefreshLayout.isRefreshing = false
+        binding.swipeRefreshLayout.isEnabled = false
 
         binding.noItemsText.text = "Scan with RFID"
         binding.noItemsText.visibility = View.VISIBLE
@@ -158,7 +171,10 @@ class InventoryProductsFragment : Fragment() {
 
 
     private fun setupRecyclerView() {
-        binding.noItemsText.visibility = View.VISIBLE
+        if (!comesFrom.equals("TrackCollection")) {
+            binding.noItemsText.visibility = View.VISIBLE
+
+        }
 
         inventoryAdapter = InventoryAdapter(
             emptyList(),
@@ -229,7 +245,9 @@ class InventoryProductsFragment : Fragment() {
 
         uhfReadViewModel.tagList.observe(viewLifecycleOwner) { tagList ->
             var newTagsAdded = false
-            binding.noItemsText.visibility = View.VISIBLE
+            if (!comesFrom.equals("TrackCollection")) {
+                binding.noItemsText.visibility = View.VISIBLE
+            }
 
             tagList.forEach { tag ->
                 val tagId = tag.generateTagString()
@@ -253,8 +271,11 @@ class InventoryProductsFragment : Fragment() {
 //                binding.scanProgressBar.visibility = View.VISIBLE
 //                binding.noItemsText.text = "Scanning..."
                 binding.noItemsText.text = "Total: $totalScans, Unique: $uniqueCount"
-                binding.noItemsText.visibility = View.VISIBLE
+                if (!comesFrom.equals("TrackCollection")) {
+                    binding.noItemsText.visibility = View.VISIBLE
+                }
                 inventoryProductsViewModel.setMatchedTagIds(uniqueTagSet.toList())
+
             }
 
             // Optional: Hide scanning UI after a delay
@@ -268,16 +289,41 @@ class InventoryProductsFragment : Fragment() {
         }
 
         inventoryProductsViewModel.pagedProducts.observe(viewLifecycleOwner) { products ->
+            Log.e("Adapter_TAG", "observeActions: " + products)
             inventoryAdapter.updateList(products)
 
             val total = inventoryProductsViewModel.totalCount.value ?: 0
             val currentCount = products.size
             binding.itemCountText.text = "$currentCount of $total"
 
-            if (products.isNullOrEmpty()) {
-                binding.noItemsText.visibility = View.VISIBLE
-            } else {
+            if (comesFrom.equals("TrackCollection")) {
+                ShowCheckBoxinProduct = false
+                val expectedProductIds =
+                    selectedItems?.flatMap { it.productIds }?.toSet() ?: emptySet()
+                val shownProductIds = products.map { it.id }.toSet()
+
+                val foundTags = expectedProductIds.intersect(shownProductIds)
+                val missingTags = expectedProductIds.subtract(shownProductIds)
+                val extraTags = shownProductIds.subtract(expectedProductIds)
+
+                Log.d("TrackCollection_TAG", "Expected: $expectedProductIds")
+                Log.d("TrackCollection_TAG", "Shown: $shownProductIds")
+                Log.d("TrackCollection_TAG", "Found: $foundTags")
+                Log.d("TrackCollection_TAG", "Missing: $missingTags")
+                Log.d("TrackCollection_TAG", "Extra: $extraTags")
+
+                binding.statsTextView.apply {
+                    visibility = View.VISIBLE
+                    text =
+                        "Found: ${foundTags.size} | Missing: ${missingTags.size} | Extra: ${extraTags.size}"
+                }
                 binding.noItemsText.visibility = View.GONE
+            } else {
+                if (products.isNullOrEmpty()) {
+                    binding.noItemsText.visibility = View.VISIBLE
+                } else {
+                    binding.noItemsText.visibility = View.GONE
+                }
             }
 
         }
