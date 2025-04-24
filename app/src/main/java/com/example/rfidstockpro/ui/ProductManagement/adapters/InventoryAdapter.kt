@@ -35,7 +35,7 @@ class InventoryAdapter(
             if (ShowCheckBoxinProduct!!) {
                 binding.productCheckBox.visibility = View.VISIBLE
                 binding.productCheckBox.isChecked = selectedProductIds.contains(product.id)
-                binding.productCheckBox.isVisible = ShowCheckBoxinProduct == true
+//                binding.productCheckBox.isVisible = ShowCheckBoxinProduct == true
             }
             if (product.selectedImages.isNotEmpty()) {
                 Glide.with(binding.productImage.context)

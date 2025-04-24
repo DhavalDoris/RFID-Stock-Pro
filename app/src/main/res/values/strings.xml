@@ -166,5 +166,7 @@
     <string name="no_items_found">No items found</string>
     <string name="no_product_found">No Product Found</string>
     <string name="next">Next</string>
+    <string name="list_of_products">List Of Products</string>
+    <string name="are_you_sure_you_want_to_delete_this_product">Are you sure you want to delete this product</string>
 
 </resources>

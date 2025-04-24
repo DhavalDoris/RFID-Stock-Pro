@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.FragmentStockBinding
+import com.example.rfidstockpro.inouttracker.CollectionUtils.selectedCollection
 import com.example.rfidstockpro.ui.ProductManagement.ProductPopupMenu
 import com.example.rfidstockpro.ui.ProductManagement.helper.ProductHolder
 import com.example.rfidstockpro.ui.ProductManagement.viewmodels.StockViewModel
@@ -32,7 +33,7 @@ class StockFragment : Fragment() {
 
     private var comesFrom: String? = null
     private var collectionName: String? = null
-    private var description: String? = null
+    private var collectionId: String? = null
     private var productIds: List<String> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,40 +42,42 @@ class StockFragment : Fragment() {
         arguments?.let {
             comesFrom = it.getString("comesFrom")
             collectionName = it.getString("collectionName")
-            description = it.getString("description")
+            collectionId = it.getString("collectionId")
             productIds = it.getStringArrayList("productIds") ?: emptyList()
         }
 
-        Log.e("comesFromTAG", "onCreate: "  + comesFrom )
-      /*  if (comesFrom == "InOutTracker") {
-            binding.btnLoadMore.visibility = View.GONE
-        }*/
+        Log.e("comesFromTAG", "onCreate: " + comesFrom)
+        /*  if (comesFrom == "InOutTracker") {
+              binding.btnLoadMore.visibility = View.GONE
+          }*/
 
-        editProductLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == AppCompatActivity.RESULT_OK) {
-                viewModel.refreshData() // You can create this method to re-fetch products from the beginning
+        editProductLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == AppCompatActivity.RESULT_OK) {
+                    viewModel.refreshData() // You can create this method to re-fetch products from the beginning
+                }
             }
-        }
     }
 
     companion object {
         fun newInstance(
             comesFrom: String?,
             collectionName: String?,
-            description: String?,
+            collectionId: String?,
             productIds: List<String>?
         ): StockFragment {
             val fragment = StockFragment()
             val args = Bundle().apply {
                 putString("comesFrom", comesFrom)
                 putString("collectionName", collectionName)
-                putString("description", description)
+                putString("collectionId", collectionId)
                 putStringArrayList("productIds", ArrayList(productIds ?: emptyList()))
             }
             fragment.arguments = args
             return fragment
         }
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -88,9 +91,10 @@ class StockFragment : Fragment() {
         observeViewModel()
 
 //        viewModel.loadNextPage()
+        Log.e("comesFromInFragment", "onCreateView:StockFragment " + comesFrom)
         if (comesFrom == "InOutTracker") {
             viewModel.loadFilteredPage(productIds) // Initial load
-            Log.e("productIds_TAG", "onCreateView: " + productIds )
+            Log.e("productIds_TAG", "onCreateView: " + productIds)
 
         } else {
             viewModel.loadNextPage()
@@ -103,7 +107,7 @@ class StockFragment : Fragment() {
 //            viewModel.loadNextPage()
             if (comesFrom == "InOutTracker") {
                 viewModel.loadFilteredPage(productIds)
-                Log.e("productIds_TAG", "btnLoadMore: " + productIds )
+                Log.e("productIds_TAG", "btnLoadMore: " + productIds)
             } else {
                 viewModel.loadNextPage()
             }
@@ -143,17 +147,35 @@ class StockFragment : Fragment() {
                             editProductLauncher.launch(intent)
 //                          startActivity(intent)
                         }
+
                         override fun onLocateClicked(product: ProductModel) {}
                         override fun onUpdateClicked(product: ProductModel) {}
                         override fun onDeleteClicked(product: ProductModel) {
-                            AlertDialog.Builder(requireContext())
-                                .setTitle(getString(R.string.delete_product))
-                                .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product_and_its_media))
-                                .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                                    viewModel.deleteProduct(product)
-                                }
-                                .setNegativeButton(getString(R.string.cancel), null)
-                                .show()
+                            if (comesFrom == "InOutTracker") {
+                                Log.e("DELETE_TAG", "onDeleteClicked: " + product.id)
+                                Log.e("DELETE_TAG", "onDeleteClicked: " + product.tagId)
+                                Log.e("DELETE_TAG", "collectionName: " + collectionName)
+                                Log.e("DELETE_TAG", "collectionId: " + collectionId)
+                                AlertDialog.Builder(requireContext())
+                                    .setTitle("Delete From Collection")
+                                    .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product))
+                                    .setPositiveButton(getString(R.string.delete)) { _, _ ->
+//                                        viewModel.deleteProduct(product)
+                                    }
+                                    .setNegativeButton(getString(R.string.cancel), null)
+                                    .show()
+
+                            } else {
+                                AlertDialog.Builder(requireContext())
+                                    .setTitle(getString(R.string.delete_product))
+                                    .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product_and_its_media))
+                                    .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                                        viewModel.deleteProduct(product)
+                                    }
+                                    .setNegativeButton(getString(R.string.cancel), null)
+                                    .show()
+                            }
+
                         }
                     }
                 ).show()
@@ -189,15 +211,17 @@ class StockFragment : Fragment() {
         viewModel.filteredProducts.observe(viewLifecycleOwner) { filteredList ->
             inventoryAdapter.updateList(filteredList)
 
-            binding.recyclerView.visibility = if (filteredList.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.recyclerView.visibility =
+                if (filteredList.isNotEmpty()) View.VISIBLE else View.GONE
             binding.noItemsText.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
             binding.swipeRefreshLayout.isRefreshing = false
 
             binding.itemCountText.text = "${filteredList.size} of ${productIds.size}"
-            binding.loadMoreContainer.visibility = if (filteredList.size < productIds.size) View.VISIBLE else View.GONE
+            binding.loadMoreContainer.visibility =
+                if (filteredList.size < productIds.size) View.VISIBLE else View.GONE
         }
 
-        viewModel.isLoading.observe(viewLifecycleOwner) {                                                                                                          isLoading ->
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
 
             val productList = viewModel.products.value ?: emptyList()
             // Show progress only if loading and no data yet
@@ -230,7 +254,8 @@ class StockFragment : Fragment() {
 
             inventoryAdapter.updateList(filteredList)
 
-            binding.recyclerView.visibility = if (filteredList.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.recyclerView.visibility =
+                if (filteredList.isNotEmpty()) View.VISIBLE else View.GONE
             binding.noItemsText.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
             binding.swipeRefreshLayout.isRefreshing = false // ✅ Stop refresh here
 
@@ -240,7 +265,8 @@ class StockFragment : Fragment() {
             Log.e("TOTAL_TAG", "observeViewModel:==>> $total")
             binding.itemCountText.text = "${filteredList.size} of $total"
             // Show/hide load more
-            binding.loadMoreContainer.visibility = if (filteredList.size < total) View.VISIBLE else View.GONE
+            binding.loadMoreContainer.visibility =
+                if (filteredList.size < total) View.VISIBLE else View.GONE
         }
 
         viewModel.totalCount.observe(viewLifecycleOwner) { total ->

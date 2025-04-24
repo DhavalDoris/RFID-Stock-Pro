@@ -23,6 +23,7 @@ import com.example.rfidstockpro.ui.ProductManagement.BluetoothConnectionManager
 import com.example.rfidstockpro.ui.ProductManagement.adapters.ProductPagerAdapter
 import com.example.rfidstockpro.ui.ProductManagement.fragments.InventoryProductsFragment
 import com.example.rfidstockpro.ui.ProductManagement.viewmodels.ProductManagementViewModel
+import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.ShowCheckBoxinProduct
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isShowDuplicateTagId
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
@@ -34,6 +35,7 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
     private lateinit var binding: ActivityProductManagementBinding
     private lateinit var dashboardViewModel: DashboardViewModel
     var collectionName: String = ""
+    var collectionId: String = ""
     var description: String = ""
     private var selectedItems: ArrayList<CollectionModel>? = null
 
@@ -47,7 +49,6 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
         binding = ActivityProductManagementBinding.inflate(layoutInflater)
         setContentView(binding.root)
         StatusBarUtils.setStatusBarColor(this)
-
 
         init()
     }
@@ -78,21 +79,24 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
         Log.d("IntentCheck", "Came ~~~> " + comesFrom)
         if (comesFrom == "collection") {
             isFromCollection = true
+            ShowCheckBoxinProduct = true
             // Hide tabs and disable swiping
             binding.tabLayout.visibility = View.GONE
             binding.viewPager.setCurrentItem(0, false)
             binding.viewPager.isUserInputEnabled = false
             updateToolbarTitleAddItem(getString(R.string.add_to_collection), null)
             collectionName = intent.getStringExtra("collection_name")!!
+            collectionId = intent.getStringExtra("collectionId")!!
             description = intent.getStringExtra("description")!!
         } else if (comesFrom == "InOutTracker") {
             isFromCollection = false
             // 👉 Handle logic specifically for InOutTracker case
             val comesFrom = intent.getStringExtra("comesFrom")
             collectionName = intent.getStringExtra("collectionName").toString()
-            description = intent.getStringExtra("description").toString()
+            collectionId = intent.getStringExtra("collectionId").toString()
+            description = intent.getStringExtra("description")!!
             productIds = intent.getStringArrayListExtra("productIds") ?: arrayListOf()
-            updateToolbarTitleAddItem(getString(R.string.product_management), true)
+            updateToolbarTitleAddItem(getString(R.string.list_of_products), true)
         } else if (comesFrom == "TrackCollection") {
             isFromCollection = true // For Showing Only Scanning Tab
             selectedItems = intent.getSerializableExtra("selected_items") as? ArrayList<CollectionModel>
@@ -108,7 +112,7 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             showBothTabs = !isFromCollection,
             comesFrom = comesFrom,
             collectionName = collectionName,
-            description = description,
+            collectionId = collectionId,
             productIds = productIds,
             selectedItems = selectedItems
         )

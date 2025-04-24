@@ -12,7 +12,7 @@ class ProductPagerAdapter(
     private val showBothTabs: Boolean,
     private val comesFrom: String?,
     private val collectionName: String?,
-    private val description: String?,
+    private val collectionId: String?,
     private val productIds: List<String>?, // 👈 Pass selected product IDs
     private val selectedItems: ArrayList<CollectionModel>? = null // Add this
 ) : FragmentStateAdapter(activity) {
@@ -27,14 +27,14 @@ class ProductPagerAdapter(
                 0 -> StockFragment.newInstance(
                     comesFrom = comesFrom,
                     collectionName = collectionName,
-                    description = description,
+                    collectionId = collectionId,
                     productIds = productIds
                 )
                 1 -> InventoryProductsFragment.newInstance(
                     tabType = "Inventory",
                     comesFrom = comesFrom,
                     collectionName = collectionName,
-                    description = description,
+                    collectionId = collectionId,
                     productIds = productIds,
                     selectedItems = selectedItems
                 )
@@ -46,7 +46,7 @@ class ProductPagerAdapter(
                 tabType = "Inventory",
                 comesFrom = comesFrom,
                 collectionName = collectionName,
-                description = description,
+                collectionId = collectionId,
                 productIds = productIds,
                 selectedItems = selectedItems
             )

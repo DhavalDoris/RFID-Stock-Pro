@@ -88,9 +88,6 @@
             android:indeterminateTint="@color/appMainColor"
             android:visibility="gone" />
 
-
-
-
         <LinearLayout
             android:id="@+id/loadMoreContainer"
             android:layout_width="match_parent"

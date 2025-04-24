@@ -13,6 +13,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -52,7 +53,7 @@ class InventoryProductsFragment : Fragment() {
     private var tabType: String? = null
     private var comesFrom: String? = null
     private var collectionName: String? = null
-    private var description: String? = null
+    private var collectionId: String? = null
     private var productIds: List<String> = emptyList()
 
     private var selectedItems: ArrayList<CollectionModel>? = null
@@ -63,7 +64,7 @@ class InventoryProductsFragment : Fragment() {
             tabType: String,
             comesFrom: String?,
             collectionName: String?,
-            description: String?,
+            collectionId: String?,
             productIds: List<String>?,
             selectedItems: ArrayList<CollectionModel>? = null
         ): InventoryProductsFragment {
@@ -72,7 +73,7 @@ class InventoryProductsFragment : Fragment() {
                 putString("tabType", tabType)
                 putString("comesFrom", comesFrom)
                 putString("collectionName", collectionName)
-                putString("description", description)
+                putString("collectionId", collectionId)
                 putStringArrayList("productIds", ArrayList(productIds ?: emptyList()))
                 putSerializable("selectedItems", selectedItems)
             }
@@ -99,7 +100,7 @@ class InventoryProductsFragment : Fragment() {
             tabType = it.getString("tabType")
             comesFrom = it.getString("comesFrom")
             collectionName = it.getString("collectionName")
-            description = it.getString("description")
+            collectionId = it.getString("collectionId")
             productIds = it.getStringArrayList("productIds") ?: emptyList()
             selectedItems = it.getSerializable("selectedItems") as? ArrayList<CollectionModel>
         }
@@ -115,6 +116,7 @@ class InventoryProductsFragment : Fragment() {
     ): View {
         binding = FragmentStockBinding.inflate(inflater, container, false)
         inventoryProductsViewModel = ViewModelProvider(this)[InventoryProductsViewModel::class.java]
+        Log.e("comesFromInFragment", "onCreateView:InventoryFragment " + comesFrom)
         return binding.root
     }
 
@@ -166,7 +168,6 @@ class InventoryProductsFragment : Fragment() {
             .replace(R.id.fragmentProductDetail, fragment)
             .addToBackStack(null)
             .commit()
-
     }
 
 
@@ -197,7 +198,23 @@ class InventoryProductsFragment : Fragment() {
 
                         override fun onLocateClicked(product: ProductModel) {}
                         override fun onUpdateClicked(product: ProductModel) {}
-                        override fun onDeleteClicked(product: ProductModel) {}
+                        override fun onDeleteClicked(product: ProductModel) {
+
+                            if (comesFrom == "InOutTracker") {
+                                Log.e("DELETE_TAG", "onDeleteClicked: " + product.id)
+                                Log.e("DELETE_TAG", "onDeleteClicked: " + product.tagId)
+                                Log.e("collectionId", "collectionId: " + collectionId)
+                            } else {
+                                AlertDialog.Builder(requireContext())
+                                    .setTitle(getString(R.string.delete_product))
+                                    .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product_and_its_media))
+                                    .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                                        inventoryProductsViewModel.deleteProduct(product)
+                                    }
+                                    .setNegativeButton(getString(R.string.cancel), null)
+                                    .show()
+                            }
+                        }
                     }
                 ).show()
             },

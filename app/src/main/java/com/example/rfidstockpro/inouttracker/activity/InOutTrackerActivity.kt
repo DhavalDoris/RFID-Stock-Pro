@@ -83,10 +83,12 @@ class InOutTrackerActivity : AppCompatActivity() {
 
         adapter = CollectionAdapter(
             onItemClick = { selectedCollection ->
+                ShowCheckBoxinProduct = false
                 val intent = Intent(this, ProductManagementActivity::class.java).apply {
                     putExtra("comesFrom", "InOutTracker")
                     putExtra("collection_name", selectedCollection.collectionName)
                     putExtra("description", selectedCollection.description)
+                    putExtra("collectionId", selectedCollection.collectionId)
                     putStringArrayListExtra("productIds", ArrayList(selectedCollection.productIds))
                 }
                 startActivity(intent)

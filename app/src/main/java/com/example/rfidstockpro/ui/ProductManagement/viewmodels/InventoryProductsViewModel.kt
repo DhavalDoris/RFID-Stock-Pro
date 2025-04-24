@@ -2,6 +2,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.aws.AwsManager.getAllProducts
 import com.example.rfidstockpro.aws.models.ProductModel
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +21,9 @@ class InventoryProductsViewModel : ViewModel() {
 
     private val _isPageLoading = MutableLiveData<Boolean>(false)
     val isPageLoading: LiveData<Boolean> get() = _isPageLoading
+
+    val isDeleting = MutableLiveData<Boolean>(false) // To track delete loading
+    val deletionError = MutableLiveData<String?>() // To track errors
 
     private val pageSize = 5
     private var currentPage = 0
@@ -40,7 +44,27 @@ class InventoryProductsViewModel : ViewModel() {
         fetchMoreMatchingProducts()
     }
 
-
+    fun deleteProduct(product: ProductModel) {
+        isDeleting.postValue(true)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val result = AwsManager.deleteProduct(product)
+                if (result) {
+                    // Notify UI of successful deletion
+                    loadNextPage() // Optionally refresh the data to reflect changes
+                } else {
+                    // Handle failure case (e.g., show a toast)
+                    // You might also need to communicate failure to the UI
+                    deletionError.postValue( "Failed to delete product")
+                }
+            } catch (e: Exception) {
+                // Handle any exceptions, show error message, etc.
+                deletionError.postValue("Error occurred: ${e.message}")
+            }finally {
+                isDeleting.postValue(false)
+            }
+        }
+    }
     private fun fetchMoreMatchingProducts() {
         if (isFetchingFromDB || isLastPageFromDB) return
         isFetchingFromDB = true
