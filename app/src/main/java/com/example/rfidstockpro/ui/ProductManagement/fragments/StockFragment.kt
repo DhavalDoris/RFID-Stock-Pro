@@ -161,42 +161,53 @@ class StockFragment : Fragment() {
                                 Log.e("DELETE_TAG", "onDeleteClicked: " + product.tagId)
                                 Log.e("DELETE_TAG", "collectionName: " + collectionName)
                                 Log.e("DELETE_TAG", "collectionId: " + collectionId)
-                                AlertDialog.Builder(requireContext())
-                                    .setTitle("Delete From Collection")
-                                    .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product))
-                                    .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                                        viewModel.removeProductFromCollectionById(collectionId!!, product.id!!) { success, message ->
 
-                                            if (success) {
-                                                lifecycleScope.launch {
-                                                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                                if (productIds.size <= 1) {
+                                    AlertDialog.Builder(requireContext())
+                                        .setTitle("Cannot remove item")
+                                        .setMessage("Collection cannot be empty. You must have at least one product.")
+                                        .setPositiveButton("OK", null)
+                                        .show()
+                                    return
+                                }
+                                else{
+                                    AlertDialog.Builder(requireContext())
+                                        .setTitle("Delete From Collection")
+                                        .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product))
+                                        .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                                            viewModel.removeProductFromCollectionById(collectionId!!, product.id!!) { success, message ->
+                                                if (success) {
+                                                    lifecycleScope.launch {
+                                                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
 
-                                                    // instead of refetching, just remove this one:
-                                                    inventoryAdapter.removeItemById(product.id!!)
-                                                    // if you keep a local `productIds` list for pagination/count:
-                                                    productIds = productIds.filterNot { it == product.id }
-                                                    // update your “X of Y” counter:
-                                                    binding.itemCountText.text = "${inventoryAdapter.itemCount} of ${productIds.size}"
-                                                    // hide the “load more” if no more:
+                                                        // instead of refetching, just remove this one:
+                                                        inventoryAdapter.removeItemById(product.id!!)
+                                                        // if you keep a local `productIds` list for pagination/count:
+                                                        productIds = productIds.filterNot { it == product.id }
+                                                        // update your “X of Y” counter:
+                                                        binding.itemCountText.text = "${inventoryAdapter.itemCount} of ${productIds.size}"
+                                                        // hide the “load more” if no more:
 //                                                    binding.loadMoreContainer.isVisible = inventoryAdapter.itemCount < productIds.size
 
 
-                                                    /*val updatedCollection = AwsManager.getCollectionById(collectionId!!)
-                                                    Log.e("updatedProductIdsT+AG", "onDeleteClicked: "  + updatedCollection )
-                                                    updatedCollection?.let { collection ->
-                                                        val updatedProductIds = collection.productIds
-                                                        // Reset & reload filtered products
-                                                        viewModel.resetFilteredPagination()
-                                                        viewModel.loadFilteredPage(updatedProductIds)
+                                                        /*val updatedCollection = AwsManager.getCollectionById(collectionId!!)
+                                                        Log.e("updatedProductIdsT+AG", "onDeleteClicked: "  + updatedCollection )
+                                                        updatedCollection?.let { collection ->
+                                                            val updatedProductIds = collection.productIds
+                                                            // Reset & reload filtered products
+                                                            viewModel.resetFilteredPagination()
+                                                            viewModel.loadFilteredPage(updatedProductIds)
 
-                                                    }*/
+                                                        }*/
 
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
-                                    .setNegativeButton(getString(R.string.cancel), null)
-                                    .show()
+                                        .setNegativeButton(getString(R.string.cancel), null)
+                                        .show()
+                                }
+
                             } else {
                                 AlertDialog.Builder(requireContext())
                                     .setTitle(getString(R.string.delete_product))

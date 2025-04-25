@@ -96,14 +96,16 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             description = intent.getStringExtra("description")!!
             productIds = intent.getStringArrayListExtra("productIds") ?: arrayListOf()
             updateToolbarTitleAddItem(getString(R.string.list_of_products), true)
+            binding.btAddMoreProduct.visibility = View.VISIBLE
         } else if (comesFrom == "TrackCollection") {
             isFromCollection = true // For Showing Only Scanning Tab
-            selectedItems = intent.getSerializableExtra("selected_items") as? ArrayList<CollectionModel>
+            selectedItems =
+                intent.getSerializableExtra("selected_items") as? ArrayList<CollectionModel>
             Log.d("INVENTORYPRODUCTSFRAGMENT_TAG", "selectedItems " + selectedItems)
             binding.tabLayout.visibility = View.GONE
             binding.viewPager.setCurrentItem(0, false)
             binding.viewPager.isUserInputEnabled = false
-            updateToolbarTitleAddItem("Track Collection", null)
+            updateToolbarTitleAddItem(getString(R.string.track_collection), null)
         }
 
         val adapter = ProductPagerAdapter(

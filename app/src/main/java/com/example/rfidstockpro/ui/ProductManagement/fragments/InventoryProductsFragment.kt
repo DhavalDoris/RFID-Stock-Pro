@@ -13,6 +13,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -34,14 +35,18 @@ import com.example.rfidstockpro.viewmodel.UHFReadViewModel
 import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.KeyEventCallback
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.example.rfidstockpro.inouttracker.model.CollectionModel
+import com.example.rfidstockpro.ui.ProductManagement.viewmodels.StockViewModel
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.ShowCheckBoxinProduct
+import kotlinx.coroutines.launch
 
 
 class InventoryProductsFragment : Fragment() {
 
     private lateinit var binding: FragmentStockBinding
     private lateinit var inventoryProductsViewModel: InventoryProductsViewModel
+    private lateinit var stockViewModel: StockViewModel
     private lateinit var uhfReadViewModel: UHFReadViewModel
     private lateinit var inventoryAdapter: InventoryAdapter
     var latestTotal = 0
@@ -116,6 +121,7 @@ class InventoryProductsFragment : Fragment() {
     ): View {
         binding = FragmentStockBinding.inflate(inflater, container, false)
         inventoryProductsViewModel = ViewModelProvider(this)[InventoryProductsViewModel::class.java]
+        stockViewModel = ViewModelProvider(this)[StockViewModel::class.java]
         Log.e("comesFromInFragment", "onCreateView:InventoryFragment " + comesFrom)
         return binding.root
     }
@@ -200,10 +206,61 @@ class InventoryProductsFragment : Fragment() {
                         override fun onUpdateClicked(product: ProductModel) {}
                         override fun onDeleteClicked(product: ProductModel) {
 
-                            if (comesFrom == "InOutTracker") {
+                   /*         if (comesFrom == "InOutTracker") {
                                 Log.e("DELETE_TAG", "onDeleteClicked: " + product.id)
                                 Log.e("DELETE_TAG", "onDeleteClicked: " + product.tagId)
                                 Log.e("collectionId", "collectionId: " + collectionId)
+                            } else {
+                                AlertDialog.Builder(requireContext())
+                                    .setTitle(getString(R.string.delete_product))
+                                    .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product_and_its_media))
+                                    .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                                        inventoryProductsViewModel.deleteProduct(product)
+                                    }
+                                    .setNegativeButton(getString(R.string.cancel), null)
+                                    .show()
+                            }*/
+
+
+                            if (comesFrom == "InOutTracker") {
+                                Log.e("DELETE_TAG", "onDeleteClicked: " + product.id)
+                                Log.e("DELETE_TAG", "onDeleteClicked: " + product.tagId)
+                                Log.e("DELETE_TAG", "collectionName: " + collectionName)
+                                Log.e("DELETE_TAG", "collectionId: " + collectionId)
+
+                                if (productIds.size <= 1) {
+                                    AlertDialog.Builder(requireContext())
+                                        .setTitle("Cannot remove item")
+                                        .setMessage("Collection cannot be empty. You must have at least one product.")
+                                        .setPositiveButton("OK", null)
+                                        .show()
+                                    return
+                                }
+                                else{
+                                    AlertDialog.Builder(requireContext())
+                                        .setTitle("Delete From Collection")
+                                        .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product))
+                                        .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                                            stockViewModel.removeProductFromCollectionById(collectionId!!, product.id!!) { success, message ->
+                                                if (success) {
+                                                    lifecycleScope.launch {
+                                                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+
+                                                        // instead of refetching, just remove this one:
+                                                        inventoryAdapter.removeItemById(product.id!!)
+                                                        // if you keep a local `productIds` list for pagination/count:
+                                                        productIds = productIds.filterNot { it == product.id }
+                                                        // update your “X of Y” counter:
+                                                        binding.itemCountText.text = "${inventoryAdapter.itemCount} of ${productIds.size}"
+
+
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .setNegativeButton(getString(R.string.cancel), null)
+                                        .show()
+                                }
                             } else {
                                 AlertDialog.Builder(requireContext())
                                     .setTitle(getString(R.string.delete_product))
