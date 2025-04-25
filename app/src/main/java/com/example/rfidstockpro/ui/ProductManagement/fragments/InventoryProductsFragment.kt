@@ -112,6 +112,9 @@ class InventoryProductsFragment : Fragment() {
 
         Log.e("INVENTORYPRODUCTSFRAGMENT_TAG", "comesFrom: " + comesFrom)
         Log.e("INVENTORYPRODUCTSFRAGMENT_TAG", "selectedItems: " + selectedItems)
+        Log.e("INVENTORYPRODUCTSFRAGMENT_TAG", "collectionId: " + collectionId)
+        Log.e("INVENTORYPRODUCTSFRAGMENT_TAG", "productIds: " + productIds)
+
     }
 
     override fun onCreateView(
@@ -206,20 +209,20 @@ class InventoryProductsFragment : Fragment() {
                         override fun onUpdateClicked(product: ProductModel) {}
                         override fun onDeleteClicked(product: ProductModel) {
 
-                   /*         if (comesFrom == "InOutTracker") {
-                                Log.e("DELETE_TAG", "onDeleteClicked: " + product.id)
-                                Log.e("DELETE_TAG", "onDeleteClicked: " + product.tagId)
-                                Log.e("collectionId", "collectionId: " + collectionId)
-                            } else {
-                                AlertDialog.Builder(requireContext())
-                                    .setTitle(getString(R.string.delete_product))
-                                    .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product_and_its_media))
-                                    .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                                        inventoryProductsViewModel.deleteProduct(product)
-                                    }
-                                    .setNegativeButton(getString(R.string.cancel), null)
-                                    .show()
-                            }*/
+                            /*         if (comesFrom == "InOutTracker") {
+                                         Log.e("DELETE_TAG", "onDeleteClicked: " + product.id)
+                                         Log.e("DELETE_TAG", "onDeleteClicked: " + product.tagId)
+                                         Log.e("collectionId", "collectionId: " + collectionId)
+                                     } else {
+                                         AlertDialog.Builder(requireContext())
+                                             .setTitle(getString(R.string.delete_product))
+                                             .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product_and_its_media))
+                                             .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                                                 inventoryProductsViewModel.deleteProduct(product)
+                                             }
+                                             .setNegativeButton(getString(R.string.cancel), null)
+                                             .show()
+                                     }*/
 
 
                             if (comesFrom == "InOutTracker") {
@@ -235,23 +238,31 @@ class InventoryProductsFragment : Fragment() {
                                         .setPositiveButton("OK", null)
                                         .show()
                                     return
-                                }
-                                else{
+                                } else {
                                     AlertDialog.Builder(requireContext())
                                         .setTitle("Delete From Collection")
                                         .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product))
                                         .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                                            stockViewModel.removeProductFromCollectionById(collectionId!!, product.id!!) { success, message ->
+                                            stockViewModel.removeProductFromCollectionById(
+                                                collectionId!!,
+                                                product.id!!
+                                            ) { success, message ->
                                                 if (success) {
                                                     lifecycleScope.launch {
-                                                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(
+                                                            requireContext(),
+                                                            message,
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
 
                                                         // instead of refetching, just remove this one:
                                                         inventoryAdapter.removeItemById(product.id!!)
                                                         // if you keep a local `productIds` list for pagination/count:
-                                                        productIds = productIds.filterNot { it == product.id }
+                                                        productIds =
+                                                            productIds.filterNot { it == product.id }
                                                         // update your “X of Y” counter:
-                                                        binding.itemCountText.text = "${inventoryAdapter.itemCount} of ${productIds.size}"
+                                                        binding.itemCountText.text =
+                                                            "${inventoryAdapter.itemCount} of ${productIds.size}"
 
 
                                                     }
@@ -316,7 +327,6 @@ class InventoryProductsFragment : Fragment() {
     @SuppressLint("MissingPermission")
     private fun observeActions() {
 
-
         uhfReadViewModel.tagList.observe(viewLifecycleOwner) { tagList ->
             var newTagsAdded = false
             if (!comesFrom.equals("TrackCollection")) {
@@ -337,8 +347,6 @@ class InventoryProductsFragment : Fragment() {
             val totalScans = tagList.sumOf { it.count } // total scans including duplicates
             val uniqueCount = tagList.size              // unique tags only
 
-            // ✅ Update your stats TextView
-
             if (newTagsAdded) {
                 // 🔄 Pass the updated list to ViewModel
                 // Show progress while scanning & matching
@@ -349,7 +357,6 @@ class InventoryProductsFragment : Fragment() {
                     binding.noItemsText.visibility = View.VISIBLE
                 }
                 inventoryProductsViewModel.setMatchedTagIds(uniqueTagSet.toList())
-
             }
 
             // Optional: Hide scanning UI after a delay
@@ -363,8 +370,17 @@ class InventoryProductsFragment : Fragment() {
         }
 
         inventoryProductsViewModel.pagedProducts.observe(viewLifecycleOwner) { products ->
-            Log.e("Adapter_TAG", "observeActions: " + products)
-            inventoryAdapter.updateList(products)
+            Log.e("INVENTORYPRODUCTSFRAGMENT_TAG", "pagedProducts.observe: " + products)
+
+            if (productIds.isNotEmpty()) {
+                val finalList = products.filter { product ->
+                    !productIds.contains(product.id)
+                }
+                inventoryAdapter.updateList(finalList)
+            }
+            else{
+                inventoryAdapter.updateList(products)
+            }
 
             val total = inventoryProductsViewModel.totalCount.value ?: 0
             val currentCount = products.size
@@ -399,8 +415,10 @@ class InventoryProductsFragment : Fragment() {
                     binding.noItemsText.visibility = View.GONE
                 }
             }
-
         }
+
+
+
 
 
         inventoryProductsViewModel.isPageLoading.observe(viewLifecycleOwner) { isLoading ->

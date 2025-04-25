@@ -19,6 +19,7 @@ class ProductManagementViewModel(application: Application) : AndroidViewModel(ap
     private val _isCollectionCreated = MutableLiveData<Boolean>()
     val isCollectionCreated: LiveData<Boolean> = _isCollectionCreated
 
+
     fun createCollection(
         collectionName: String,
         description: String,

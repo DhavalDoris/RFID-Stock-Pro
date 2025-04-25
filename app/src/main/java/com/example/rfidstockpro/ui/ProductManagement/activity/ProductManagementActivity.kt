@@ -1,6 +1,8 @@
 package com.example.rfidstockpro.ui.ProductManagement.activity
 
+import UHFConnectionManager
 import android.annotation.SuppressLint
+import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -11,11 +13,12 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.lifecycle.ViewModelProvider
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.RFIDApplication
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
+import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.databinding.ActivityProductManagementBinding
 import com.example.rfidstockpro.inouttracker.CollectionUtils
-import com.example.rfidstockpro.inouttracker.activity.CreateCollectionActivity
 import com.example.rfidstockpro.inouttracker.activity.InOutTrackerActivity
 import com.example.rfidstockpro.inouttracker.model.CollectionModel
 import com.example.rfidstockpro.sharedpref.SessionManager
@@ -29,6 +32,7 @@ import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
 import com.example.rfidstockpro.viewmodel.DashboardViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 import com.rscja.deviceapi.interfaces.ConnectionStatus
+
 
 class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment.ToolbarCallback {
 
@@ -87,6 +91,19 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             updateToolbarTitleAddItem(getString(R.string.add_to_collection), null)
             collectionName = intent.getStringExtra("collection_name")!!
             description = intent.getStringExtra("description")!!
+
+            collectionId = intent.getStringExtra("collectionId") ?: ""
+            if (collectionId.isNotEmpty()) {
+                // Proceed with normal flow using the collectionId
+                productIds = intent.getStringArrayListExtra("productIds") ?: arrayListOf()
+
+                Log.e("collectionIdTAG", "collectionId: " + collectionId)
+                Log.e("collectionIdTAG", "productIds: " + productIds)
+            } else {
+                Log.e("collectionIdTAG", "init: Collection ID is missing ")
+                // Optionally handle the missing data case, perhaps finish() the activity
+            }
+
         } else if (comesFrom == "InOutTracker") {
             isFromCollection = false
             // 👉 Handle logic specifically for InOutTracker case
@@ -97,6 +114,17 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             productIds = intent.getStringArrayListExtra("productIds") ?: arrayListOf()
             updateToolbarTitleAddItem(getString(R.string.list_of_products), true)
             binding.btAddMoreProduct.visibility = View.VISIBLE
+
+            binding.btAddMoreProduct.setOnClickListener {
+                val intent = Intent(this, ProductManagementActivity::class.java).apply {
+                    putExtra("comesFrom", "collection")
+                    putExtra("collection_name", collectionName)
+                    putExtra("description", description)
+                    putExtra("collectionId", collectionId)
+                    putStringArrayListExtra("productIds", ArrayList(productIds))
+                }
+                startActivity(intent)
+            }
         } else if (comesFrom == "TrackCollection") {
             isFromCollection = true // For Showing Only Scanning Tab
             selectedItems =
@@ -171,21 +199,65 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
 
         toolbarDone.setOnClickListener {
 
-            Log.e("ToolbarCallback", "updateToolbarTitleAddItem: " + productIds)
+            if (collectionId!!.isNotEmpty()) {
+                Log.e("ToolbarCallback", "Update Product: " + productIds)
+                Log.e("ToolbarCallback", "collectionId : " + collectionId)
 
-            CollectionUtils.handleCreateCollection(
-                context = this,
-                collectionName = collectionName,
-                description = description,
-                productIds = productIds!!,
-                onSuccess = {
-                    val userId = SessionManager.getInstance(this).getUserName()
-                    viewModel.createCollection(collectionName, description, productIds!!, userId)
-                },
-                onFailure = {
-                    // Optional: log or UI changes
+                if (productIds!!.isNotEmpty()) {
+
+                    val pd = ProgressDialog(this@ProductManagementActivity)
+                    pd.setMessage("Please Wait ...")
+                    pd.show()
+
+                    AwsManager.updateCollectionProductIds(
+                        tableName = RFIDApplication.IN_OUT_COLLECTIONS_TABLE,
+                        collectionId = collectionId,
+                        newProductIds = productIds!!
+                    ) { success ->
+                        if (success) {
+                            pd.dismiss()
+                            productIds = emptyList()
+                            Toast.makeText(
+                                this,
+                                "Collection updated successfully",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            val intent = Intent(this, InOutTrackerActivity::class.java)
+                            intent.flags =
+                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            pd.dismiss()
+                            Toast.makeText(this, "Failed to update collection", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(this, "product Ids Empty", Toast.LENGTH_SHORT).show()
                 }
-            )
+            } else {
+                CollectionUtils.handleCreateCollection(
+                    context = this,
+                    collectionName = collectionName,
+                    description = description,
+                    productIds = productIds!!,
+                    onSuccess = {
+                        val userId = SessionManager.getInstance(this).getUserName()
+                        viewModel.createCollection(
+                            collectionName,
+                            description,
+                            productIds!!,
+                            userId
+                        )
+                    },
+                    onFailure = {
+                        // Optional: log or UI changes
+                    }
+                )
+
+            }
+            // Update Collection
         }
     }
 

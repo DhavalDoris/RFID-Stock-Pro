@@ -25,8 +25,6 @@ object CollectionUtils {
         val sessionManager = SessionManager.getInstance(context)
         val userId = sessionManager.getUserName()
 
-
-
         AwsManager.checkIfCollectionNameExists(
             tableName = com.example.rfidstockpro.RFIDApplication.IN_OUT_COLLECTIONS_TABLE,
             collectionName = collectionName

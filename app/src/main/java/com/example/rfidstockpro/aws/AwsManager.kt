@@ -59,7 +59,10 @@ import software.amazon.awssdk.services.s3.model.UploadPartRequest
 import software.amazon.awssdk.services.ses.SesClient
 import java.io.File
 import java.io.FileInputStream
+import java.text.SimpleDateFormat
 import java.time.Duration
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
 
 object AwsManager {
@@ -1166,6 +1169,63 @@ object AwsManager {
     }
 
 
+    fun updateCollectionProductIds(
+        tableName: String,
+        collectionId: String,
+        newProductIds: List<String>,
+        onResult: (Boolean) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Step 1: Fetch the current item
+                val getRequest = GetItemRequest.builder()
+                    .tableName(tableName)
+                    .key(mapOf("collectionId" to AttributeValue.builder().s(collectionId).build()))
+                    .build()
 
+                val result = dynamoDBClient.getItem(getRequest)
+                val currentItem = result.item()
 
+                if (currentItem == null) {
+                    withContext(Dispatchers.Main) {
+                        onResult(false)
+                    }
+                    return@launch
+                }
+
+                val existingProductIds = currentItem["productIds"]?.l()?.map { it.s()!! } ?: emptyList()
+
+                // Step 2: Merge and remove duplicates
+                val updatedProductIds = (existingProductIds + newProductIds).toSet().toList()
+
+                val updateRequest = UpdateItemRequest.builder()
+                    .tableName(tableName)
+                    .key(mapOf("collectionId" to AttributeValue.builder().s(collectionId).build()))
+                    .updateExpression("SET productIds = :p, updatedDateTime = :updatedTime")
+                    .expressionAttributeValues(mapOf(
+                        ":p" to AttributeValue.builder().l(
+                            updatedProductIds.map { AttributeValue.builder().s(it).build() }
+                        ).build(),
+                        ":updatedTime" to AttributeValue.builder().s(currentTime()).build()
+                    ))
+                    .build()
+
+                dynamoDBClient.updateItem(updateRequest)
+
+                withContext(Dispatchers.Main) {
+                    onResult(true)
+                }
+            } catch (e: Exception) {
+                Log.e("AWSManager", "Error updating product IDs: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    onResult(false)
+                }
+            }
+        }
+    }
+
+    fun currentTime(): String {
+        val format = SimpleDateFormat("dd-MM-yyyy hh:mm:ss a", Locale.getDefault())
+        return format.format(Date())
+    }
 }

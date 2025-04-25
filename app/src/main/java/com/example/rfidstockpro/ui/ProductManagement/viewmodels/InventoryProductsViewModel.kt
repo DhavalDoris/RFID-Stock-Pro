@@ -34,6 +34,12 @@ class InventoryProductsViewModel : ViewModel() {
     private var isLastPageFromDB = false
     private var isFetchingFromDB = false
 
+    fun filterOutProductsByIds(productIds: List<String>) {
+        allMatchingProducts = allMatchingProducts.filterNot { it.id in productIds }.toMutableList()
+        _pagedProducts.value = allMatchingProducts.take(pageSize) // Update the paged list based on filtered products
+        _totalCount.value = allMatchingProducts.size
+    }
+
     fun setMatchedTagIds(tagIds: List<String>) {
         matchedTagIds = tagIds
         allMatchingProducts.clear()
