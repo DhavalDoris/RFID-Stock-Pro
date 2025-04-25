@@ -11,10 +11,14 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.FragmentStockBinding
 import com.example.rfidstockpro.inouttracker.CollectionUtils.selectedCollection
@@ -23,6 +27,7 @@ import com.example.rfidstockpro.ui.ProductManagement.helper.ProductHolder
 import com.example.rfidstockpro.ui.ProductManagement.viewmodels.StockViewModel
 import com.example.rfidstockpro.ui.activities.AddProductActivity
 import com.example.rfidstockpro.ui.inventory.InventoryAdapter
+import kotlinx.coroutines.launch
 
 
 class StockFragment : Fragment() {
@@ -160,11 +165,38 @@ class StockFragment : Fragment() {
                                     .setTitle("Delete From Collection")
                                     .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_product))
                                     .setPositiveButton(getString(R.string.delete)) { _, _ ->
-//                                        viewModel.deleteProduct(product)
+                                        viewModel.removeProductFromCollectionById(collectionId!!, product.id!!) { success, message ->
+
+                                            if (success) {
+                                                lifecycleScope.launch {
+                                                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+
+                                                    // instead of refetching, just remove this one:
+                                                    inventoryAdapter.removeItemById(product.id!!)
+                                                    // if you keep a local `productIds` list for pagination/count:
+                                                    productIds = productIds.filterNot { it == product.id }
+                                                    // update your “X of Y” counter:
+                                                    binding.itemCountText.text = "${inventoryAdapter.itemCount} of ${productIds.size}"
+                                                    // hide the “load more” if no more:
+//                                                    binding.loadMoreContainer.isVisible = inventoryAdapter.itemCount < productIds.size
+
+
+                                                    /*val updatedCollection = AwsManager.getCollectionById(collectionId!!)
+                                                    Log.e("updatedProductIdsT+AG", "onDeleteClicked: "  + updatedCollection )
+                                                    updatedCollection?.let { collection ->
+                                                        val updatedProductIds = collection.productIds
+                                                        // Reset & reload filtered products
+                                                        viewModel.resetFilteredPagination()
+                                                        viewModel.loadFilteredPage(updatedProductIds)
+
+                                                    }*/
+
+                                                }
+                                            }
+                                        }
                                     }
                                     .setNegativeButton(getString(R.string.cancel), null)
                                     .show()
-
                             } else {
                                 AlertDialog.Builder(requireContext())
                                     .setTitle(getString(R.string.delete_product))
@@ -276,6 +308,9 @@ class StockFragment : Fragment() {
             binding.loadMoreContainer.visibility =
                 if (currentCount < total) View.VISIBLE else View.GONE
         }
+
+
+
 
     }
 

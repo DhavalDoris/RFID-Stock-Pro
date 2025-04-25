@@ -7,4 +7,10 @@ object  Helper {
 */
     /*external fun ACCESS(): String
     external fun SECRET(): String*/
+
+    fun getCurrentFormattedDateTime(): String {
+        val formatter = java.text.SimpleDateFormat("dd/MM/yy hh:mm a", java.util.Locale.getDefault())
+        return formatter.format(java.util.Date())
+    }
+
 }

@@ -94,5 +94,17 @@ class InventoryAdapter(
         return productList.mapNotNull { it.id } // Assuming `productList` holds current items
     }
 
+    /** Removes the item with the given ID from the list and notifies. */
+    fun removeItemById(itemId: String) {
+        // Find its position in the current list
+        val mutable = productList.toMutableList()
+        val index = mutable.indexOfFirst { it.id == itemId }
+        if (index != -1) {
+            mutable.removeAt(index)
+            productList = mutable
+            // Tell RecyclerView exactly which item vanished
+            notifyItemRemoved(index)
+        }
+    }
 
 }

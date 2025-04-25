@@ -46,6 +46,7 @@ class InOutTrackerActivity : AppCompatActivity() {
         updateToolbarTitleAddItem(getString(R.string.in_out_ntracker_header))
         init()
         setupRecyclerView()
+        Log.e("INOUt_TAG", "onCreate: ", )
     }
 
     fun init() {
@@ -77,6 +78,7 @@ class InOutTrackerActivity : AppCompatActivity() {
             }
             startActivity(intent)
         }
+
     }
 
     private fun setupRecyclerView() {
@@ -162,7 +164,8 @@ class InOutTrackerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
+        Log.e("INOUt_TAG", "onResume: ", )
+        viewModel.fetchCollections(userId!!)
     }
 
     override fun onBackPressed() {

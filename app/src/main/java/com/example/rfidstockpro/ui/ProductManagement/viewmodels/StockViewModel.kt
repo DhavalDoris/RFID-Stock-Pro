@@ -5,12 +5,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.rfidstockpro.Helper.getCurrentFormattedDateTime
 import com.example.rfidstockpro.RFIDApplication.Companion.PRODUCT_TABLE
 import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.aws.AwsManager.getPaginatedProducts
 import com.example.rfidstockpro.aws.AwsManager.getProductById
 import com.example.rfidstockpro.aws.AwsManager.getTotalProductCount
 import com.example.rfidstockpro.aws.models.ProductModel
+import com.example.rfidstockpro.inouttracker.model.CollectionModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -141,6 +143,52 @@ class StockViewModel : ViewModel() {
             }
         }
     }
+
+    fun removeProductFromCollectionById(
+        collectionId: String,
+        productId: String,
+        callback: (success: Boolean, message: String?) -> Unit
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 1. Fetch the full collection from AWS
+                val collection = AwsManager.getCollectionById(collectionId)
+
+                if (collection == null) {
+                    callback(false, "Collection not found")
+                    return@launch
+                }
+
+                if (!collection.productIds.contains(productId)) {
+                    callback(false, "Product not in collection")
+                    return@launch
+                }
+
+                // 2. Remove productId and update
+                val updatedProductIds = collection.productIds.toMutableList().apply {
+                    remove(productId)
+                }
+
+                val updatedCollection = collection.copy(
+                    productIds = updatedProductIds,
+                    updatedDateTime = getCurrentFormattedDateTime()
+                )
+
+                val success = AwsManager.updateCollection(updatedCollection)
+                if (success) {
+                    callback(true, "Product removed from collection")
+                } else {
+                    callback(false, "Failed to update collection")
+                }
+
+            } catch (e: Exception) {
+                callback(false, "Error: ${e.message}")
+            }
+        }
+    }
+
+
+
     fun resetFilteredPagination() {
         currentPage = 0
         currentList.clear()

@@ -86,7 +86,6 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             binding.viewPager.isUserInputEnabled = false
             updateToolbarTitleAddItem(getString(R.string.add_to_collection), null)
             collectionName = intent.getStringExtra("collection_name")!!
-            collectionId = intent.getStringExtra("collectionId")!!
             description = intent.getStringExtra("description")!!
         } else if (comesFrom == "InOutTracker") {
             isFromCollection = false

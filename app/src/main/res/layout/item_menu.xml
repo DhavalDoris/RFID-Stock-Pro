@@ -64,6 +64,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
+        android:visibility="gone"
         android:background="@color/gray_line" />
 
     <LinearLayout
@@ -71,7 +72,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingVertical="@dimen/_5sdp">
+        android:paddingVertical="@dimen/_5sdp"
+        android:visibility="gone">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:layout_width="@dimen/_20sdp"
@@ -94,14 +96,16 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/gray_line" />
+        android:background="@color/gray_line"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:id="@+id/action_update"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingVertical="@dimen/_5sdp">
+        android:paddingVertical="@dimen/_5sdp"
+        android:visibility="gone">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:layout_width="@dimen/_20sdp"

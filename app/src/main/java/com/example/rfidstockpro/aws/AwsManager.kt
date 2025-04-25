@@ -15,6 +15,8 @@ import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.aws.models.toMap
 import com.example.rfidstockpro.aws.models.toProductModel
 import com.example.rfidstockpro.inouttracker.model.CollectionModel
+import com.example.rfidstockpro.inouttracker.model.toCollectionModel
+import com.example.rfidstockpro.inouttracker.model.toMap
 import com.example.rfidstockpro.ui.activities.AddProductActivity.Companion.previewImageUrls
 import com.example.rfidstockpro.ui.activities.AddProductActivity.Companion.previewVideoUrl
 import kotlinx.coroutines.CoroutineScope
@@ -1086,6 +1088,41 @@ object AwsManager {
             }
         }
 
+    }
+
+    suspend fun getCollectionById(collectionId: String): CollectionModel? {
+        return try {
+            val request = GetItemRequest.builder()
+                .tableName(IN_OUT_COLLECTIONS_TABLE) // Replace with your actual table name
+                .key(mapOf("collectionId" to AttributeValue.builder().s(collectionId).build()))
+                .build()
+
+            val response = dynamoDBClient.getItem(request)
+
+            if (response.hasItem()) {
+                response.item().toCollectionModel()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    suspend fun updateCollection(updatedCollection: CollectionModel): Boolean {
+        return try {
+            val request = PutItemRequest.builder()
+                .tableName(IN_OUT_COLLECTIONS_TABLE) // Replace with your actual table name
+                .item(updatedCollection.toMap())
+                .build()
+
+            dynamoDBClient.putItem(request)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 
 
