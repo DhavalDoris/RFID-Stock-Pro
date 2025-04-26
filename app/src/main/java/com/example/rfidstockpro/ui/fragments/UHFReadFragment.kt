@@ -65,11 +65,11 @@ class UHFReadFragment : Fragment() {
     ): View {
         binding = FragmentUhfreadTagBinding.inflate(inflater, container, false)
 
-        sharedProductViewModel.product.observe(viewLifecycleOwner) { product ->
-            Log.d("UHFReadFragment", "Received Product: ${product}")
+    /*    sharedProductViewModel.product.observe(viewLifecycleOwner) { product ->
+            Log.d("UHFReadFragment", "Received Product -> : ${product}")
 //            val scannedUniqueTags = product.distinct()
 //            scannedProductsViewModel.setScannedTags(scannedUniqueTags)
-        }
+        }*/
 
         return binding.root
     }

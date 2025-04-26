@@ -51,6 +51,11 @@
             android:theme="@style/AppTheme"
             android:exported="false" />
         <activity
+            android:name=".bulkupload.activity.BulkUploadActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme"
+            android:exported="false" />
+        <activity
             android:name=".ui.ProductManagement.activity.ProductManagementActivity"
             android:exported="true"
             android:screenOrientation="portrait"

@@ -252,6 +252,8 @@ class UHFReadViewModel(private val uhfRepository: UHFRepository ) : ViewModel() 
 
                     scope.launch {
                         Log.d("AWS_PRODUCT", "Saving product to DynamoDB...")
+
+
                         val (isSuccess, saveMessage) = AwsManager.saveProduct(
                             PRODUCT_TABLE,
                             updatedProduct

@@ -714,27 +714,38 @@ object AwsManager {
 
         return withContext(Dispatchers.IO) {
             try {
-                // 🔍 Step 1: Scan for existing tagId
-                val scanRequest = ScanRequest.builder()
-                    .tableName(tableName)
-                    .filterExpression("tagId = :tagId")
-                    .expressionAttributeValues(
-                        mapOf(":tagId" to AttributeValue.builder().s(product.tagId).build())
-                    )
-                    .build()
+                Log.e("saveProductTAG", "saveProduct: >> " + product.tagId  )
+                if (!product.tagId.isNullOrBlank()) {
+                    Log.e("saveProductTAG", "saveProduct: --->> " + product.tagId  )
 
-                val scanResponse = dynamoDBClient.scan(scanRequest)
+                    // 🔍 Step 1: Scan for existing tagId
+                    val scanRequest = ScanRequest.builder()
+                        .tableName(tableName)
+                        .filterExpression("tagId = :tagId")
+                        .expressionAttributeValues(
+                            mapOf(":tagId" to AttributeValue.builder().s(product.tagId).build())
+                        )
+                        .build()
 
-                if (scanResponse.count() > 0) {
-                    val msg = "Product with tagId '${product.tagId}' already exists."
-                    Log.e("AWS_SAVE", msg)
-                    return@withContext Pair(false, msg)
+                    val scanResponse = dynamoDBClient.scan(scanRequest)
+
+                    if (scanResponse.count() > 0) {
+                        val msg = "Product with tagId '${product.tagId}' already exists."
+                        Log.e("AWS_SAVE", msg)
+                        return@withContext Pair(false, msg)
+                    }
                 }
 
+                // ✅ Step 2: Convert to map & clean up tagId if empty
+                val item = product.toMap().toMutableMap()
+                if (item["tagId"]?.s().isNullOrBlank()) {
+                    item.remove("tagId")
+                }
 
                 val putItemRequest = PutItemRequest.builder()
                     .tableName(tableName)
-                    .item(product.toMap()) // Use the extension function
+//                    .item(product.toMap()) // Use the extension function
+                    .item(item) // Use the extension function
                     .build()
 
                 dynamoDBClient.putItem(putItemRequest)

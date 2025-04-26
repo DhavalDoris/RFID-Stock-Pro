@@ -32,6 +32,7 @@ import com.example.rfidstockpro.Utils.FragmentManagerHelper
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.Utils.ToastUtils.showToast
 import com.example.rfidstockpro.adapter.CustomSpinnerAdapter
+import com.example.rfidstockpro.bulkupload.activity.BulkUploadActivity
 import com.example.rfidstockpro.databinding.ActivityDashboardBinding
 import com.example.rfidstockpro.inouttracker.activity.CreateCollectionActivity
 import com.example.rfidstockpro.inouttracker.activity.InOutTrackerActivity
@@ -157,6 +158,10 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 
         binding.btnInOut.setOnClickListener {
             startActivity(Intent(this, InOutTrackerActivity::class.java))
+        }
+
+        binding.btnImport.setOnClickListener {
+            startActivity(Intent(this, BulkUploadActivity::class.java))
         }
     }
 

@@ -121,4 +121,8 @@ dependencies {
     implementation ("com.tbuonomo:dotsindicator:5.1.0")
 
     implementation("androidx.media3:media3-ui:1.6.0")
+
+    //bulk upload
+    implementation ("org.apache.poi:poi:5.2.3")
+    implementation ("org.apache.poi:poi-ooxml:5.2.3")
 }
