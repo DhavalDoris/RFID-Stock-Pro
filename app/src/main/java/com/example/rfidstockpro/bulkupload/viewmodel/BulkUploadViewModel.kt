@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.rfidstockpro.RFIDApplication.Companion.PRODUCT_TABLE
 import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.aws.models.ProductModel
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -18,18 +17,27 @@ import java.util.*
 
 class BulkUploadViewModel : ViewModel() {
 
+  // Mapping user Excel headers to your app fields
+  private val systemHeaderMap = mapOf(
+    "Title"             to "productName",
+    "Category"          to "productCategory",
+    "Style No"          to "styleNo",
+    "10K Price"         to "price",
+    "Description"       to "description",
+    "Compressed Image"  to "selectedImages",
+    "Compressed Video"  to "selectedVideo"
+  )
+
   fun uploadProductsFromExcel(
     context: Context,
     fileUri: Uri,
-    onProgress: (current: Int, total: Int) -> Unit,
+    onProgress: (percent: Int) -> Unit,
     onComplete: (successCount: Int, failureCount: Int) -> Unit
   ) {
     viewModelScope.launch(Dispatchers.IO) {
       val input = context.contentResolver.openInputStream(fileUri)
       if (input == null) {
-        withContext(Dispatchers.Main) {
-          onComplete(0, 0)
-        }
+        withContext(Dispatchers.Main) { onComplete(0, 0) }
         return@launch
       }
 
@@ -37,7 +45,7 @@ class BulkUploadViewModel : ViewModel() {
       val sheet = workbook.getSheetAt(0)
       val headerRow = sheet.getRow(0)
 
-      // build header→columnIndex map
+      // Build dynamic header → column index map
       val headerMap = mutableMapOf<String, Int>()
       for (ci in 0 until headerRow.lastCellNum) {
         headerRow.getCell(ci)?.stringCellValue
@@ -47,11 +55,11 @@ class BulkUploadViewModel : ViewModel() {
       }
 
       val totalRows = sheet.lastRowNum
-      var success = 0
-      var fail = 0
+      var successCount = 0
+      var failureCount = 0
 
-      fun getCellValue(row: org.apache.poi.ss.usermodel.Row, header: String): String {
-        val idx = headerMap[header] ?: return ""
+      fun getCellValue(row: org.apache.poi.ss.usermodel.Row, headerName: String): String {
+        val idx = headerMap[headerName] ?: return ""
         val cell = row.getCell(idx) ?: return ""
         return when (cell.cellType) {
           CellType.STRING  -> cell.stringCellValue
@@ -62,114 +70,84 @@ class BulkUploadViewModel : ViewModel() {
         }.trim()
       }
 
-      // iterate data rows
+      // Loop over data rows
       for (i in 1..totalRows) {
         val row = sheet.getRow(i)
         if (row == null) {
-          fail++
-          withContext(Dispatchers.Main) { onProgress(i, totalRows) }
+          failureCount++
+          updateProgress(i, totalRows, onProgress)
           continue
         }
 
-        // map to your fields
-        val dataMap = mapOf(
-          "Title"            to getCellValue(row, "Title"),
-          "Category"         to getCellValue(row, "Category"),
-          "Style No"         to getCellValue(row, "Style No"),
-          "10K Price"        to getCellValue(row, "10K Price"),
-          "Description"      to getCellValue(row, "Description"),
-          "Compressed Image" to getCellValue(row, "Compressed Image"),
-          "Compressed Video" to getCellValue(row, "Compressed Video")
-        )
-
-        // build ProductModel
-        val product = mapRowToProductModel(dataMap)
-
-        // directly save to DynamoDB
-        val (wasSaved, _) = AwsManager.saveProduct(PRODUCT_TABLE, product)
-        if (wasSaved) success++ else fail++
-
-        // update progress on Main
-        withContext(Dispatchers.Main) {
-          onProgress(i, totalRows)
+        // Build extracted data map dynamically
+        val extractedData = mutableMapOf<String, String>()
+        for ((excelHeader, appField) in systemHeaderMap) {
+          extractedData[appField] = getCellValue(row, excelHeader)
         }
+
+        // Validate required fields
+        if (extractedData["productName"].isNullOrBlank() ||
+          extractedData["price"].isNullOrBlank() ||
+          extractedData["productCategory"].isNullOrBlank()
+        ) {
+          failureCount++
+          updateProgress(i, totalRows, onProgress)
+          continue
+        }
+
+        // Create ProductModel
+        val product = mapExtractedDataToProduct(extractedData)
+
+        val (wasSaved, _) = AwsManager.saveProduct(PRODUCT_TABLE, product)
+        if (wasSaved) successCount++ else failureCount++
+
+        updateProgress(i, totalRows, onProgress)
       }
 
       workbook.close()
 
-      // final callback
       withContext(Dispatchers.Main) {
-        onComplete(success, fail)
+        onComplete(successCount, failureCount)
       }
     }
   }
 
-  /*private fun mapRowToProductModel(data: Map<String,String>): ProductModel {
-    val now = SimpleDateFormat("dd-MM-yyyy hh:mm:ss a", Locale.getDefault()).format(Date())
-    val img = data["Compressed Image"].orEmpty()
-    val vid = data["Compressed Video"].orEmpty().takeIf { it.isNotBlank() }
+  // --- Progress update helper
+  private suspend fun updateProgress(current: Int, total: Int, onProgress: (percent: Int) -> Unit) {
+    val percent = (current * 100 / total)
+    withContext(Dispatchers.Main) {
+      onProgress(percent)
+    }
+  }
 
-    return ProductModel(
-      id               = UUID.randomUUID().toString(),
-      selectedImages   = if (img.isNotEmpty()) listOf(img) else emptyList(),
-      selectedVideo    = vid,
-      productName      = data["Title"].orEmpty(),
-      productCategory  = data["Category"].orEmpty(),
-      styleNo          = data["Style No"].orEmpty(),
-      sku              = "SKU-${System.currentTimeMillis()}",
-      price            = data["10K Price"].orEmpty(),
-      description      = data["Description"].orEmpty(),
-      isImageSelected  = img.isNotEmpty(),
-      isMediaUpdated   = false,
-      tagId            = "",
-      status           = "in",
-      createdAt        = now,
-      updatedAt        = now,
-      previewImageUrls = if (img.isNotEmpty()) listOf(img) else null,
-      previewVideoUrl  = vid
-    )
-  }*/
-
-  private fun mapRowToProductModel(data: Map<String,String>): ProductModel {
-    // 1) Generate a UUID for the PK…
+  // --- Data Mapping Helper
+  private fun mapExtractedDataToProduct(data: Map<String, String>): ProductModel {
     val id = UUID.randomUUID().toString()
 
-
-    // 3) Timestamp
     val now = SimpleDateFormat("dd-MM-yyyy hh:mm:ss a", Locale.getDefault())
       .format(Date())
 
-    // 4) Pull media URLs from Excel…
-    val img = data["Compressed Image"].orEmpty()
-    val vid = data["Compressed Video"]
-      .orEmpty()
-      .takeIf { it.isNotBlank() }
-
-    val rawPrice = data["10K Price"].orEmpty()
-    val cleanedPrice = rawPrice.replace(Regex("[$,]"), "")  // Remove $ and commas
+    val rawPrice = data["price"].orEmpty()
+    val cleanedPrice = rawPrice.replace(Regex("[$,]"), "") // clean price
 
     return ProductModel(
-      id               = id,
-      selectedImages   = if (img.isNotEmpty()) listOf(img) else emptyList(),
-      selectedVideo    = vid,
-      productName      = data["Title"].orEmpty(),
-      productCategory  = data["Category"].orEmpty(),
-      styleNo          = data["Style No"].orEmpty(),
-      sku              = "SKU-${System.currentTimeMillis()}",
-      price            = cleanedPrice,
-      description      = data["Description"].orEmpty(),
-      isImageSelected  = img.isNotEmpty(),
-      isMediaUpdated   = false,
-
-      // ← use the generated, non-empty tagId here:
-      tagId = "",
-
-      status           = "in",
-      createdAt        = now,
-      updatedAt        = now,
-      previewImageUrls = if (img.isNotEmpty()) listOf(img) else null,
-      previewVideoUrl  = vid
+      id = id,
+      selectedImages = data["selectedImages"]?.takeIf { it.isNotBlank() }?.let { listOf(it) } ?: emptyList(),
+      selectedVideo = data["selectedVideo"].takeIf { it?.isNotBlank() == true },
+      productName = data["productName"].orEmpty(),
+      productCategory = data["productCategory"].orEmpty(),
+      styleNo = data["styleNo"].orEmpty(),
+      sku = "SKU-${System.currentTimeMillis()}",
+      price = cleanedPrice,
+      description = data["description"].orEmpty(),
+      isImageSelected = !data["selectedImages"].isNullOrBlank(),
+      isMediaUpdated = false,
+      tagId = "", // empty, because bulk upload
+      status = "in",
+      createdAt = now,
+      updatedAt = now,
+      previewImageUrls = data["selectedImages"]?.let { listOf(it) },
+      previewVideoUrl = data["selectedVideo"]
     )
   }
-
 }

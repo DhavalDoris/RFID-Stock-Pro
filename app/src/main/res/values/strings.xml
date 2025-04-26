@@ -174,4 +174,28 @@
     <string name="delete_collection">Delete Collection</string>
     <string name="are_you_sure_you_want_to_delete_this_collection">Are you sure you want to delete this collection?</string>
 
+
+
+       <!-- <string-array name="system_headers">
+            <item>Title</item>
+            <item>Price</item>
+            <item>Category</item>
+            <item>Style No</item>
+            <item>Description</item>
+            <item>Compressed Image</item>
+            <item>Compressed Video</item>
+            <item>Tag ID</item>
+            &lt;!&ndash; Add more fields if needed &ndash;&gt;
+        </string-array>-->
+    <string-array name="system_headers">
+        <item>Title</item>
+        <item>Style No</item>
+        <item>Category</item>
+        <item>SKU</item>
+        <item>Price</item>
+        <item>Description</item>
+        <item>Image</item>
+        <item>Video</item>
+    </string-array>
+
 </resources>
