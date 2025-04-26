@@ -1228,4 +1228,29 @@ object AwsManager {
         val format = SimpleDateFormat("dd-MM-yyyy hh:mm:ss a", Locale.getDefault())
         return format.format(Date())
     }
+
+    suspend fun deleteCollectionById(collectionId: String) {
+        try {
+            // Build the request to delete the item by its collectionId
+            val request = DeleteItemRequest.builder()
+                .tableName(IN_OUT_COLLECTIONS_TABLE) // Replace with actual table name
+                .key(
+                    mapOf(
+                        "collectionId" to AttributeValue.builder().s(collectionId).build()
+                    )
+                )
+                .build()
+
+            // Perform the delete operation
+            val response = dynamoDBClient.deleteItem(request)
+
+            // Log the success
+            Log.d("AwsManager", "Successfully deleted collection with ID: $collectionId")
+        } catch (e: Exception) {
+            // Log the error
+            Log.e("AwsManager", "Error deleting collection with ID: $collectionId. ${e.localizedMessage}", e)
+            throw e // Re-throw the exception to be handled by the calling code
+        }
+    }
+
 }

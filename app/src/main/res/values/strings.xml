@@ -171,5 +171,7 @@
     <string name="add_more_product">Add More Product</string>
     <string name="track_collection">Track Collection</string>
     <string name="please_wait">Please wait...</string>
+    <string name="delete_collection">Delete Collection</string>
+    <string name="are_you_sure_you_want_to_delete_this_collection">Are you sure you want to delete this collection?</string>
 
 </resources>

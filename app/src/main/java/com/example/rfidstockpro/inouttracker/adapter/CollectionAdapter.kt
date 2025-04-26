@@ -10,7 +10,8 @@ import com.example.rfidstockpro.inouttracker.SelectionState
 
 class CollectionAdapter(
     private val onItemClick: (CollectionModel) -> Unit,
-    private var onSelectionChanged: (SelectionState) -> Unit // 🔄 Send full info
+    private var onSelectionChanged: (SelectionState) -> Unit, // 🔄 Send full info
+    private val onDeleteClick: (String) -> Unit // 🆕 New delete callback
 ) : RecyclerView.Adapter<CollectionAdapter.ViewHolder>() {
 
     var list: List<CollectionModel> = emptyList()
@@ -31,7 +32,13 @@ class CollectionAdapter(
             )
         )
     }
-
+    fun removeItemById(collectionId: String) {
+        val index = list.indexOfFirst { it.collectionId == collectionId }
+        if (index != -1) {
+            list = list.toMutableList().also { it.removeAt(index) }
+            notifyItemRemoved(index)
+        }
+    }
 
     inner class ViewHolder(val binding: ItemCollectionBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -89,6 +96,10 @@ class CollectionAdapter(
 
             root.setOnClickListener {
                 onItemClick(item)
+            }
+
+            ivDelete.setOnClickListener {
+                onDeleteClick(item.collectionId) // 👈 Pass the ID to activity
             }
         }
     }

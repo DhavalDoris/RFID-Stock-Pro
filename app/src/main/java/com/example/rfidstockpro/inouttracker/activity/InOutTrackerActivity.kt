@@ -6,14 +6,13 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.isVisible
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rfidstockpro.R
-import com.example.rfidstockpro.Utils.FragmentManagerHelper
 import com.example.rfidstockpro.Utils.StatusBarUtils
 import com.example.rfidstockpro.databinding.ActivityInOutBinding
 import com.example.rfidstockpro.inouttracker.CollectionUtils
@@ -105,6 +104,25 @@ class InOutTrackerActivity : AppCompatActivity() {
                 binding.btnNext.isEnabled = isListNotEmpty
                 binding.btnNext.alpha = if (isListNotEmpty) 1.0f else 0.5f // Optional for visual feedback
 
+            },
+            onDeleteClick = { collectionId ->
+                AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.delete_collection))
+                    .setMessage(getString(R.string.are_you_sure_you_want_to_delete_this_collection))
+                    .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                        // 🔥 Proceed to delete after confirmation
+                        viewModel.deleteCollection(
+                            collectionId = collectionId,
+                            onSuccess = {
+                                adapter!!.removeItemById(collectionId) // Instant removal
+                            },
+                            onError = { error ->
+                                Toast.makeText(this, "Error: ${error.localizedMessage}", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             }
         )
 

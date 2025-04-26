@@ -95,4 +95,28 @@ class CreateCollectionViewModel : ViewModel() {
             }
         }
     }
+
+    fun deleteCollection(
+        collectionId: String,
+        onSuccess: () -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                AwsManager.deleteCollectionById(collectionId)
+                withContext(Dispatchers.Main) {
+                    _collections.value = _collections.value?.filterNot { it.collectionId == collectionId }
+                    onSuccess()
+                }
+
+            } catch (e: Exception) {
+                Log.e("DynamoDB", "Delete error: ${e.localizedMessage}", e)
+                withContext(Dispatchers.Main) {
+                    // Notify UI on error
+                    onError(e)
+                }
+            }
+        }
+    }
+
 }
