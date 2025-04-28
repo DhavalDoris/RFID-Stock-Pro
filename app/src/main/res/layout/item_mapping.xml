@@ -3,8 +3,44 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/_5sdp"
+    android:layout_marginTop="@dimen/_5sdp"
+    android:background="@color/gray_line"
     android:orientation="vertical"
     android:padding="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <TextView
+            android:id="@+id/HeaderLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:text="Imported Header"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toTopOf="@+id/tvSample"
+            app:layout_constraintEnd_toStartOf="@+id/spinnerSystemHeader"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/SampleLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:maxLines="1"
+            android:text="Sample"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvImportedHeader" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,9 +50,13 @@
             android:id="@+id/tvImportedHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/_3sdp"
             android:layout_weight="1"
+            android:background="@drawable/edittext_bg"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:paddingHorizontal="@dimen/_10sdp"
+            android:paddingVertical="@dimen/_7sdp"
             android:text="Imported Header"
-            android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/tvSample"
             app:layout_constraintEnd_toStartOf="@+id/spinnerSystemHeader"
             app:layout_constraintStart_toStartOf="parent"
@@ -26,20 +66,61 @@
             android:id="@+id/tvSample"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/_3sdp"
             android:layout_weight="1"
+            android:background="@drawable/edittext_bg"
             android:ellipsize="end"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
             android:maxLines="1"
+            android:paddingHorizontal="@dimen/_10sdp"
+            android:paddingVertical="@dimen/_7sdp"
             android:text="Sample Value"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvImportedHeader" />
     </LinearLayout>
 
-    <Spinner
-        android:id="@+id/spinnerSystemHeader"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:entries="@array/system_headers"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/spinnerLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:layout_weight="1"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:text="System Header"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toTopOf="@+id/tvSample"
+            app:layout_constraintEnd_toStartOf="@+id/spinnerSystemHeader"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- GIVE THE SPINNER “weight” so it only takes leftover space -->
+        <Spinner
+            android:id="@+id/spinnerSystemHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/edittext_bg"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:paddingVertical="@dimen/_5sdp" />
+
+        <!-- Clear button stays its fixed size and always gets taps -->
+        <ImageView
+            android:id="@+id/btnClearSelection"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:clickable="true"
+            android:contentDescription="Clear selection"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@drawable/cancel_selection"
+            android:visibility="gone" />
+    </LinearLayout>
+
 </LinearLayout>

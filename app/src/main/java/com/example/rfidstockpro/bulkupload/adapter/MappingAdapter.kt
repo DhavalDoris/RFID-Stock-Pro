@@ -1,5 +1,6 @@
 package com.example.rfidstockpro.bulkupload.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +13,9 @@ import com.example.rfidstockpro.bulkupload.model.MappingItem
 import com.example.rfidstockpro.databinding.ItemMappingBinding
 
 class MappingAdapter(private val items: List<MappingItem>) : RecyclerView.Adapter<MappingAdapter.MappingViewHolder>() {
+
+    // List to track selected headers
+    private val selectedSystemHeaders = mutableListOf<String>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MappingViewHolder {
         val binding = ItemMappingBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -32,17 +36,18 @@ class MappingAdapter(private val items: List<MappingItem>) : RecyclerView.Adapte
             val context = binding.spinnerSystemHeader.context
             val systemHeaders = context.resources.getStringArray(R.array.system_headers)
 
+            // Create the spinner adapter
             val adapter = ArrayAdapter.createFromResource(
                 context,
                 R.array.system_headers,
-                android.R.layout.simple_spinner_item
+                R.layout.custom_spinner_item
             ).apply {
-                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                setDropDownViewResource(R.layout.custom_spinner_item)
             }
 
             binding.spinnerSystemHeader.adapter = adapter
 
-            // 👇 Auto select based on matching imported header with system headers
+            // Auto select based on matching imported header with system headers
             val autoMatchPosition = findBestMatchPosition(item.importedHeader, systemHeaders)
             if (autoMatchPosition >= 0) {
                 binding.spinnerSystemHeader.setSelection(autoMatchPosition)
@@ -57,13 +62,54 @@ class MappingAdapter(private val items: List<MappingItem>) : RecyclerView.Adapte
                 }
             }
 
-            binding.spinnerSystemHeader.setOnItemSelectedListener { _, _, pos, _ ->
-                item.systemHeader = adapter.getItem(pos).toString()
+            // Spinner item selected listener
+            binding.spinnerSystemHeader.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
+                    val selectedSystemHeader = adapter.getItem(pos).toString()
+
+                    // Remove old system header if it was previously selected
+                    item.systemHeader?.let {
+                        selectedSystemHeaders.remove(it)
+                    }
+
+                    // If the user selects a valid header, add it to the list of selected headers
+                    if (selectedSystemHeader != "-- Select --") {
+                        selectedSystemHeaders.add(selectedSystemHeader)
+                        item.systemHeader = selectedSystemHeader
+                    } else {
+                        item.systemHeader = null
+                    }
+
+                    // Notify the adapter to update the views
+                    notifyDataSetChanged()
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>) {}
+            }
+
+            // Clear selection button logic
+            binding.btnClearSelection.apply {
+                isClickable = true
+                isFocusable = true
+                setOnClickListener {
+                    Log.d("MappingAdapter_TAG", "Clear button clicked at pos $adapterPosition")
+
+                    // Clear the spinner selection for this item and reset the value
+                    item.systemHeader = null
+                    binding.spinnerSystemHeader.setSelection(0)  // Reset spinner to default ("-- Select --")
+
+                    // Remove the header from selected list
+                    item.systemHeader?.let {
+                        selectedSystemHeaders.remove(it)
+                    }
+
+                    notifyDataSetChanged()
+                }
             }
         }
     }
 
-    // Helper function for finding best match position
+    // Helper function to find the best match position based on the imported header
     private fun findBestMatchPosition(importedHeader: String, systemHeaders: Array<String>): Int {
         val lowerHeader = importedHeader.lowercase()
 
@@ -79,13 +125,6 @@ class MappingAdapter(private val items: List<MappingItem>) : RecyclerView.Adapte
                     (lowerSystemField.contains("description") && lowerHeader.contains("description"))
         }
     }
-
-    fun Spinner.setOnItemSelectedListener(listener: (parent: AdapterView<*>, view: View, position: Int, id: Long) -> Unit) {
-        onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                listener(parent, view!!, position, id)
-            }
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-    }
 }
+
+
