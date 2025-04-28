@@ -44,6 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text=""
+            android:visibility="gone"
             android:fontFamily="@font/rethinksans_bold"
             android:textColor="@color/red"/>
 

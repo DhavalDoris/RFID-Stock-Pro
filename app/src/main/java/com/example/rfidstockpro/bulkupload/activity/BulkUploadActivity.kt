@@ -3,6 +3,7 @@ package com.example.rfidstockpro.bulkupload.activity
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -39,9 +40,7 @@ class BulkUploadActivity : AppCompatActivity() {
         ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
-//      startBulkUpload(it)
             selectedFileUri = it
-
             Log.e("STARTBULKUPLOAD_TAG", ": loadMappings() " + it)
             loadMappings(it)
         }
@@ -87,200 +86,75 @@ class BulkUploadActivity : AppCompatActivity() {
                     binding.btnUploadFile.isEnabled = true
                 }
             )
-
         }
-
-
-        /*private fun loadMappings(fileUri: Uri) {
-          CoroutineScope(Dispatchers.IO).launch {
-            try {
-              val input = contentResolver.openInputStream(fileUri)
-              val workbook = XSSFWorkbook(input)
-              val sheet = workbook.getSheetAt(0)
-              val headerRow = sheet.getRow(0)
-
-              val headers = mutableListOf<String>()
-              for (ci in 0 until headerRow.lastCellNum) {
-                val cell = headerRow.getCell(ci)
-                val value = when (cell?.cellType) {
-                  CellType.STRING -> cell.stringCellValue
-                  else -> ""
-                }
-                if (value.isNotBlank()) {
-                  headers.add(value.trim())
-                }
-              }
-
-              workbook.close()
-
-              runOnUiThread {
-                mappingItems.clear()
-                headers.forEach { headerName ->
-                  // Dummy sample data (you can load sample values later)
-                  mappingItems.add(MappingItem(headerName, "Example"))
-                }
-                adapter.notifyDataSetChanged()
-              }
-
-            } catch (e: Exception) {
-              Log.e("BulkUpload", "Error reading Excel: ${e.message}")
-              e.printStackTrace()
-            }
-          }
-        }*/
-
-        /*private fun loadMappings(fileUri: Uri) {
-          CoroutineScope(Dispatchers.IO).launch {
-            try {
-              val input = contentResolver.openInputStream(fileUri)
-              val workbook = XSSFWorkbook(input)
-              val sheet = workbook.getSheetAt(0)
-
-              val headerRow = sheet.getRow(0)
-              val firstDataRow = sheet.getRow(1) // <-- read first real product
-
-              val headers = mutableListOf<MappingItem>()
-
-              for (ci in 0 until headerRow.lastCellNum) {
-                val headerCell = headerRow.getCell(ci)
-                val headerName = when (headerCell?.cellType) {
-                  CellType.STRING -> headerCell.stringCellValue.trim()
-                  else -> ""
-                }
-
-                if (headerName.isNotBlank()) {
-                  // Now read sample value from first data row
-                  val sampleCell = firstDataRow?.getCell(ci)
-                  val sampleValue = when (sampleCell?.cellType) {
-                    CellType.STRING  -> sampleCell.stringCellValue
-                    CellType.NUMERIC -> sampleCell.numericCellValue.toString()
-                    CellType.BOOLEAN -> sampleCell.booleanCellValue.toString()
-                    else             -> ""
-                  }.trim()
-
-                  headers.add(MappingItem(headerName, sampleValue))
-                }
-              }
-
-              workbook.close()
-
-              runOnUiThread {
-                mappingItems.clear()
-                mappingItems.addAll(headers)
-                adapter.notifyDataSetChanged()
-              }
-
-            } catch (e: Exception) {
-              Log.e("BulkUpload", "Error reading Excel: ${e.message}")
-              e.printStackTrace()
-            }
-          }
-        }*/
     }
 
+    fun loadMappings(fileUri: Uri) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val input = contentResolver.openInputStream(fileUri)
+                val workbook = XSSFWorkbook(input)
+                val sheet = workbook.getSheetAt(0)
 
-         fun loadMappings(fileUri: Uri) {
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val input = contentResolver.openInputStream(fileUri)
-                    val workbook = XSSFWorkbook(input)
-                    val sheet = workbook.getSheetAt(0)
+                val headerRow = sheet.getRow(0)
+                val firstDataRow = sheet.getRow(1) // First data example
 
-                    val headerRow = sheet.getRow(0)
-                    val firstDataRow = sheet.getRow(1) // First data example
+                val headers = mutableListOf<MappingItem>()
+                val excelHeadersFound = mutableSetOf<String>()
 
-                    val headers = mutableListOf<MappingItem>()
-                    val excelHeadersFound = mutableSetOf<String>()
+                for (ci in 0 until headerRow.lastCellNum) {
+                    val headerCell = headerRow.getCell(ci)
+                    val headerName = when (headerCell?.cellType) {
+                        CellType.STRING -> headerCell.stringCellValue.trim()
+                        else -> ""
+                    }
 
-                    for (ci in 0 until headerRow.lastCellNum) {
-                        val headerCell = headerRow.getCell(ci)
-                        val headerName = when (headerCell?.cellType) {
-                            CellType.STRING -> headerCell.stringCellValue.trim()
+                    if (headerName.isNotBlank()) {
+
+                        val sampleCell = firstDataRow?.getCell(ci)
+                        val sampleValue = when (sampleCell?.cellType) {
+                            CellType.STRING -> sampleCell.stringCellValue
+                            CellType.NUMERIC -> sampleCell.numericCellValue.toString()
+                            CellType.BOOLEAN -> sampleCell.booleanCellValue.toString()
                             else -> ""
-                        }
+                        }.trim()
 
-                        if (headerName.isNotBlank()) {
-
-                            val sampleCell = firstDataRow?.getCell(ci)
-                            val sampleValue = when (sampleCell?.cellType) {
-                                CellType.STRING -> sampleCell.stringCellValue
-                                CellType.NUMERIC -> sampleCell.numericCellValue.toString()
-                                CellType.BOOLEAN -> sampleCell.booleanCellValue.toString()
-                                else -> ""
-                            }.trim()
-
-                            if (systemHeaders.any { it.equals(headerName, ignoreCase = true) }) {
-                                headers.add(MappingItem(headerName, sampleValue))
-                                excelHeadersFound.add(headerName)
-                            }
-
+                        if (systemHeaders.any { it.equals(headerName, ignoreCase = true) }) {
+                            headers.add(MappingItem(headerName, sampleValue))
+                            excelHeadersFound.add(headerName)
                         }
 
                     }
 
-                    workbook.close()
-
-                    val missingHeaders = systemHeaders.filter { systemField ->
-                        excelHeadersFound.none { it.equals(systemField, ignoreCase = true) }
-                    }
-
-                    runOnUiThread {
-                        mappingItems.clear()
-                        mappingItems.addAll(headers)
-                        adapter.notifyDataSetChanged()
-
-                        if (missingHeaders.isNotEmpty()) {
-                            binding.tvMissingMessage.text =
-                                "Missing fields in Excel: ${missingHeaders.joinToString(", ")}"
-
-                        }
-                    }
-
-                } catch (e: Exception) {
-                    Log.e("BulkUpload", "Error reading Excel: ${e.message}")
-                    e.printStackTrace()
                 }
+
+                workbook.close()
+
+                val missingHeaders = systemHeaders.filter { systemField ->
+                    excelHeadersFound.none { it.equals(systemField, ignoreCase = true) }
+                }
+
+                runOnUiThread {
+                    mappingItems.clear()
+                    mappingItems.addAll(headers)
+                    adapter.notifyDataSetChanged()
+
+                    if (missingHeaders.isNotEmpty()) {
+                        binding.tvMissingMessage.visibility = View.VISIBLE
+                        binding.tvMissingMessage.text =
+                            "Missing fields in Excel: ${missingHeaders.joinToString(", ")}"
+                    }
+                    else{
+                        binding.tvMissingMessage.visibility = View.GONE
+                    }
+
+                }
+
+            } catch (e: Exception) {
+                Log.e("BulkUpload", "Error reading Excel: ${e.message}")
+                e.printStackTrace()
             }
         }
-
-
-         fun startBulkUpload(fileUri: Uri) {
-            binding.btnUploadFile.isEnabled = false
-
-
-            viewModel.uploadProductsFromExcel(
-                context = this,
-                fileUri = fileUri,
-                onProgress = { percent ->
-                    binding.progressBar.progress = percent
-                    binding.tvProgress.text = "$percent%"
-                },
-                onComplete = { success, failure ->
-                    Toast.makeText(
-                        this,
-                        "Uploaded! Success: $success, Failed: $failure",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    runOnUiThread {
-                        binding.btnUploadFile.isEnabled = true
-//          Toast.makeText(this, "Upload complete: $successCount succeeded, $failureCount failed", Toast.LENGTH_LONG).show()
-                    }
-                }
-            )
-
-            /*  viewModel.uploadProductsFromExcel(
-                context   = this,
-                fileUri   = fileUri,
-                onProgress = { current, total ->
-                  runOnUiThread {
-                    binding.tvProgress.text = "Uploading $current of $total"
-                    binding.progressBar.max = total
-                    binding.progressBar.progress = current
-                  }
-                },
-                onComplete = { successCount, failureCount ->
-
-                }
-              )*/
-        }
     }
+
+}
