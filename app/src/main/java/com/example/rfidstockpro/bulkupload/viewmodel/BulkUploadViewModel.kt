@@ -12,13 +12,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.poi.ss.usermodel.CellType
+import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.text.SimpleDateFormat
 import java.util.*
 
 class BulkUploadViewModel : ViewModel() {
 
-  fun uploadProductsFromMappings(
+  /*fun uploadProductsFromMappings(
     context: Context,
     fileUri: Uri,
     mappings: List<MappingItem>,
@@ -98,7 +99,117 @@ class BulkUploadViewModel : ViewModel() {
         onComplete(successCount, failureCount)
       }
     }
+  }*/
+
+
+  fun uploadProductsFromMappings(
+    context: Context,
+    fileUri: Uri,
+    mappings: List<MappingItem>,
+    onProgress: (percent: Int) -> Unit,
+    onComplete: (successCount: Int, failureCount: Int) -> Unit
+  ) {
+    viewModelScope.launch(Dispatchers.IO) {
+      val input = context.contentResolver.openInputStream(fileUri)
+      if (input == null) return@launch withContext(Dispatchers.Main) { onComplete(0,0) }
+
+      val workbook = XSSFWorkbook(input)
+      val sheet = workbook.getSheetAt(0)
+      val headerRow = sheet.getRow(0)
+
+      // build column-index map
+      val headerMap = mutableMapOf<String, Int>()
+      for (ci in 0 until headerRow.lastCellNum) {
+        headerRow.getCell(ci)?.stringCellValue
+          ?.takeIf { it.isNotBlank() }
+          ?.trim()
+          ?.let { headerMap[it] = ci }
+      }
+
+      val totalRows = sheet.lastRowNum
+      var successCount = 0
+      var failureCount = 0
+
+      suspend fun getCell(row: Row, hdr: String): String {
+        val idx = headerMap[hdr] ?: return ""
+        val c = row.getCell(idx) ?: return ""
+        return when (c.cellType) {
+          CellType.STRING  -> c.stringCellValue
+          CellType.NUMERIC -> c.numericCellValue.toString()
+          CellType.BOOLEAN -> c.booleanCellValue.toString()
+          else             -> ""
+        }.trim()
+      }
+
+      for (i in 1..totalRows) {
+        val row = sheet.getRow(i)
+        if (row == null) {
+          failureCount++
+        } else {
+          try {
+            // 1) extract by user mapping
+            val extracted = mutableMapOf<String,String>()
+            for (m in mappings) {
+              val v = getCell(row, m.importedHeader)
+              if (!m.systemHeader.isNullOrBlank()) {
+                extracted[m.systemHeader!!] = v
+              }
+            }
+
+            // 2) Pull SKU, clean price, prepare timestamps
+            val skuVal = extracted["SKU"].orEmpty().trim()
+            val rawPrice = extracted["Price"].orEmpty()
+            val cleanPrice = rawPrice.replace(Regex("[$,]"), "")
+            val now = SimpleDateFormat("dd-MM-yyyy hh:mm:ss a", Locale.getDefault()).format(Date())
+
+            // 3) Upsert: check existing by SKU
+            var existing = skuVal.takeIf { it.isNotBlank() }
+              ?.let { AwsManager.getProductBySku(PRODUCT_TABLE, it) }
+
+            val idToUse        = existing?.id ?: UUID.randomUUID().toString()
+            val createdAtToUse = existing?.createdAt ?: now
+
+            // 4) Build your ProductModel
+            val product = ProductModel(
+              id               = idToUse,
+              selectedImages   = extracted["Image"]?.takeIf { it.isNotBlank() }?.let { listOf(it) } ?: emptyList(),
+              selectedVideo    = extracted["Video"].takeIf { it?.isNotBlank()==true },
+              productName      = extracted["Title"].orEmpty(),
+              productCategory  = extracted["Category"].orEmpty(),
+              styleNo          = extracted["Style No"].orEmpty(),
+              sku              = skuVal,
+              price            = cleanPrice,
+              description      = extracted["Description"].orEmpty(),
+              isImageSelected  = !extracted["Image"].isNullOrBlank(),
+              isMediaUpdated   = false,
+              tagId            = existing?.tagId ?: "",
+              status           = existing?.status ?: "in",
+              createdAt        = createdAtToUse,
+              updatedAt        = now,
+              previewImageUrls = null,
+              previewVideoUrl  = null
+            )
+
+            // 5) Save (PutItem will overwrite existing or insert new)
+            val (ok, _) = AwsManager.saveProduct(PRODUCT_TABLE, product)
+            if (ok) successCount++ else failureCount++
+
+          } catch (e: Exception) {
+            e.printStackTrace()
+            failureCount++
+          }
+        }
+
+        // 6) progress update
+        val pct = i * 100 / totalRows
+        withContext(Dispatchers.Main) { onProgress(pct) }
+      }
+
+      workbook.close()
+      withContext(Dispatchers.Main) { onComplete(successCount, failureCount) }
+    }
   }
+
 
   // --- Progress update helper
   private suspend fun updateProgress(current: Int, total: Int, onProgress: (percent: Int) -> Unit) {

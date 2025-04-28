@@ -89,72 +89,103 @@ class BulkUploadActivity : AppCompatActivity() {
         }
     }
 
-    fun loadMappings(fileUri: Uri) {
+    private fun loadMappings(fileUri: Uri) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val input = contentResolver.openInputStream(fileUri)
+                val input = contentResolver.openInputStream(fileUri) ?: return@launch
                 val workbook = XSSFWorkbook(input)
                 val sheet = workbook.getSheetAt(0)
 
+                // 1) Read headers
                 val headerRow = sheet.getRow(0)
-                val firstDataRow = sheet.getRow(1) // First data example
-
-                val headers = mutableListOf<MappingItem>()
-                val excelHeadersFound = mutableSetOf<String>()
-
+                val headersFound = mutableListOf<MappingItem>()
+                val headerMap = mutableMapOf<String, Int>()
                 for (ci in 0 until headerRow.lastCellNum) {
-                    val headerCell = headerRow.getCell(ci)
-                    val headerName = when (headerCell?.cellType) {
-                        CellType.STRING -> headerCell.stringCellValue.trim()
-                        else -> ""
-                    }
+                    headerRow.getCell(ci)?.stringCellValue
+                        ?.takeIf { it.isNotBlank() }
+                        ?.trim()
+                        ?.also { headerMap[it] = ci }
+                }
 
-                    if (headerName.isNotBlank()) {
-
-                        val sampleCell = firstDataRow?.getCell(ci)
-                        val sampleValue = when (sampleCell?.cellType) {
-                            CellType.STRING -> sampleCell.stringCellValue
+                // 2) Build initial MappingItems (only system headers)
+                val excelHeadersFound = mutableSetOf<String>()
+                for ((headerName, ci) in headerMap) {
+                    if (systemHeaders.any { it.equals(headerName, ignoreCase = true) }) {
+                        // sample from first data row
+                        val sampleCell = sheet.getRow(1)?.getCell(ci)
+                        val sample = when (sampleCell?.cellType) {
+                            CellType.STRING  -> sampleCell.stringCellValue
                             CellType.NUMERIC -> sampleCell.numericCellValue.toString()
                             CellType.BOOLEAN -> sampleCell.booleanCellValue.toString()
-                            else -> ""
+                            else             -> ""
                         }.trim()
-
-                        if (systemHeaders.any { it.equals(headerName, ignoreCase = true) }) {
-                            headers.add(MappingItem(headerName, sampleValue))
-                            excelHeadersFound.add(headerName)
-                        }
-
+                        headersFound += MappingItem(headerName, sample)
+                        excelHeadersFound += headerName
                     }
+                }
 
+                // 3) Check for missing system headers
+                val missingHeaders = systemHeaders.filter { sys ->
+                    excelHeadersFound.none { it.equals(sys, ignoreCase = true) }
+                }
+
+                // 4) Check for duplicate SKUs
+                //    Find the exact header key used in the sheet (case-insensitive)
+                val skuKey = headerMap.keys.firstOrNull { it.equals("sku", ignoreCase = true) }
+                val duplicateSkus = mutableMapOf<String, Int>()
+                if (skuKey != null) {
+                    val idx = headerMap[skuKey]!!
+                    val counts = mutableMapOf<String, Int>()
+                    for (r in 1..sheet.lastRowNum) {
+                        val cell = sheet.getRow(r)?.getCell(idx)
+                        val value = when (cell?.cellType) {
+                            CellType.STRING  -> cell.stringCellValue.trim()
+                            CellType.NUMERIC -> cell.numericCellValue.toString()
+                            else             -> ""
+                        }
+                        if (value.isNotBlank()) counts[value] = counts.getOrDefault(value, 0) + 1
+                    }
+                    counts.filterValues { it > 1 }.forEach { (sku, times) ->
+                        duplicateSkus[sku] = times
+                    }
                 }
 
                 workbook.close()
 
-                val missingHeaders = systemHeaders.filter { systemField ->
-                    excelHeadersFound.none { it.equals(systemField, ignoreCase = true) }
-                }
-
                 runOnUiThread {
+                    // Populate RecyclerView
                     mappingItems.clear()
-                    mappingItems.addAll(headers)
+                    mappingItems.addAll(headersFound)
                     adapter.notifyDataSetChanged()
 
+                    // Build error message if needed
+                    val errors = mutableListOf<String>()
                     if (missingHeaders.isNotEmpty()) {
-                        binding.tvMissingMessage.visibility = View.VISIBLE
-                        binding.tvMissingMessage.text =
-                            "Missing fields in Excel: ${missingHeaders.joinToString(", ")}"
+                        errors += "Missing fields: ${missingHeaders.joinToString()}"
                     }
-                    else{
-                        binding.tvMissingMessage.visibility = View.GONE
+                    if (duplicateSkus.isNotEmpty()) {
+                        duplicateSkus.forEach { (sku, times) ->
+                            errors += "SKU \"$sku\" appears $times times"
+                        }
                     }
 
+                    if (errors.isNotEmpty()) {
+                        binding.tvMissingMessage.visibility = View.VISIBLE
+                        binding.tvMissingMessage.text = errors.joinToString("\n")
+                        binding.btnUpload.isEnabled = false
+                        binding.btnUpload.alpha = 0.5f
+                    } else {
+                        binding.tvMissingMessage.visibility = View.GONE
+                        binding.btnUpload.isEnabled = true
+                        binding.btnUpload.alpha = 1f
+                    }
                 }
 
             } catch (e: Exception) {
-                Log.e("BulkUpload", "Error reading Excel: ${e.message}")
-                e.printStackTrace()
+                Log.e("BulkUpload", "Error reading Excel", e)
             }
         }
     }
+
 
 }

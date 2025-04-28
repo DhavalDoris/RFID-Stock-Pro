@@ -1264,4 +1264,45 @@ object AwsManager {
         }
     }
 
+
+    suspend fun getProductBySku(
+        tableName: String,
+        sku: String
+    ): ProductModel? = withContext(Dispatchers.IO) {
+        // scan for an item where sku = :skuVal
+        val scanReq = ScanRequest.builder()
+            .tableName(tableName)
+            .filterExpression("sku = :skuVal")
+            .expressionAttributeValues(
+                mapOf(":skuVal" to AttributeValue.builder().s(sku).build())
+            )
+            .build()
+
+        val resp = dynamoDBClient.scan(scanReq)
+        if (resp.count() > 0) {
+            val item = resp.items()[0]
+            // build a ProductModel from the raw attribute map:
+            ProductModel(
+                id               = item["id"]?.s(),
+                selectedImages   = item["selectedImages"]?.l()?.map { it.s() } ?: emptyList(),
+                selectedVideo    = item["selectedVideo"]?.s(),
+                productName      = item["productName"]?.s().orEmpty(),
+                productCategory  = item["productCategory"]?.s().orEmpty(),
+                styleNo          = item["styleNo"]?.s().orEmpty(),
+                sku              = item["sku"]?.s().orEmpty(),
+                price            = item["price"]?.s().orEmpty(),
+                description      = item["description"]?.s().orEmpty(),
+                isImageSelected  = item["isImageSelected"]?.bool() ?: false,
+                isMediaUpdated   = item["isMediaUpdated"]?.bool() ?: false,
+                tagId            = item["tagId"]?.s().orEmpty(),
+                status           = item["status"]?.s().orEmpty(),
+                createdAt        = item["createdAt"]?.s().orEmpty(),
+                updatedAt        = item["updatedAt"]?.s().orEmpty(),
+                previewImageUrls = null,
+                previewVideoUrl  = null
+            )
+        } else {
+            null
+        }
+    }
 }
