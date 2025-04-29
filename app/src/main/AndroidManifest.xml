@@ -71,6 +71,7 @@
         <activity
             android:name=".ui.activities.AddProductActivity"
             android:exported="false"
+            android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme"/>
         <activity

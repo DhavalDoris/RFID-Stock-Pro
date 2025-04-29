@@ -36,6 +36,7 @@ import com.rscja.deviceapi.interfaces.ConnectionStatus
 import com.rscja.deviceapi.interfaces.KeyEventCallback
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.example.rfidstockpro.Utils.PermissionUtils
 import com.example.rfidstockpro.inouttracker.model.CollectionModel
 import com.example.rfidstockpro.ui.ProductManagement.viewmodels.StockViewModel
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.ShowCheckBoxinProduct
@@ -162,11 +163,24 @@ class InventoryProductsFragment : Fragment() {
 
         val btnConnectScanner = binding.connectRFID.btnConnectScannerAdd
         btnConnectScanner.setOnClickListener {
-            if (dashboardViewModel.isConnected.value == true) {
-                dashboardViewModel.disconnect(true)
+
+
+            if (!PermissionUtils.isLocationEnabled(requireActivity())) {
+                PermissionUtils.showLocationDialogIfDisabled(requireActivity()) {
+                    if (dashboardViewModel.isConnected.value == true) {
+                        dashboardViewModel.disconnect(true)
+                    } else {
+                        BluetoothConnectionManager.showBluetoothDevice(requireActivity())
+                    }
+                }
             } else {
-                BluetoothConnectionManager.showBluetoothDevice(requireActivity())
+                if (dashboardViewModel.isConnected.value == true) {
+                    dashboardViewModel.disconnect(true)
+                } else {
+                    BluetoothConnectionManager.showBluetoothDevice(requireActivity())
+                }
             }
+
         }
     }
 

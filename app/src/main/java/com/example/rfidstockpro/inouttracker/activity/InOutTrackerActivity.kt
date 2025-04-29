@@ -22,6 +22,8 @@ import com.example.rfidstockpro.inouttracker.model.CollectionModel
 import com.example.rfidstockpro.inouttracker.viewmodel.CreateCollectionViewModel
 import com.example.rfidstockpro.sharedpref.SessionManager
 import com.example.rfidstockpro.ui.ProductManagement.activity.ProductManagementActivity
+import com.example.rfidstockpro.ui.ToolbarConfig
+import com.example.rfidstockpro.ui.ToolbarUtils
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.ShowCheckBoxinProduct
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isShowDuplicateTagId
 import com.example.rfidstockpro.ui.activities.DeviceListActivity.TAG
@@ -166,7 +168,7 @@ class InOutTrackerActivity : AppCompatActivity() {
     }
 
     fun updateToolbarTitleAddItem(title: String) {
-        val toolbarTitle = findViewById<AppCompatTextView>(R.id.tvToolbarTitle)
+       /* val toolbarTitle = findViewById<AppCompatTextView>(R.id.tvToolbarTitle)
         val toolbarSearch = findViewById<AppCompatImageView>(R.id.ivSearch)
         val toolbarFilter = findViewById<AppCompatImageView>(R.id.ivFilter)
         Log.e(TAG, "updateToolbarTitle: ")
@@ -177,8 +179,23 @@ class InOutTrackerActivity : AppCompatActivity() {
 
         toolbarFilter.setOnClickListener {
             Toast.makeText(this, "Filter", Toast.LENGTH_SHORT).show()
-        }
+        }*/
+
+        ToolbarUtils.setupToolbar(
+            this,
+            ToolbarConfig(
+                title = title,
+                showSearch = false,
+                showFilter = true,
+                onFilterClick = {
+                    Toast.makeText(this, "Custom Filter Action", Toast.LENGTH_SHORT).show()
+                }
+            )
+        )
+
     }
+
+
 
     override fun onResume() {
         super.onResume()

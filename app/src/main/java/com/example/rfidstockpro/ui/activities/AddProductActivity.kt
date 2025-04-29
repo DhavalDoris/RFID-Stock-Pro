@@ -51,6 +51,7 @@ import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.DataSource
+import com.example.rfidstockpro.Utils.PermissionUtils
 import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.ShowCheckBoxinProduct
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isShowDuplicateTagId
@@ -123,7 +124,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
         }
 
         val source = intent.getStringExtra("source")
-        Log.e("sourceTAG", "initUI:~~> " + source )
+        Log.e("sourceTAG", "initUI:~~> " + source)
         if (source == "EditScreen") {
 
             product?.let {
@@ -246,11 +247,24 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
 
         val btnConnectScanner = binding.connectRFID.btnConnectScannerAdd
         btnConnectScanner.setOnClickListener {
-            if (dashboardViewModel.isConnected.value == true) {
-                dashboardViewModel.disconnect(true)
+
+            if (!PermissionUtils.isLocationEnabled(this)) {
+                PermissionUtils.showLocationDialogIfDisabled(this) {
+                    if (dashboardViewModel.isConnected.value == true) {
+                        dashboardViewModel.disconnect(true)
+                    } else {
+                        BluetoothConnectionManager.showBluetoothDevice(this)
+                    }
+                }
             } else {
-                BluetoothConnectionManager.showBluetoothDevice(this)
+                if (dashboardViewModel.isConnected.value == true) {
+                    dashboardViewModel.disconnect(true)
+                } else {
+                    BluetoothConnectionManager.showBluetoothDevice(this)
+                }
             }
+
+
         }
 
         dashboardViewModel.deviceConnected.observe(this) { device ->
@@ -454,8 +468,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             selectedVideoPath = selectedVideo?.let {
                 addItemViewModel.getRealPathFromUriNew(this, it)
             } ?: selectedProduct?.selectedVideo
-        }
-        else {
+        } else {
             selectedImagePaths = selectedImageFiles.map { it.absolutePath }
             selectedVideoPath = selectedVideo?.let {
                 addItemViewModel.getRealPathFromUriNew(this, it)
@@ -509,7 +522,7 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
         var selectedVideoPath: String? = null
         var tagId = ""
         if (source == "EditScreen") {
-            tagId =  selectedProduct!!.tagId
+            tagId = selectedProduct!!.tagId
             selectedImagePaths = selectedProduct?.selectedImages ?: emptyList()
             if (selectedImageFiles.isNotEmpty()) {
                 selectedImagePaths = selectedImageFiles.map { it.absolutePath }
@@ -551,31 +564,30 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
 
         val isValid = addItemViewModel.validateProductInput(productModel)
         if (isValid) {
-/*
-            if (isUpdateTag) {
-                if (uhfDevice.connectStatus == ConnectionStatus.CONNECTED) {
-                    openTagListFragment(productModel)
-                } else {
-                    binding.connectRFID.rlStatScan.visibility = View.VISIBLE
-                    Log.d("ADD_ITEM", "🔄 RFID not connected — showing connect UI")
+            /*
+                        if (isUpdateTag) {
+                            if (uhfDevice.connectStatus == ConnectionStatus.CONNECTED) {
+                                openTagListFragment(productModel)
+                            } else {
+                                binding.connectRFID.rlStatScan.visibility = View.VISIBLE
+                                Log.d("ADD_ITEM", "🔄 RFID not connected — showing connect UI")
+                            }
+                        } else {*/
+            AwsManager.OnlyUpdateProductToAWS(
+                context = this,
+                product = productModel,
+                onSuccess = {
+                    Toast.makeText(this, "Product Updated successfully!", Toast.LENGTH_SHORT).show()
+                    setResult(Activity.RESULT_OK)
+                    finish()
+                },
+                onError = { error ->
+                    Toast.makeText(this, "$error", Toast.LENGTH_LONG).show()
                 }
-            } else {*/
-                AwsManager.OnlyUpdateProductToAWS(
-                    context = this,
-                    product = productModel,
-                    onSuccess = {
-                        Toast.makeText(this, "Product Updated successfully!", Toast.LENGTH_SHORT).show()
-                        setResult(Activity.RESULT_OK)
-                        finish()
-                    },
-                    onError = { error ->
-                        Toast.makeText(this, "$error", Toast.LENGTH_LONG).show()
-                    }
-                )
+            )
 //            }
         }
     }
-
 
 
     private fun openTagListFragment(input: ProductModel) {

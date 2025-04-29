@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.AppCompatTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rlSuccessFull"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/_40sdp"
+    android:layout_below="@+id/commonToolbar"
+    android:background="#DAFFF3"
+    android:drawableStart="@drawable/right_icon"
+    android:drawablePadding="@dimen/_5sdp"
+    android:fontFamily="@font/rethinksans_bold"
+    android:gravity="center_vertical"
+    android:padding="@dimen/_6sdp"
+    android:paddingStart="@dimen/_10sdp"
+    android:text="@string/file_uploaded_successfully"
+    android:textColor="#51BA98"
+    android:textSize="@dimen/_12sdp"
+    android:visibility="visible">
+
+</androidx.appcompat.widget.AppCompatTextView>

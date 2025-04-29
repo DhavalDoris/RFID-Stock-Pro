@@ -5,12 +5,16 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -62,7 +66,7 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
     private val REQUEST_SELECT_DEVICE: Int = 1
     private val PERMISSION_REQUEST_CODE = 100
     var mBtAdapter: BluetoothAdapter? = null
-
+    private val REQUEST_ACTION_LOCATION_SETTINGS = 99
     private val timeFilterOptions = listOf("Weekly", "Monthly", "Yearly")
 
     override fun provideUHFDevice(): RFIDWithUHFBLE {
@@ -99,6 +103,18 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         val toolbarView = findViewById<View>(R.id.commonToolbar)
 //        tvToolbarTitle = toolbarView.findViewById(R.id.tvToolbarTitle)
 
+        if (!isLocationEnabled()) {
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.permission))
+                .setMessage(getString(R.string.open_location_msg))
+                .setPositiveButton(getString(R.string.open_location)) { _, _ ->
+                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                    startActivityForResult(intent, REQUEST_ACTION_LOCATION_SETTINGS)
+                }
+                .setNegativeButton(getString(R.string.permission_cancel)) { _, _ -> finish() }
+                .setCancelable(false)
+                .show()
+        }
     }
 
     private fun uhfTrigger() {
@@ -170,11 +186,28 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         UHFConnectionManager.addStatusChangeListener(connectionListener)
 
         binding.btnConnectScanner.setOnClickListener {
-            if (dashboardViewModel.isConnected.value == true) {
-                dashboardViewModel.disconnect(true)
+
+            if (isLocationEnabled()) {
+//                checkPermission()
+                if (dashboardViewModel.isConnected.value == true) {
+                    dashboardViewModel.disconnect(true)
+                } else {
+                    showBluetoothDevice()
+                }
             } else {
-                showBluetoothDevice()
+                AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.permission))
+                    .setMessage(getString(R.string.open_location_msg))
+                    .setPositiveButton(getString(R.string.open_location)) { _, _ ->
+                        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                        startActivityForResult(intent, REQUEST_ACTION_LOCATION_SETTINGS)
+                    }
+                    .setNegativeButton(getString(R.string.permission_cancel)) { _, _ -> finish() }
+                    .setCancelable(false)
+                    .show()
             }
+
+
         }
 
         binding.btnDisconnect.setOnClickListener {
@@ -184,6 +217,36 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 
         }
     }
+    private fun isLocationEnabled(): Boolean {
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    private fun checkPermission() {
+        if (!isLocationEnabled()) {
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivityForResult(intent, REQUEST_ACTION_LOCATION_SETTINGS)
+            return
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+//            checkLocationPermission()
+        } else if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) ||
+            (Build.VERSION.SDK_INT < Build.VERSION_CODES.R &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED)
+        ) {
+//            checkReadWritePermission()
+        } else if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+//            checkBluetoothPermission()
+        }
+    }
+
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun showBluetoothDevice() {
@@ -477,11 +540,10 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
             REQUEST_ENABLE_BT -> {
                 if (resultCode == Activity.RESULT_OK) {
                     showBluetoothDevice()
-//                    showToast(dashboardActivity!!, "Bluetooth has turned on")
                 } else {
-//                    showToast(dashboardActivity!!, "Problem in BT Turning ON")
                 }
             }
+
         }
     }
 
@@ -490,18 +552,13 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         if (uhfDevice.connectStatus == ConnectionStatus.CONNECTING) {
             showToast(this, getString(R.string.connecting))
         } else {
-//            showToast(this, "Connecting to $deviceAddress")
             uhfDevice.connect(deviceAddress, object : ConnectionStatusCallback<Any?> {
                 override fun getStatus(connectionStatus: ConnectionStatus, device: Any?) {
                     runOnUiThread {
                         if (connectionStatus == ConnectionStatus.CONNECTED) {
                             Log.e("ConetionTAG", "getStatus: " + "IF")
                             UHFConnectionManager.updateConnectionStatus(connectionStatus, device)
-
-//                            showToast(this@DashboardActivity, getString(R.string.connect_success))
                             binding.tvStaus.text = getString(R.string.connected)
-//                            binding.footerView.visibility = View.GONE
-//                            binding.rlRfidStatus.visibility = View.VISIBLE
                             AnimationUtils.fadeInView(binding.rlRfidStatus);
                             AnimationUtils.fadeOutView(binding.footerView);
                         } else {

@@ -3,50 +3,182 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/main_bg_color">
+
+    <include
+        android:id="@+id/commonToolbar"
+        layout="@layout/toolbar_common" />
+
+    <RelativeLayout
+        android:id="@+id/rlFileStepView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_40sdp"
+        android:layout_below="@+id/commonToolbar"
+        android:background="@drawable/edittext_bg"
+        android:gravity="center"
+        android:padding="@dimen/_7sdp"
+        android:visibility="visible">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvOne"
+            android:layout_width="@dimen/_20sdp"
+            android:layout_height="@dimen/_20sdp"
+            android:layout_centerVertical="true"
+            android:background="@drawable/number_bg"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:gravity="center"
+            android:text="1"
+            android:textColor="@color/white" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvUploadFile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/_5sdp"
+            android:layout_toRightOf="@+id/tvOne"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:gravity="center"
+            android:text="Upload file"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+
+        <View
+            android:id="@+id/viewLine"
+            android:layout_width="@dimen/_100sdp"
+            android:layout_height="@dimen/_3sdp"
+            android:layout_centerVertical="true"
+            android:layout_marginHorizontal="@dimen/_10sdp"
+            android:layout_marginVertical="@dimen/_5sdp"
+            android:layout_toEndOf="@+id/tvUploadFile"
+            android:background="@drawable/dotted_line" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvTwo"
+            android:layout_width="@dimen/_20sdp"
+            android:layout_height="@dimen/_20sdp"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/viewLine"
+            android:background="@drawable/number_bg"
+            android:backgroundTint="@color/gray_line"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:gravity="center"
+            android:text="2"
+            android:textColor="@color/gray" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvReviewData"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/_5sdp"
+            android:layout_toEndOf="@+id/tvTwo"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:gravity="center"
+            android:text="Review data"
+            android:textColor="@color/gray"
+            android:textStyle="bold" />
+
+    </RelativeLayout>
 
     <LinearLayout
-        android:id="@+id/llProgress"
-        android:layout_alignParentTop="true"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:id="@+id/llPickFile"
+        android:layout_width="@dimen/_250sdp"
+        android:layout_height="@dimen/_250sdp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/background_excel"
         android:orientation="vertical">
 
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_30sdp"
+            app:srcCompat="@drawable/exel_icon" />
+
         <TextView
-            android:id="@+id/tvProgress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Progress: 0/0" />
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:gravity="center"
+            android:text="@string/import_excel_file"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_17sdp"
+            android:textStyle="bold" />
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleHorizontal"
+        <TextView
+            android:id="@+id/labelText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:max="100"
-            android:progress="0" />
-
-        <Button
-            android:id="@+id/btnUploadFile"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Upload file"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/rethinksans_variablefont_wght"
+            android:gravity="center"
+            android:text="@string/choose_the_excel_file_xls_or_xlsx_nfrom_your_device"
+            android:textColor="@color/gray" />
 
         <TextView
             android:id="@+id/tvMissingMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text=""
-            android:visibility="gone"
             android:fontFamily="@font/rethinksans_bold"
-            android:textColor="@color/red"/>
+            android:text="ABCD"
+            android:gravity="center"
+            android:textColor="@color/red"
+            android:visibility="gone" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/btnUploadFile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/_15sdp"
+            android:background="@drawable/continue_btn_bg"
+            android:clickable="true"
+            android:elevation="8dp"
+            android:enabled="true"
+            android:fontFamily="@font/rethinksans_bold"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/_12sdp"
+            android:paddingVertical="@dimen/_7sdp"
+            android:text="Upload file"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/_14ssp"
+            android:visibility="visible" />
+
+        <LinearLayout
+            android:id="@+id/llProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_30sdp"
+                android:layout_marginTop="8dp"
+                android:max="100"
+                android:progress="0" />
+
+            <TextView
+                android:id="@+id/tvProgress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/rethinksans_bold"
+                android:gravity="center"
+                android:text="Progress: 0/0"
+                android:textColor="@color/appMainColor"
+                android:textSize="@dimen/_13sdp" />
+
+
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -54,16 +186,55 @@
         android:id="@+id/recyclerMappings"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/llProgress"
-        android:layout_above="@+id/btnUpload"
-        android:padding="8dp" />
+        android:layout_above="@+id/footerView"
+        android:layout_below="@+id/rlFileStepView"
+        android:padding="8dp"
+        android:visibility="gone" />
 
-    <Button
-        android:id="@+id/btnUpload"
+    <LinearLayout
+        android:id="@+id/footerView"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Upload"
-        android:layout_margin="16dp"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/_5sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:layout_marginHorizontal="@dimen/_10sdp">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/btnCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/_5sdp"
+            android:layout_weight="1"
+            android:background="@drawable/button_selector"
+            android:backgroundTint="@color/gray_line"
+            android:fontFamily="@font/rethinksans_bold"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:padding="@dimen/_10sdp"
+            android:text="@string/back"
+            android:textColor="@color/gray"
+            android:textSize="@dimen/_12ssp" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/btnUpload"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/_5sdp"
+            android:layout_weight="1"
+            android:background="@drawable/button_selector"
+            android:backgroundTint="@color/appMainColor"
+            android:fontFamily="@font/rethinksans_bold"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:padding="@dimen/_10sdp"
+            android:text="Upload"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/_12ssp"
+            android:visibility="visible" />
+
+    </LinearLayout>
 
 </RelativeLayout>
