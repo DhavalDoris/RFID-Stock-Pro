@@ -272,7 +272,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/role_bg"
-                        android:backgroundTint="#8000DB0F"
+                        android:backgroundTint="@color/active_tint"
                         android:fontFamily="@font/rethinksans_bold"
                         android:paddingStart="@dimen/_6sdp"
                         android:paddingTop="@dimen/_2sdp"
@@ -280,7 +280,7 @@
                         android:paddingBottom="@dimen/_2sdp"
                         android:text="Active"
                         android:layout_marginTop="@dimen/_2sdp"
-                        android:textColor="#4CAF50"
+                        android:textColor="@color/active_color"
                         android:textSize="@dimen/_9ssp"
                         android:textStyle="bold" />
                 </LinearLayout>

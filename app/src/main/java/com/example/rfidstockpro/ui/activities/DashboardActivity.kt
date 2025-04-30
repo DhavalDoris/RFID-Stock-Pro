@@ -169,7 +169,11 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         }
 
         binding.productManagement.setOnClickListener {
-            startActivity(Intent(this, ProductManagementActivity::class.java))
+//            startActivity(Intent(this, ProductManagementActivity::class.java))
+            val intent = Intent(this, ProductManagementActivity::class.java)
+            intent.putExtra("comesFrom", "Dashboard")
+            startActivity(intent)
+
         }
 
         binding.btnInOut.setOnClickListener {

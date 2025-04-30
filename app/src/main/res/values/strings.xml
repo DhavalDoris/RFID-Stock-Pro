@@ -183,6 +183,7 @@
     <string name="review_data">Review data</string>
     <string name="_2">2</string>
     <string name="_1">1</string>
+    <string name="tag_id_not_added">Tag id not added</string>
 
 
     <!-- <string-array name="system_headers">

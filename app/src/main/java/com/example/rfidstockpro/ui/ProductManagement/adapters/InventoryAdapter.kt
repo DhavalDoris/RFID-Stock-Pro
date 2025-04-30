@@ -1,9 +1,11 @@
 package com.example.rfidstockpro.ui.inventory
 
+import android.content.res.ColorStateList
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -29,9 +31,34 @@ class InventoryAdapter(
             binding.productCategory.text = product.productCategory
             binding.productStatus.text = product.status
             binding.productPrice.text = "$" + product.price
-            binding.tagIdTextView.text = product.tagId
 
-            Log.e("SHOWCHECKBOXINPRODUCT_TAG", "bind: " +  ShowCheckBoxinProduct )
+            if (product.tagId.isNotEmpty()) {
+                binding.tagIdTextView.text = product.tagId
+            } else {
+                binding.tagIdTextView.text = binding.root.context.getString(R.string.tag_id_not_added)
+            }
+
+            when (product.status.lowercase()) {
+                "active" -> {
+                    binding.productStatus.setTextColor(ContextCompat.getColor(binding.root.context, R.color.active_color))
+                    binding.productStatus.backgroundTintList =
+                        ColorStateList.valueOf(ContextCompat.getColor(binding.root.context, R.color.active_tint))
+                }
+
+                "pending" -> {
+                    binding.productStatus.setTextColor(ContextCompat.getColor(binding.root.context, R.color.pending_status))
+                    binding.productStatus.backgroundTintList =
+                        ColorStateList.valueOf(ContextCompat.getColor(binding.root.context, R.color.pendingView_bg_2))
+                }
+
+                else -> {
+                    binding.productStatus.setTextColor(ContextCompat.getColor(binding.root.context, R.color.active_color))
+                    binding.productStatus.backgroundTintList =
+                        ColorStateList.valueOf(ContextCompat.getColor(binding.root.context, R.color.active_tint))
+                }
+            }
+
+            Log.e("SHOWCHECKBOXINPRODUCT_TAG", "bind: " + ShowCheckBoxinProduct)
             if (ShowCheckBoxinProduct!!) {
                 binding.productCheckBox.visibility = View.VISIBLE
                 binding.productCheckBox.isChecked = selectedProductIds.contains(product.id)

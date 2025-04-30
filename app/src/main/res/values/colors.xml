@@ -51,5 +51,9 @@
 
     <color name="dot_inactive">#D3D3D3</color>
     <color name="pendingView_bg">#FFF0D4</color>
+    <color name="pendingView_bg_2">#F2BD57</color>
+    <color name="active_tint">#8000DB0F</color>
+    <color name="active_color">#4CAF50</color>
+    <color name="pending_status">#FF8800</color>
 
 </resources>

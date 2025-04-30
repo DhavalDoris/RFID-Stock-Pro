@@ -135,6 +135,9 @@ class ProductManagementActivity : AppCompatActivity(), InventoryProductsFragment
             binding.viewPager.isUserInputEnabled = false
             updateToolbarTitleAddItem(getString(R.string.track_collection), null)
         }
+        else if(comesFrom == "Dashboard"){
+            updateToolbarTitleAddItem(getString(R.string.product_management), null)
+        }
 
         val adapter = ProductPagerAdapter(
             this,
