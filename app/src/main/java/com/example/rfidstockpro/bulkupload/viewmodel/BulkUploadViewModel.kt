@@ -25,12 +25,13 @@ class BulkUploadViewModel : ViewModel() {
   val headersLiveData = MutableLiveData<List<MappingItem>>()
   val validationErrorsLiveData = MutableLiveData<List<String>>()
   val fileNameLiveData = MutableLiveData<String>()
+  val parsedProductsLiveData = MutableLiveData<List<ProductModel>>()
 
   val systemHeaders = listOf("Title", "Category", "Style No", "SKU", "Price", "Description", "Image", "Video")
   val mandatoryHeaders = systemHeaders.filterNot { it in listOf("Description", "Style No") }
   var fileUri: Uri? = null
 
-  fun processExcelFile(context: Context, uri: Uri) {
+  /*fun processExcelFile(context: Context, uri: Uri) {
     viewModelScope.launch(Dispatchers.IO) {
       val errors = mutableListOf<String>()
       val mappingItems = mutableListOf<MappingItem>()
@@ -143,7 +144,161 @@ class BulkUploadViewModel : ViewModel() {
         validationErrorsLiveData.postValue(errors)
       }
     }
+  }*/
+
+  fun processExcelFile(context: Context, uri: Uri) {
+    viewModelScope.launch(Dispatchers.IO) {
+      val errors = mutableListOf<String>()
+      val mappingItems = mutableListOf<MappingItem>()
+      val parsedProducts = mutableListOf<ProductModel>() // ✅ products to show in preview
+      val contentResolver = context.contentResolver
+
+      try {
+        val input = contentResolver.openInputStream(uri) ?: return@launch
+        val workbook = XSSFWorkbook(input)
+        val sheet = workbook.getSheetAt(0)
+
+        if (sheet.physicalNumberOfRows == 0) {
+          errors += "The Excel file is completely empty."
+          validationErrorsLiveData.postValue(errors)
+          workbook.close()
+          return@launch
+        }
+
+        val headerRow = sheet.getRow(0)
+        if (headerRow == null || headerRow.lastCellNum <= 0) {
+          errors += "The Excel file is missing a header row."
+          validationErrorsLiveData.postValue(errors)
+          workbook.close()
+          return@launch
+        }
+
+        if (sheet.lastRowNum < 1) {
+          errors += "The Excel file has no data rows."
+          validationErrorsLiveData.postValue(errors)
+          workbook.close()
+          return@launch
+        }
+
+        val headerMap = mutableMapOf<String, Int>()
+        for (ci in 0 until headerRow.lastCellNum) {
+          headerRow.getCell(ci)?.stringCellValue
+            ?.takeIf { it.isNotBlank() }
+            ?.trim()
+            ?.also { headerMap[it] = ci }
+        }
+
+        val excelHeadersFound = mutableSetOf<String>()
+        for ((headerName, ci) in headerMap) {
+          if (systemHeaders.any { it.equals(headerName, ignoreCase = true) }) {
+            val sampleCell = sheet.getRow(1)?.getCell(ci)
+            val sample = when (sampleCell?.cellType) {
+              CellType.STRING -> sampleCell.stringCellValue
+              CellType.NUMERIC -> sampleCell.numericCellValue.toString()
+              CellType.BOOLEAN -> sampleCell.booleanCellValue.toString()
+              else -> ""
+            }.trim()
+            mappingItems += MappingItem(headerName, sample)
+            excelHeadersFound += headerName
+          }
+        }
+
+        val missingHeaders = mandatoryHeaders.filterNot { hdr ->
+          excelHeadersFound.any { it.equals(hdr, ignoreCase = true) }
+        }
+
+        if (missingHeaders.isNotEmpty()) {
+          errors += "Missing mandatory headers: ${missingHeaders.joinToString()}"
+        }
+
+        // Check for duplicate SKUs
+        val skuKey = headerMap.keys.firstOrNull { it.equals("SKU", ignoreCase = true) }
+        if (skuKey != null) {
+          val idx = headerMap[skuKey]!!
+          val counts = mutableMapOf<String, Int>()
+          for (r in 1..sheet.lastRowNum) {
+            val value = sheet.getRow(r)?.getCell(idx)?.let { cell ->
+              when (cell.cellType) {
+                CellType.STRING -> cell.stringCellValue.trim()
+                CellType.NUMERIC -> cell.numericCellValue.toString()
+                else -> ""
+              }
+            }.orEmpty()
+            if (value.isNotBlank()) counts[value] = counts.getOrDefault(value, 0) + 1
+          }
+          counts.filterValues { it > 1 }.forEach { (sku, times) ->
+            errors += "SKU \"$sku\" appears $times times"
+          }
+        }
+
+        // Check for empty mandatory fields
+        for (header in mandatoryHeaders) {
+          val headerCol = headerMap.keys.firstOrNull { it.equals(header, ignoreCase = true) }
+          val colIdx = headerMap[headerCol] ?: continue
+
+          for (r in 1..sheet.lastRowNum) {
+            val cell = sheet.getRow(r)?.getCell(colIdx)
+            val value = when (cell?.cellType) {
+              CellType.STRING -> cell.stringCellValue.trim()
+              CellType.NUMERIC -> cell.numericCellValue.toString()
+              else -> ""
+            }
+            if (value.isBlank()) {
+              errors += "$header is empty at row ${r + 1}"
+            }
+          }
+        }
+
+        // ✅ Build preview product list
+        for (r in 1..sheet.lastRowNum) {
+          val row = sheet.getRow(r) ?: continue
+
+          val title = headerMap["Title"]?.let { row.getCell(it)?.toString()?.trim() } ?: ""
+          val category = headerMap["Category"]?.let { row.getCell(it)?.toString()?.trim() } ?: ""
+          val styleNo = headerMap["Style No"]?.let { row.getCell(it)?.toString()?.trim() } ?: ""
+          val sku = headerMap["SKU"]?.let { row.getCell(it)?.toString()?.trim() } ?: ""
+          val price = headerMap["Price"]?.let { row.getCell(it)?.toString()?.trim() } ?: ""
+          val description = headerMap["Description"]?.let { row.getCell(it)?.toString()?.trim() } ?: ""
+          val image = headerMap["Image"]?.let { row.getCell(it)?.toString()?.trim() } ?: ""
+          val video = headerMap["Video"]?.let { row.getCell(it)?.toString()?.trim() } ?: ""
+
+          val product = ProductModel(
+            id = UUID.randomUUID().toString(),
+            selectedImages = image.takeIf { it.isNotBlank() }?.let { listOf(it) } ?: emptyList(),
+            selectedVideo = video.takeIf { it.isNotBlank() },
+            productName = title,
+            productCategory = category,
+            styleNo = styleNo,
+            sku = sku,
+            price = price,
+            description = description,
+            isImageSelected = image.isNotBlank(),
+            isMediaUpdated = false,
+            tagId = "",
+            status = "Pending", // or something else if needed
+            createdAt = "",     // leave blank for preview
+            updatedAt = "",
+            previewImageUrls = null,
+            previewVideoUrl = null
+          )
+
+          parsedProducts += product
+        }
+
+        workbook.close()
+        fileNameLiveData.postValue(getFileName(uri, context))
+        headersLiveData.postValue(mappingItems)
+        validationErrorsLiveData.postValue(errors)
+        parsedProductsLiveData.postValue(parsedProducts) // ✅ Post parsed products for preview
+
+      } catch (e: Exception) {
+        Log.e("BulkUploadViewModel", "Excel parsing error", e)
+        errors += "An error occurred while reading the Excel file."
+        validationErrorsLiveData.postValue(errors)
+      }
+    }
   }
+
 
   private fun getFileName(uri: Uri, context: Context): String {
     val cursor = context.contentResolver.query(uri, null, null, null, null)
@@ -190,6 +345,7 @@ class BulkUploadViewModel : ViewModel() {
       val totalRows = sheet.lastRowNum
       var successCount = 0
       var failureCount = 0
+      val parsedProducts = mutableListOf<ProductModel>() // ✅ List of uploaded products
 
       suspend fun getCell(row: Row, hdr: String): String {
         val idx = headerMap[hdr] ?: return ""
@@ -246,9 +402,14 @@ class BulkUploadViewModel : ViewModel() {
               previewImageUrls = null,
               previewVideoUrl = null
             )
-
+            parsedProducts += product
             val (ok, _) = AwsManager.saveProduct(PRODUCT_TABLE, product)
-            if (ok) successCount++ else failureCount++
+            if (ok) {
+              successCount++
+//              parsedProducts.add(product) // ✅ add to list
+            } else {
+              failureCount++
+            }
 
           } catch (e: Exception) {
             e.printStackTrace()
@@ -261,6 +422,7 @@ class BulkUploadViewModel : ViewModel() {
       }
 
       workbook.close()
+      parsedProductsLiveData.postValue(parsedProducts)
       withContext(Dispatchers.Main) { onComplete(successCount, failureCount) }
     }
   }

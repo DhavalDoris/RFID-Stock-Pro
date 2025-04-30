@@ -50,5 +50,6 @@
     <color name="orange">#CBA505</color>
 
     <color name="dot_inactive">#D3D3D3</color>
+    <color name="pendingView_bg">#FFF0D4</color>
 
 </resources>

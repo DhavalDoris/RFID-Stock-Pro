@@ -4,6 +4,7 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.Comman.showCustomSnackbarBelowToolbar
 import com.example.rfidstockpro.Utils.StatusBarUtils
+import com.example.rfidstockpro.bulkupload.adapter.ExcelProductAdapter
 import com.example.rfidstockpro.bulkupload.adapter.MappingAdapter
 import com.example.rfidstockpro.bulkupload.model.MappingItem
 import com.example.rfidstockpro.bulkupload.viewmodel.BulkUploadViewModel
@@ -84,6 +86,32 @@ class BulkUploadActivity : AppCompatActivity() {
     }
 
     private fun initClicks() {
+
+        // Trigger the Excel processing when clicking Next
+        binding.btnNext.setOnClickListener {
+          /*  val excelFileUri = viewModel.fileUri
+            Log.e("Product_TAG", "initClicks: " + excelFileUri )
+            if (excelFileUri != null) {
+                // Process Excel file and show products
+                viewModel.processExcelFile(this, excelFileUri)
+            }*/
+
+            val products = viewModel.parsedProductsLiveData.value
+            if (!products.isNullOrEmpty()) {
+                binding.recyclerMappings.apply {
+                    layoutManager = LinearLayoutManager(this@BulkUploadActivity)
+                    adapter = ExcelProductAdapter(products)
+                    visibility = View.VISIBLE
+                }
+
+                binding.btnNext.visibility = View.GONE
+                binding.btnCancel.visibility = View.VISIBLE
+                binding.btnUpload.visibility = View.VISIBLE
+                setStep(2)
+            } else {
+                Toast.makeText(this, "No products to preview.", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         binding.btnUploadFile.setOnClickListener {
             openDocumentLauncher.launch(
@@ -169,17 +197,28 @@ class BulkUploadActivity : AppCompatActivity() {
                 binding.llPickFile.visibility = View.GONE
                 binding.recyclerMappings.visibility = View.VISIBLE
                 binding.footerView.visibility = View.VISIBLE
-//                binding.btnCancel.visibility = View.GONE
-//                binding.btnUpload.visibility = View.GONE
-//                binding.btnNext.visibility = View.VISIBLE
+                binding.btnCancel.visibility = View.GONE
+                binding.btnUpload.visibility = View.GONE
+                binding.btnNext.visibility = View.VISIBLE
                 showCustomSnackbarBelowToolbar(this, findViewById(R.id.commonToolbar))
                 setStep(2)
+
             }
         }
 
         viewModel.fileNameLiveData.observe(this) { name ->
             binding.labelText.text = name
         }
+
+      /*  viewModel.parsedProductsLiveData.observe(this) { products ->
+            Log.d("UploadedProduct", products.toString())
+            if (!products.isNullOrEmpty()) {
+                products.forEach { Log.d("UploadedProduct", it.toString()) }
+            }
+            else{
+                Log.d("UploadedProduct" , " ELSE" )
+            }
+        }*/
     }
 
     fun setStep(step: Int) {
@@ -241,6 +280,23 @@ class BulkUploadActivity : AppCompatActivity() {
             }
         }
 
+ /*       viewModel.parsedProductsLiveData.observe(this) { products ->
+            if (!products.isNullOrEmpty()) {
+                products.forEach { Log.d("UploadedProduct", it.toString()) }
+            }
+
+            if (products.isNotEmpty()) {
+                binding.recyclerMappings.apply {
+                    layoutManager = LinearLayoutManager(this@BulkUploadActivity)
+                    adapter = ExcelProductAdapter(products)
+                    visibility = View.VISIBLE
+                }
+                // hide Next, show Cancel & Upload
+                binding.btnNext.visibility = View.GONE
+                binding.btnCancel.visibility = View.VISIBLE
+                binding.btnUpload.visibility = View.VISIBLE
+            }
+        }*/
     }
 
     private lateinit var progressDialog: ProgressDialog
