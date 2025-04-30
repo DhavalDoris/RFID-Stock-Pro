@@ -62,8 +62,7 @@
                     android:fontFamily="@font/rethinksans_bold"
                     android:text="Product Title"
                     android:textColor="@android:color/black"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/tvCategory"
@@ -75,7 +74,7 @@
                     android:text="Category"
                     android:textColor="#666666"
                     android:textSize="14sp"
-                    android:textStyle="bold" />
+                    />
 
                 <TextView
                     android:id="@+id/tvStatus"
@@ -93,7 +92,7 @@
                     android:text="Status"
                     android:textColor="#FF8800"
                     android:textSize="14sp"
-                    android:textStyle="bold" />
+                    />
 
             </RelativeLayout>
 

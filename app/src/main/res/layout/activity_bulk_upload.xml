@@ -117,18 +117,6 @@
             android:text="@string/choose_the_excel_file_xls_or_xlsx_nfrom_your_device"
             android:textColor="@color/gray" />
 
-        <TextView
-            android:id="@+id/tvMissingMessage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginHorizontal="@dimen/_15sdp"
-            android:fontFamily="@font/rethinksans_bold"
-            android:text="ABCD"
-            android:gravity="center"
-            android:textColor="@color/red"
-            android:visibility="gone" />
-
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/btnUploadFile"
             android:layout_width="wrap_content"
@@ -261,5 +249,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"/>
+
+
+    <TextView
+        android:id="@+id/tvMissingMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="@dimen/_15sdp"
+        android:fontFamily="@font/rethinksans_bold"
+        android:text="ABCD"
+        android:gravity="center"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:layout_alignParentBottom="true"
+        android:textColor="@color/red"
+        android:visibility="gone" />
+
 
 </RelativeLayout>
