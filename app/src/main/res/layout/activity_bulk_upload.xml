@@ -28,7 +28,7 @@
             android:background="@drawable/number_bg"
             android:fontFamily="@font/rethinksans_variablefont_wght"
             android:gravity="center"
-            android:text="1"
+            android:text="@string/_1"
             android:textColor="@color/white" />
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -40,7 +40,7 @@
             android:layout_toRightOf="@+id/tvOne"
             android:fontFamily="@font/rethinksans_variablefont_wght"
             android:gravity="center"
-            android:text="Upload file"
+            android:text="@string/upload_file"
             android:textColor="@color/black"
             android:textStyle="bold" />
 
@@ -64,7 +64,7 @@
             android:backgroundTint="@color/gray_line"
             android:fontFamily="@font/rethinksans_variablefont_wght"
             android:gravity="center"
-            android:text="2"
+            android:text="@string/_2"
             android:textColor="@color/gray" />
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -76,7 +76,7 @@
             android:layout_toEndOf="@+id/tvTwo"
             android:fontFamily="@font/rethinksans_variablefont_wght"
             android:gravity="center"
-            android:text="Review data"
+            android:text="@string/review_data"
             android:textColor="@color/gray"
             android:textStyle="bold" />
 
@@ -122,6 +122,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:layout_marginHorizontal="@dimen/_15sdp"
             android:fontFamily="@font/rethinksans_bold"
             android:text="ABCD"
             android:gravity="center"
@@ -143,7 +144,7 @@
             android:gravity="center"
             android:paddingHorizontal="@dimen/_12sdp"
             android:paddingVertical="@dimen/_7sdp"
-            android:text="Upload file"
+            android:text="@string/upload_file"
             android:textColor="@android:color/white"
             android:textSize="@dimen/_14ssp"
             android:visibility="visible" />
@@ -173,7 +174,7 @@
                 android:layout_marginTop="16dp"
                 android:fontFamily="@font/rethinksans_bold"
                 android:gravity="center"
-                android:text="Progress: 0/0"
+                android:text=""
                 android:textColor="@color/appMainColor"
                 android:textSize="@dimen/_13sdp" />
 
@@ -231,6 +232,23 @@
             android:gravity="center"
             android:padding="@dimen/_10sdp"
             android:text="Upload"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/_12ssp"
+            android:visibility="visible" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/_5sdp"
+            android:layout_weight="1"
+            android:background="@drawable/button_selector"
+            android:backgroundTint="@color/appMainColor"
+            android:fontFamily="@font/rethinksans_bold"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:gravity="center"
+            android:padding="@dimen/_10sdp"
+            android:text="@string/next"
             android:textColor="@android:color/white"
             android:textSize="@dimen/_12ssp"
             android:visibility="visible" />

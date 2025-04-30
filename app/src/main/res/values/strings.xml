@@ -179,6 +179,10 @@
     <string name="choose_the_excel_file_xls_or_xlsx_nfrom_your_device">Choose the Excel file (.xls or .xlsx)\nfrom your device.</string>
     <string name="file_uploaded_successfully">File uploaded successfully!</string>
     <string name="back">Back</string>
+    <string name="upload_file">Upload file</string>
+    <string name="review_data">Review data</string>
+    <string name="_2">2</string>
+    <string name="_1">1</string>
 
 
     <!-- <string-array name="system_headers">
