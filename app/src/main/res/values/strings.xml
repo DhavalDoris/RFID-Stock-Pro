@@ -184,6 +184,7 @@
     <string name="_2">2</string>
     <string name="_1">1</string>
     <string name="tag_id_not_added">Tag id not added</string>
+    <string name="no_collecton_found">No Collecton found</string>
 
 
     <!-- <string-array name="system_headers">

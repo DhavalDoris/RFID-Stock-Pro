@@ -52,11 +52,15 @@ class AddItemViewModel : ViewModel() {
         }
 
         val price = input.price.toDoubleOrNull()
-        if (input.price.isEmpty() || price == null || price <= 0) {
+        if (input.price.isEmpty() || price == null ) {
             _validationError.value = "Price is required"
             return false
         }
 
+        if (price <= 0) {
+            _validationError.value = "Price must be greater than 0"
+            return false
+        }
 
         // Validate Description
        /* if (input.description.isEmpty()) {

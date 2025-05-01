@@ -185,7 +185,6 @@ class BulkUploadViewModel : ViewModel() {
       }
     }*/
 
-
     fun processExcelFile(context: Context, uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             val errors = mutableListOf<String>()

@@ -47,7 +47,7 @@ class InOutTrackerActivity : AppCompatActivity() {
         updateToolbarTitleAddItem(getString(R.string.in_out_ntracker_header))
         init()
         setupRecyclerView()
-        Log.e("INOUt_TAG", "onCreate: ", )
+        Log.e("INOUt_TAG", "onCreate: ")
     }
 
     fun init() {
@@ -75,7 +75,10 @@ class InOutTrackerActivity : AppCompatActivity() {
         binding.btnNext.setOnClickListener {
             val intent = Intent(this, ProductManagementActivity::class.java).apply {
                 putExtra("comesFrom", "TrackCollection")
-                putExtra("selected_items", ArrayList(selectedCollectionItems)) // Must be Serializable or Parcelable
+                putExtra(
+                    "selected_items",
+                    ArrayList(selectedCollectionItems)
+                ) // Must be Serializable or Parcelable
             }
             startActivity(intent)
         }
@@ -104,7 +107,8 @@ class InOutTrackerActivity : AppCompatActivity() {
 
                 val isListNotEmpty = selectedCollectionItems.isNotEmpty()
                 binding.btnNext.isEnabled = isListNotEmpty
-                binding.btnNext.alpha = if (isListNotEmpty) 1.0f else 0.5f // Optional for visual feedback
+                binding.btnNext.alpha =
+                    if (isListNotEmpty) 1.0f else 0.5f // Optional for visual feedback
 
             },
             onDeleteClick = { collectionId ->
@@ -119,7 +123,11 @@ class InOutTrackerActivity : AppCompatActivity() {
                                 adapter!!.removeItemById(collectionId) // Instant removal
                             },
                             onError = { error ->
-                                Toast.makeText(this, "Error: ${error.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    this,
+                                    "Error: ${error.localizedMessage}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         )
                     }
@@ -132,6 +140,11 @@ class InOutTrackerActivity : AppCompatActivity() {
         binding.ListOfCollections.adapter = adapter
 
         viewModel.collections.observe(this) {
+            if (it.isEmpty()) {
+                binding.textNoCollection.visibility = View.VISIBLE
+            } else {
+                binding.textNoCollection.visibility = View.GONE
+            }
             Log.d("CollectionListVM", "Observed ${it.size} collections")
             adapter!!.setData(it)
         }
@@ -168,18 +181,18 @@ class InOutTrackerActivity : AppCompatActivity() {
     }
 
     fun updateToolbarTitleAddItem(title: String) {
-       /* val toolbarTitle = findViewById<AppCompatTextView>(R.id.tvToolbarTitle)
-        val toolbarSearch = findViewById<AppCompatImageView>(R.id.ivSearch)
-        val toolbarFilter = findViewById<AppCompatImageView>(R.id.ivFilter)
-        Log.e(TAG, "updateToolbarTitle: ")
-        toolbarTitle!!.text = title
+        /* val toolbarTitle = findViewById<AppCompatTextView>(R.id.tvToolbarTitle)
+         val toolbarSearch = findViewById<AppCompatImageView>(R.id.ivSearch)
+         val toolbarFilter = findViewById<AppCompatImageView>(R.id.ivFilter)
+         Log.e(TAG, "updateToolbarTitle: ")
+         toolbarTitle!!.text = title
 
-        toolbarSearch.visibility = View.GONE
-        toolbarFilter.visibility = View.GONE
+         toolbarSearch.visibility = View.GONE
+         toolbarFilter.visibility = View.GONE
 
-        toolbarFilter.setOnClickListener {
-            Toast.makeText(this, "Filter", Toast.LENGTH_SHORT).show()
-        }*/
+         toolbarFilter.setOnClickListener {
+             Toast.makeText(this, "Filter", Toast.LENGTH_SHORT).show()
+         }*/
 
         ToolbarUtils.setupToolbar(
             this,
@@ -196,10 +209,9 @@ class InOutTrackerActivity : AppCompatActivity() {
     }
 
 
-
     override fun onResume() {
         super.onResume()
-        Log.e("INOUt_TAG", "onResume: ", )
+        Log.e("INOUt_TAG", "onResume: ")
         viewModel.fetchCollections(userId!!)
     }
 
