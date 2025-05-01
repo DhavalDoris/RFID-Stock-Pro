@@ -1,6 +1,7 @@
 package com.example.rfidstockpro.ui.fragments
 
 import InventoryProductsViewModel
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AppCompatActivity.RESULT_OK
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.rfidstockpro.R
@@ -42,7 +44,19 @@ class UHFReadFragment : Fragment() {
 
     private lateinit var sharedProductViewModel: SharedProductViewModel
     private lateinit var inventoryProductsViewModel: InventoryProductsViewModel
+    private var isReviewMode: Boolean = false
+    private var callback: UHFReadFragmentCallback? = null
 
+    // Set the callback from the parent activity
+    fun setCallback(callback: UHFReadFragmentCallback) {
+        this.callback = callback
+    }
+
+    // Callback interface
+    interface UHFReadFragmentCallback {
+        fun onSuccess(message: String)
+        fun onError(errorMessage: String)
+    }
 
     // Interface for UHF device provider
     interface UHFDeviceProvider {
@@ -55,7 +69,7 @@ class UHFReadFragment : Fragment() {
             ViewModelProvider(requireActivity()).get(SharedProductViewModel::class.java)
         inventoryProductsViewModel =
             ViewModelProvider(requireActivity())[InventoryProductsViewModel::class.java]
-
+        isReviewMode = arguments?.getBoolean("isReviewMode") ?: false
     }
 
     override fun onCreateView(
@@ -65,11 +79,11 @@ class UHFReadFragment : Fragment() {
     ): View {
         binding = FragmentUhfreadTagBinding.inflate(inflater, container, false)
 
-    /*    sharedProductViewModel.product.observe(viewLifecycleOwner) { product ->
-            Log.d("UHFReadFragment", "Received Product -> : ${product}")
-//            val scannedUniqueTags = product.distinct()
-//            scannedProductsViewModel.setScannedTags(scannedUniqueTags)
-        }*/
+        /*    sharedProductViewModel.product.observe(viewLifecycleOwner) { product ->
+                Log.d("UHFReadFragment", "Received Product -> : ${product}")
+    //            val scannedUniqueTags = product.distinct()
+    //            scannedProductsViewModel.setScannedTags(scannedUniqueTags)
+            }*/
 
         return binding.root
     }
@@ -175,9 +189,25 @@ class UHFReadFragment : Fragment() {
                     binding.rlSuccessFullAdded.visibility = View.VISIBLE
                     isProductSuccessfullyAdded = true
                     (activity as? AddProductActivity)?.updateToolbarTitleAddItem("")
+                    Log.e("CallBackTAG", "onSuccess: 1 ")
+                    // Call the success callback on activity
+                    callback?.onSuccess("Product added successfully.")
+                    if (isReviewMode) {
+                        isReviewMode = false
+                       /* requireActivity().setResult(RESULT_OK)
+                        requireActivity().finish()*/
+
+                        (activity as? AddProductActivity)?.setResult(
+                            Activity.RESULT_OK,
+                            Intent().putExtra("uploadedSku", product?.sku)
+                        )
+                        (activity as? AddProductActivity)?.finish()
+                    }
+
                 },
                 onError = { errorMessage ->
                     Snackbar.make(binding.root, errorMessage, Snackbar.LENGTH_LONG).show()
+                    callback?.onError(errorMessage)
                 }
             )
         } else {
@@ -256,6 +286,7 @@ class UHFReadFragment : Fragment() {
                     cbFilter.isChecked = false
                     cbFilter.isEnabled = false
                 }
+
                 else -> {}
             }
         }

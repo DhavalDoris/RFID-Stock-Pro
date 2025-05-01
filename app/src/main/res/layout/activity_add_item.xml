@@ -17,13 +17,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/stepIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/commonToolbar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/rethinksans_bold"
+        android:paddingVertical="@dimen/_10sdp"
+        android:text=""
+        android:textSize="16sp"
+        android:visibility="gone" />
+
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nested"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/footerView"
-        android:layout_below="@+id/commonToolbar"
+        android:layout_below="@+id/stepIndicator"
         android:fillViewport="true">
 
         <LinearLayout
@@ -393,9 +406,12 @@
                 android:layout_marginBottom="@dimen/_10sdp"
                 android:background="@drawable/edittext_bg"
                 android:drawablePadding="@dimen/_5sdp"
-                android:gravity="start"
+                android:gravity="start|top"
                 android:hint="@string/write"
-                android:padding="@dimen/_10sdp" />
+                android:inputType="textMultiLine"
+                android:maxLines="5"
+                android:padding="@dimen/_10sdp"
+                android:singleLine="false" />
 
         </LinearLayout>
 
@@ -446,7 +462,7 @@
             android:text="@string/update"
             android:textColor="@android:color/white"
             android:textSize="@dimen/_12ssp"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/btnUpdateWithTag"
@@ -465,7 +481,7 @@
             android:text="@string/update_tag"
             android:textColor="@android:color/white"
             android:textSize="@dimen/_12ssp"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
     </LinearLayout>
 

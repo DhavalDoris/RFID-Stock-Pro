@@ -2,6 +2,7 @@ package com.example.rfidstockpro.bulkupload.activity
 
 import android.app.ProgressDialog
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.Utils.Comman.showCustomSnackbarBelowToolbar
 import com.example.rfidstockpro.Utils.StatusBarUtils
+import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.bulkupload.adapter.ExcelProductAdapter
 import com.example.rfidstockpro.bulkupload.adapter.MappingAdapter
 import com.example.rfidstockpro.bulkupload.model.MappingItem
@@ -23,6 +25,7 @@ import com.example.rfidstockpro.bulkupload.viewmodel.BulkUploadViewModel
 import com.example.rfidstockpro.databinding.ActivityBulkUploadBinding
 import com.example.rfidstockpro.ui.ToolbarConfig
 import com.example.rfidstockpro.ui.ToolbarUtils
+import com.example.rfidstockpro.ui.activities.AddProductActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -35,7 +38,11 @@ class BulkUploadActivity : AppCompatActivity() {
     private lateinit var viewModel: BulkUploadViewModel
     private val mappingItems = mutableListOf<MappingItem>()
     private lateinit var adapter: MappingAdapter
-//    var selectedFileUri: Uri? = null
+    private var currentProductIndex = 0 // To keep track of the product being reviewed
+    private val REQUEST_CODE_REVIEW = 1001
+
+    //    var selectedFileUri: Uri? = null
+    private lateinit var excelProductAdapter: ExcelProductAdapter
 
     private val openDocumentLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
@@ -89,24 +96,30 @@ class BulkUploadActivity : AppCompatActivity() {
 
         // Trigger the Excel processing when clicking Next
         binding.btnNext.setOnClickListener {
-          /*  val excelFileUri = viewModel.fileUri
-            Log.e("Product_TAG", "initClicks: " + excelFileUri )
-            if (excelFileUri != null) {
-                // Process Excel file and show products
-                viewModel.processExcelFile(this, excelFileUri)
-            }*/
+            /*  val excelFileUri = viewModel.fileUri
+              Log.e("Product_TAG", "initClicks: " + excelFileUri )
+              if (excelFileUri != null) {
+                  // Process Excel file and show products
+                  viewModel.processExcelFile(this, excelFileUri)
+              }*/
 
             val products = viewModel.parsedProductsLiveData.value
             if (!products.isNullOrEmpty()) {
+
+
                 binding.recyclerMappings.apply {
                     layoutManager = LinearLayoutManager(this@BulkUploadActivity)
-                    adapter = ExcelProductAdapter(products)
+
+                    val products = viewModel.parsedProductsLiveData.value ?: mutableListOf()
+                    excelProductAdapter = ExcelProductAdapter(products)
+                    binding.recyclerMappings.adapter = excelProductAdapter
+
                     visibility = View.VISIBLE
                 }
 
                 binding.btnNext.visibility = View.GONE
                 binding.btnCancel.visibility = View.VISIBLE
-                binding.btnUpload.visibility = View.VISIBLE
+                binding.btnReviewUpload.visibility = View.VISIBLE
                 setStep(2)
             } else {
                 Toast.makeText(this, "No products to preview.", Toast.LENGTH_SHORT).show()
@@ -123,53 +136,131 @@ class BulkUploadActivity : AppCompatActivity() {
             binding.btnUploadFile.visibility = View.GONE
         }
 
-        binding.btnUpload.setOnClickListener {
-
-            AlertDialog.Builder(this)
-                .setTitle("Confirm Upload")
-                .setMessage("Are you sure you want to upload these products?")
-                .setPositiveButton("Yes") { _, _ ->
-                    showProgressDialog(this)
-                    val fileUri = viewModel.fileUri ?: return@setPositiveButton
-                    val finalMappings = mappingItems.map {
-                        val selected = it.systemHeader ?: ""
-                        MappingItem(it.importedHeader, it.sampleValue, selected)
-                    }
+        binding.btnReviewUpload.setOnClickListener {
+//            uploadeProduct()
+            /*  val selectedProduct = getSelectedProduct() // You need to implement this method
+              if (selectedProduct != null) {
+                  navigateToAddProductScreen(selectedProduct)
+              } else {
+                  /
+                  Toast.makeText(this, "Please select a product to review.", Toast.LENGTH_SHORT).show()
+              }*/
 
 
-                    viewModel.uploadProductsFromMappings(
-                        context = this,
-                        fileUri = fileUri,
-                        mappings = finalMappings,
-                        onProgress = { pct ->
-                            runOnUiThread {
-                                binding.progressBar.progress = pct
-                                binding.tvProgress.text = "$pct%"
-                            }
-                        },
-                        onComplete = { success, failure ->
-                            progressDialog.dismiss()
-                            runOnUiThread {
-                                Toast.makeText(
-                                    this,
-                                    "Uploaded! Success: $success, Failed: $failure",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                showUploadResultDialog(success, failure)
-                                finish()
-                            }
-                        }
-                    )
+            val productList = viewModel.parsedProductsLiveData.value
+            if (productList != null && productList.isNotEmpty()) {
+                // Check if any products are left to review
+                if (currentProductIndex < productList.size) {
+                    val currentProduct = productList[currentProductIndex]
+                    val total = productList.size
+                    val index =
+                        currentProductIndex // or currentProductIndex + 1 if you want 1-based in UI
+                    navigateToAddProductScreen(currentProduct, index, total)
+                } else {
+                    Toast.makeText(this, "All products have been reviewed.", Toast.LENGTH_SHORT)
+                        .show()
                 }
-                .setNegativeButton("Cancel", null)
-                .show()
-
-
+            } else {
+                Toast.makeText(this, "Please select products first.", Toast.LENGTH_SHORT).show()
+            }
         }
+
 
         binding.btnCancel.setOnClickListener {
             finish()
         }
+    }
+
+    private fun getSelectedProduct(): ProductModel? {
+        val adapter = binding.recyclerMappings.adapter as ExcelProductAdapter
+        // Assuming you are storing selected items in a list, or you can get the selected item by its position
+        return adapter.getSelectedProduct() // Implement this method in your adapter to return the selected product
+    }
+
+    private fun navigateToAddProductScreen(product: ProductModel, index: Int, total: Int) {
+
+        val intent = Intent(this, AddProductActivity::class.java).apply {
+            putExtra("productData", product) // Pass the selected product data
+            putExtra("index", index + 1) // to show 1-based count
+            putExtra("total", total)
+        }
+        startActivityForResult(intent, REQUEST_CODE_REVIEW)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_REVIEW && resultCode == RESULT_OK) {
+
+            val sku = data?.getStringExtra("uploadedSku")
+            val productList = viewModel.parsedProductsLiveData.value
+            val updatedIndex = productList?.indexOfFirst { it.sku == sku } ?: -1
+
+//            productList?.find { it.sku == sku }?.isUploaded = true
+
+            if (updatedIndex != -1) {
+                productList?.get(updatedIndex)!!.isUploaded = true
+                excelProductAdapter.notifyItemChanged(updatedIndex)
+            }
+//            binding.recyclerMappings.adapter?.notifyDataSetChanged()
+            Log.e("CallBackTAG", "onSuccess: 3")
+            // Move to the next product after the user finishes reviewing
+            currentProductIndex++
+
+            // If there are more products to review, pass the next product to the Add Product screen
+
+            if (productList != null && currentProductIndex < productList.size) {
+                val nextProduct = productList[currentProductIndex]
+                val total = productList.size
+                val index =
+                    currentProductIndex
+                navigateToAddProductScreen(nextProduct, index, total)
+            } else {
+                // All products reviewed
+                Toast.makeText(this, "All products have been reviewed.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun uploadeProduct() {
+        AlertDialog.Builder(this)
+            .setTitle("Confirm Upload")
+            .setMessage("Are you sure you want to upload these products?")
+            .setPositiveButton("Yes") { _, _ ->
+                showProgressDialog(this)
+                val fileUri = viewModel.fileUri ?: return@setPositiveButton
+                val finalMappings = mappingItems.map {
+                    val selected = it.systemHeader ?: ""
+                    MappingItem(it.importedHeader, it.sampleValue, selected)
+                }
+
+
+                viewModel.uploadProductsFromMappings(
+                    context = this,
+                    fileUri = fileUri,
+                    mappings = finalMappings,
+                    onProgress = { pct ->
+                        runOnUiThread {
+                            binding.progressBar.progress = pct
+                            binding.tvProgress.text = "$pct%"
+                        }
+                    },
+                    onComplete = { success, failure ->
+                        progressDialog.dismiss()
+                        runOnUiThread {
+                            Toast.makeText(
+                                this,
+                                "Uploaded! Success: $success, Failed: $failure",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            showUploadResultDialog(success, failure)
+                            finish()
+                        }
+                    }
+                )
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun setupObservers() {
@@ -187,18 +278,18 @@ class BulkUploadActivity : AppCompatActivity() {
                 }
                 binding.btnUploadFile.visibility = View.VISIBLE
                 binding.llProgress.visibility = View.GONE
-                binding.btnUpload.isEnabled = false
-                binding.btnUpload.alpha = 0.5f
+                binding.btnReviewUpload.isEnabled = false
+                binding.btnReviewUpload.alpha = 0.5f
             } else {
                 binding.tvMissingMessage.visibility = View.GONE
-                binding.btnUpload.isEnabled = true
-                binding.btnUpload.alpha = 1f
+                binding.btnReviewUpload.isEnabled = true
+                binding.btnReviewUpload.alpha = 1f
                 binding.llProgress.visibility = View.VISIBLE
                 binding.llPickFile.visibility = View.GONE
                 binding.recyclerMappings.visibility = View.VISIBLE
                 binding.footerView.visibility = View.VISIBLE
                 binding.btnCancel.visibility = View.GONE
-                binding.btnUpload.visibility = View.GONE
+                binding.btnReviewUpload.visibility = View.GONE
                 binding.btnNext.visibility = View.VISIBLE
                 showCustomSnackbarBelowToolbar(this, findViewById(R.id.commonToolbar))
                 setStep(2)
@@ -210,15 +301,15 @@ class BulkUploadActivity : AppCompatActivity() {
             binding.labelText.text = name
         }
 
-      /*  viewModel.parsedProductsLiveData.observe(this) { products ->
-            Log.d("UploadedProduct", products.toString())
-            if (!products.isNullOrEmpty()) {
-                products.forEach { Log.d("UploadedProduct", it.toString()) }
-            }
-            else{
-                Log.d("UploadedProduct" , " ELSE" )
-            }
-        }*/
+        /*  viewModel.parsedProductsLiveData.observe(this) { products ->
+              Log.d("UploadedProduct", products.toString())
+              if (!products.isNullOrEmpty()) {
+                  products.forEach { Log.d("UploadedProduct", it.toString()) }
+              }
+              else{
+                  Log.d("UploadedProduct" , " ELSE" )
+              }
+          }*/
     }
 
     fun setStep(step: Int) {
@@ -251,7 +342,7 @@ class BulkUploadActivity : AppCompatActivity() {
     }
 
 
-    private fun simulateFakeProgress()  {
+    private fun simulateFakeProgress() {
 
         binding.llProgress.visibility = View.VISIBLE
         binding.progressBar.progress = 0
@@ -280,23 +371,23 @@ class BulkUploadActivity : AppCompatActivity() {
             }
         }
 
- /*       viewModel.parsedProductsLiveData.observe(this) { products ->
-            if (!products.isNullOrEmpty()) {
-                products.forEach { Log.d("UploadedProduct", it.toString()) }
-            }
+        /*       viewModel.parsedProductsLiveData.observe(this) { products ->
+                   if (!products.isNullOrEmpty()) {
+                       products.forEach { Log.d("UploadedProduct", it.toString()) }
+                   }
 
-            if (products.isNotEmpty()) {
-                binding.recyclerMappings.apply {
-                    layoutManager = LinearLayoutManager(this@BulkUploadActivity)
-                    adapter = ExcelProductAdapter(products)
-                    visibility = View.VISIBLE
-                }
-                // hide Next, show Cancel & Upload
-                binding.btnNext.visibility = View.GONE
-                binding.btnCancel.visibility = View.VISIBLE
-                binding.btnUpload.visibility = View.VISIBLE
-            }
-        }*/
+                   if (products.isNotEmpty()) {
+                       binding.recyclerMappings.apply {
+                           layoutManager = LinearLayoutManager(this@BulkUploadActivity)
+                           adapter = ExcelProductAdapter(products)
+                           visibility = View.VISIBLE
+                       }
+                       // hide Next, show Cancel & Upload
+                       binding.btnNext.visibility = View.GONE
+                       binding.btnCancel.visibility = View.VISIBLE
+                       binding.btnReviewUpload.visibility = View.VISIBLE
+                   }
+               }*/
     }
 
     private lateinit var progressDialog: ProgressDialog

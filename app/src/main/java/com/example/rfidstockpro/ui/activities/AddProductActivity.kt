@@ -53,10 +53,12 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.DataSource
 import com.example.rfidstockpro.Utils.PermissionUtils
 import com.example.rfidstockpro.aws.AwsManager
+import com.example.rfidstockpro.bulkupload.viewmodel.BulkUploadViewModel
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.ShowCheckBoxinProduct
 import com.example.rfidstockpro.ui.activities.DashboardActivity.Companion.isShowDuplicateTagId
 
-class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider {
+class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider,
+    UHFReadFragment.UHFReadFragmentCallback {
 
     private val selectedImageFiles = mutableListOf<File>()
 
@@ -78,6 +80,10 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
     private lateinit var captureVideoLauncher: ActivityResultLauncher<Intent>
     var isMediaUpdated: Boolean = false
 
+    private var currentIndex = 0
+    private var totalCount = 0
+    private var isReviewMode = false
+
     companion object {
         var previewImageUrls: List<String> = emptyList()
         var previewVideoUrl: String? = null
@@ -96,6 +102,30 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
 
     @SuppressLint("MissingPermission")
     private fun initUI() {
+
+        val products = intent.getParcelableExtra<ProductModel>("productData")
+
+        if (products != null) {
+            isReviewMode = true
+            currentIndex = intent.getIntExtra("index", 1)
+            totalCount = intent.getIntExtra("total", 1)
+            updateStepIndicator()
+
+            binding.stepIndicator.visibility = View.VISIBLE
+            Log.d("COME_ProductAdd", "==> " + products)
+            binding.etProductName.setText(products.productName)
+            binding.etCategory.setText(products.productCategory)
+            binding.etSku.setText(products.sku)
+            binding.textStyleNo.setText(products.styleNo)
+            binding.etPrice.setText(products.price.replace("$", "").trim())
+            binding.etDescription.setText(products.description)
+
+            // Auto-fill fields with the data from the passed product
+//            etProductName.setText(products.productName)
+//            etProductSku.setText(products.sku)
+            // Fill other fields like Price, Category, etc.
+        }
+
         isShowDuplicateTagId = false
         ShowCheckBoxinProduct = false
         val product = selectedProduct
@@ -281,6 +311,11 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
             }
         }
 
+    }
+
+    private fun updateStepIndicator() {
+        // Update the step indicator text with current step out of total steps
+        binding.stepIndicator.text = "$currentIndex of $totalCount"
     }
 
     fun updateToolbarTitleAddItem(title: String) {
@@ -593,11 +628,25 @@ class AddProductActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvide
     private fun openTagListFragment(input: ProductModel) {
         val viewModel = ViewModelProvider(this).get(SharedProductViewModel::class.java)
         viewModel.setProduct(input)
-        FragmentManagerHelper.setFragment(this, UHFReadFragment(), R.id.rfidFrame)
+        val fragment = UHFReadFragment()
+        val bundle = Bundle().apply {
+            putBoolean("isReviewMode", isReviewMode)
+        }
+        fragment.arguments = bundle
+        FragmentManagerHelper.setFragment(this, fragment, R.id.rfidFrame)
     }
 
     override fun provideUHFDevice(): RFIDWithUHFBLE {
         return uhfDevice
+    }
+
+    override fun onSuccess(message: String) {
+        Log.e("CallBackTAG", "onSuccess: 2  -  "  + message )
+
+    }
+
+    override fun onError(errorMessage: String) {
+
     }
 
 }

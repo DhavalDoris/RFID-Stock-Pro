@@ -2,12 +2,15 @@ package com.example.rfidstockpro.bulkupload.adapter
 
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.rfidstockpro.R
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.databinding.ExcelProductItemBinding
+import com.example.rfidstockpro.ui.ProductManagement.helper.ProductHolder.selectedProduct
 
 class ExcelProductAdapter(
     private val items: List<ProductModel>
@@ -26,12 +29,30 @@ class ExcelProductAdapter(
         return ProductViewHolder(binding)
     }
 
+    fun getSelectedProduct(): ProductModel? {
+        return selectedProduct
+    }
+
+
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val product = items[position]
         with(holder.binding) {
-            tvTitle.text = product.productName
-            tvCategory.text = product.productCategory
-            tvStatus.text = product.status
+
+            if (!product.productName.isNullOrEmpty()) {
+                tvTitle.visibility = View.VISIBLE
+                tvTitle.text = product.productName
+            }
+
+            tvCategory.text = "Category : " + product.productCategory
+            Log.e("isUploaded_TAG", "onBindViewHolder: ~~~~> " + product.isUploaded )
+            if (product.isUploaded) {
+                tvStatus.visibility = View.VISIBLE
+                tvStatus.text = "Added"
+//                tvStatus.setTextColor(ContextCompat.getColor(holder.binding.root.context, R.color.greenConnected))
+            } else {
+                tvStatus.visibility = View.GONE
+            }
+
             tvPrice.text = "${product.price}"
             if (product.sku.isNotEmpty()) {
                 tvSku.text = product.sku

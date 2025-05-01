@@ -208,7 +208,7 @@
             android:textSize="@dimen/_12ssp" />
 
         <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/btnUpload"
+            android:id="@+id/btnReviewUpload"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/_5sdp"
@@ -219,10 +219,11 @@
             android:foreground="?android:attr/selectableItemBackground"
             android:gravity="center"
             android:padding="@dimen/_10sdp"
-            android:text="Upload"
+            android:text="Review"
             android:textColor="@android:color/white"
             android:textSize="@dimen/_12ssp"
             android:visibility="visible" />
+
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/btnNext"

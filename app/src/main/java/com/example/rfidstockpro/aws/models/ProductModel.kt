@@ -1,7 +1,10 @@
 package com.example.rfidstockpro.aws.models
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
-
+import java.io.Serializable
+@Parcelize
 data class ProductModel(
     var id: String?,
     val selectedImages: List<String>,  // New: List of image paths
@@ -20,8 +23,9 @@ data class ProductModel(
     val updatedAt: String,  // 🔥 New field
     // Temporary fields - not to be stored
     var previewImageUrls: List<String>? = null,
-    var previewVideoUrl: String? = null
-)
+    var previewVideoUrl: String? = null,
+    var isUploaded: Boolean = false
+): Parcelable
 
 fun ProductModel.toMap(): Map<String, AttributeValue> {
     return mapOf(

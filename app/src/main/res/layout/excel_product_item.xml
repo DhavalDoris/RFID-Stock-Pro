@@ -30,14 +30,16 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_margin="@dimen/_10sdp">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/_10sdp"
-                app:cardCornerRadius="@dimen/_5sdp">
+                app:cardCornerRadius="@dimen/_5sdp"
+                android:visibility="gone">
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/imgProduct"
@@ -63,7 +65,8 @@
                     android:fontFamily="@font/rethinksans_bold"
                     android:text="Product Title"
                     android:textColor="@android:color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:visibility="gone"/>
 
                 <TextView
                     android:id="@+id/tvCategory"
@@ -84,13 +87,13 @@
                     android:layout_marginStart="@dimen/_5sdp"
                     android:layout_marginTop="2dp"
                     android:layout_toEndOf="@+id/tvCategory"
-                    android:background="@drawable/buy_bg"
-                    android:backgroundTint="@color/pendingView_bg"
-                    android:fontFamily="@font/rethinksans_variablefont_wght"
                     android:paddingHorizontal="@dimen/_5sdp"
                     android:paddingVertical="@dimen/_2sdp"
-                    android:text="Status"
-                    android:textColor="@color/pending_status"
+                    android:text="Added"
+                    android:background="@drawable/role_bg"
+                    android:backgroundTint="@color/active_tint"
+                    android:fontFamily="@font/rethinksans_bold"
+                    android:textColor="@color/active_color"
                     android:textSize="14sp" />
 
             </RelativeLayout>
@@ -107,7 +110,7 @@
                 android:fontFamily="@font/rethinksans_bold"
                 android:text="$0.00"
                 android:textColor="@android:color/black"
-                android:textSize="@dimen/_14ssp"
+                android:textSize="@dimen/_12ssp"
                 android:textStyle="bold" />
 
         </RelativeLayout>
