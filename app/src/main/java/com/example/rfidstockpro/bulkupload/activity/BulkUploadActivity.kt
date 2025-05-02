@@ -13,10 +13,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rfidstockpro.R
+import com.example.rfidstockpro.RFIDApplication.Companion.PRODUCT_TABLE
 import com.example.rfidstockpro.Utils.Comman.showCustomSnackbarBelowToolbar
 import com.example.rfidstockpro.Utils.StatusBarUtils
+import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.aws.models.ProductModel
 import com.example.rfidstockpro.bulkupload.adapter.ExcelProductAdapter
 import com.example.rfidstockpro.bulkupload.adapter.MappingAdapter
@@ -28,8 +31,11 @@ import com.example.rfidstockpro.ui.ToolbarUtils
 import com.example.rfidstockpro.ui.activities.AddProductActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class BulkUploadActivity : AppCompatActivity() {
@@ -95,18 +101,16 @@ class BulkUploadActivity : AppCompatActivity() {
     private fun initClicks() {
 
         // Trigger the Excel processing when clicking Next
-        binding.btnNext.setOnClickListener {
-            /*  val excelFileUri = viewModel.fileUri
+       /* binding.btnNext.setOnClickListener {
+            *//*  val excelFileUri = viewModel.fileUri
               Log.e("Product_TAG", "initClicks: " + excelFileUri )
               if (excelFileUri != null) {
                   // Process Excel file and show products
                   viewModel.processExcelFile(this, excelFileUri)
-              }*/
+              }*//*
 
             val products = viewModel.parsedProductsLiveData.value
             if (!products.isNullOrEmpty()) {
-
-
                 binding.recyclerMappings.apply {
                     layoutManager = LinearLayoutManager(this@BulkUploadActivity)
 
@@ -124,7 +128,121 @@ class BulkUploadActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "No products to preview.", Toast.LENGTH_SHORT).show()
             }
+        }*/
+
+        binding.btnNext.setOnClickListener {
+           /* val products = viewModel.parsedProductsLiveData.value.orEmpty()
+            if (products.isEmpty()) {
+                Toast.makeText(this, "No products to preview.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Disable the Next button and show a progress dialog
+            binding.btnNext.isEnabled = false
+            binding.btnNext.alpha = 0.5f
+
+            // 1) Check for existing SKUs on a background thread
+            CoroutineScope(Dispatchers.Main).launch {
+                val duplicates = withContext(Dispatchers.IO) {
+                    products.filter { AwsManager.getProductBySku(PRODUCT_TABLE, it.sku) != null }
+                }
+                Log.e("CHECK_DUPLICATE_TAG", "initClicks: " +  duplicates )
+
+                if (duplicates.isNotEmpty()) {
+                    // 2) Show one dialog listing all duplicates
+                    AlertDialog.Builder(this@BulkUploadActivity)
+                        .setTitle("Duplicate SKUs")
+                        .setMessage("The following SKUs already exist and will be skipped:\n\n" +
+                                duplicates.joinToString("\n") { "• ${it.sku}" })
+                        .setPositiveButton("Continue") { _, _ ->
+                            // 3) Remove duplicates and show the rest
+                            displayPreview(products - duplicates.toSet())
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                } else {
+                    // No duplicates → just proceed
+                    displayPreview(products)
+                }
+            }*/
+
+
+          /*  val products = viewModel.parsedProductsLiveData.value.orEmpty()
+            if (products.isEmpty()) return@setOnClickListener
+
+            // disable UI
+            binding.btnNext.isEnabled = false
+            binding.btnNext.alpha = 0.5f
+//            showProgressDialog("Checking duplicates…")
+
+            lifecycleScope.launch {
+                // 1) Batch-get all existing SKUs in one shot
+                val existing = withContext(Dispatchers.IO) {
+                    AwsManager.batchGetProductsBySku(PRODUCT_TABLE, products.map { it.sku })
+                        .map { it.sku }
+                        .toSet()
+                }
+
+                if (existing.isNotEmpty()) {
+                    AlertDialog.Builder(this@BulkUploadActivity)
+                        .setTitle("Duplicate SKUs")
+                        .setMessage(
+                            "These SKUs already exist and will be skipped:\n\n" +
+                                    existing.joinToString("\n") { "• $it" }
+                        )
+                        .setPositiveButton("Continue") { _, _ ->
+                            displayPreview(products.filter { it.sku !in existing })
+                        }
+                        .setOnDismissListener { binding.btnNext.isEnabled = true }
+                        .show()
+                } else {
+                    displayPreview(products)
+                }
+            }*/
+
+
+            lifecycleScope.launch {
+                val products = viewModel.parsedProductsLiveData.value.orEmpty()
+
+                binding.btnNext.isEnabled = false
+                binding.btnNext.alpha = 0.5f
+                val progressDialog = ProgressDialog(this@BulkUploadActivity)
+                progressDialog.setMessage("Checking for Excel...")
+                progressDialog.setCancelable(false) // Prevent user from dismissing during check
+                progressDialog.show()
+                // Kick off *all* queries in parallel:
+                val checks = products.map { p ->
+                    async(Dispatchers.IO) {
+                        AwsManager.getProductBySku(PRODUCT_TABLE, p.sku) != null
+                    }
+                }
+                val existsFlags = checks.awaitAll()
+                progressDialog.dismiss()
+
+                val duplicates = products
+                    .zip(existsFlags)
+                    .filter { it.second }
+                    .map { it.first.sku }
+
+                if (duplicates.isNotEmpty()) {
+
+                    AlertDialog.Builder(this@BulkUploadActivity)
+                        .setTitle("Duplicate SKUs")
+                        .setMessage("These SKUs exist and will be skipped:\n\n" +
+                                duplicates.joinToString("\n") { "• $it" })
+                        .setPositiveButton("Continue") { _, _ ->
+                            displayPreview(products.filter { it.sku !in duplicates })
+                        }
+                        .setCancelable(false)
+                        .setOnDismissListener { binding.btnNext.isEnabled = true }
+                        .show()
+                } else {
+                    displayPreview(products)
+                }
+            }
+
         }
+
 
         binding.btnUploadFile.setOnClickListener {
             openDocumentLauncher.launch(
@@ -169,6 +287,22 @@ class BulkUploadActivity : AppCompatActivity() {
         binding.btnCancel.setOnClickListener {
             finish()
         }
+    }
+
+
+
+    private fun displayPreview(list: List<ProductModel>) {
+        excelProductAdapter = ExcelProductAdapter(list)
+        binding.recyclerMappings.apply {
+            layoutManager = LinearLayoutManager(this@BulkUploadActivity)
+            adapter = excelProductAdapter
+            visibility = View.VISIBLE
+        }
+
+        binding.btnNext.visibility = View.GONE
+        binding.btnCancel.visibility = View.VISIBLE
+        binding.btnReviewUpload.visibility = View.VISIBLE
+        setStep(2)
     }
 
     private fun getSelectedProduct(): ProductModel? {
