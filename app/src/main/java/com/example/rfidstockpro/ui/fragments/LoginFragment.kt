@@ -22,22 +22,12 @@ import com.example.rfidstockpro.R
 import com.example.rfidstockpro.RFIDApplication.Companion.USER_TABLE
 import com.example.rfidstockpro.Utils.TextUtils
 import com.example.rfidstockpro.Utils.observeOnce
-import com.example.rfidstockpro.aws.AwsManager
 import com.example.rfidstockpro.aws.models.UserModel
 import com.example.rfidstockpro.databinding.FragmentLoginBinding
-import com.example.rfidstockpro.ui.activities.AuthActivity
-import com.example.rfidstockpro.ui.activities.DashboardActivity
 import com.example.rfidstockpro.ui.activities.VerificationActivity
 import com.example.rfidstockpro.viewmodel.AuthViewModel
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import software.amazon.awssdk.core.sync.RequestBody
-import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.io.File
-import java.util.UUID
 
 
 class LoginFragment : Fragment() {

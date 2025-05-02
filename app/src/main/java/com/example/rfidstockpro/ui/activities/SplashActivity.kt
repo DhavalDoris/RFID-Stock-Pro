@@ -31,7 +31,9 @@ class SplashActivity : AppCompatActivity() {
         binding.continueButton.setOnClickListener {
             val sessionManager = SessionManager.getInstance(this) // Get Singleton Instance
             val intent = if (sessionManager.isLoggedIn()) {
-                Intent(this, DashboardActivity::class.java)  // If logged in, go to Dashboard
+                Intent(this, DashboardActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
             } else {
                 Intent(this, AuthActivity::class.java) // Otherwise, go to Login screen
             }

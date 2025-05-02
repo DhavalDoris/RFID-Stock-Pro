@@ -46,10 +46,9 @@
     <string name="cancel">Cancel</string>
     <string name="title_stop_read_card">Please stop reading cards!</string>
 
-    <string name="permission_cancel">Exit application</string>
     <string name="permission">Permission</string>
     <string name="open_location_msg">The application requires enable location, Otherwise, the Bluetooth function cannot be used normally.</string>
-    <string name="open_location">Enable Location</string>
+    <string name="open_location">Enable</string>
 
     <string name="permission_enable">Enable Permissions</string>
     <string name="permission_external_storage">The application requires storage permissions, otherwise it cannot be used normally.</string>

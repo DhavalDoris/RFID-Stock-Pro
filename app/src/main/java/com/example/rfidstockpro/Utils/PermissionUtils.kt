@@ -1,17 +1,11 @@
 package com.example.rfidstockpro.Utils
 
-import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.os.Build
-import android.os.Environment
 import android.provider.Settings
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.rfidstockpro.R
 
 object PermissionUtils {
@@ -30,7 +24,7 @@ object PermissionUtils {
                     val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                     activity.startActivityForResult(intent, REQUEST_ACTION_LOCATION_SETTINGS)
                 }
-                .setNegativeButton(activity.getString(R.string.permission_cancel)) { _, _ -> activity.finish() }
+                .setNegativeButton(activity.getString(R.string.cancel)) { _, _ ->  }
                 .setCancelable(false)
                 .show()
         } else {

@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.rfidstockpro.R
-import com.example.rfidstockpro.Utils.Utils
 import com.example.rfidstockpro.databinding.FragmentLocateBinding
 import com.example.rfidstockpro.ui.ProductManagement.helper.ProductHolder
 import kotlinx.coroutines.CoroutineScope

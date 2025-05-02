@@ -22,6 +22,7 @@ import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
@@ -68,6 +69,10 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
     var mBtAdapter: BluetoothAdapter? = null
     private val REQUEST_ACTION_LOCATION_SETTINGS = 99
     private val timeFilterOptions = listOf("Weekly", "Monthly", "Yearly")
+    private val REQUEST_APP_SETTINGS = 101
+
+    private lateinit var permissionLauncher: androidx.activity.result.ActivityResultLauncher<Array<String>>
+
 
     override fun provideUHFDevice(): RFIDWithUHFBLE {
         return uhfDevice
@@ -92,6 +97,13 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         uhfDevice.init(applicationContext)
         StatusBarUtils.setStatusBarColor(this)
 
+
+        // Initialize permission launcher
+        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            handlePermissionResult(permissions)
+        }
+
+
         setupPieChart()
         checkPermissions()
         observeViewModel()
@@ -103,7 +115,7 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
         val toolbarView = findViewById<View>(R.id.commonToolbar)
 //        tvToolbarTitle = toolbarView.findViewById(R.id.tvToolbarTitle)
 
-        if (!isLocationEnabled()) {
+     /*   if (!isLocationEnabled()) {
             AlertDialog.Builder(this)
                 .setTitle(getString(R.string.permission))
                 .setMessage(getString(R.string.open_location_msg))
@@ -114,12 +126,28 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
                 .setNegativeButton(getString(R.string.permission_cancel)) { _, _ -> finish() }
                 .setCancelable(false)
                 .show()
-        }
+        }*/
     }
 
     private fun uhfTrigger() {
 
 
+    }
+
+    private fun handlePermissionResult(permissions: Map<String, Boolean>) {
+        val allGranted = permissions.all { it.value }
+        if (allGranted) {
+            showBluetoothDevice()
+        } else {
+            val permanentlyDenied = permissions.any { (permission, granted) ->
+                !granted && !ActivityCompat.shouldShowRequestPermissionRationale(this, permission)
+            }
+            if (permanentlyDenied) {
+                showPermissionDialog(true)
+            } else {
+                showPermissionDialog(false)
+            }
+        }
     }
 
     private fun loadUserData() {
@@ -191,7 +219,7 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
 
         binding.btnConnectScanner.setOnClickListener {
 
-            if (isLocationEnabled()) {
+          /*  if (isLocationEnabled()) {
 //                checkPermission()
                 if (dashboardViewModel.isConnected.value == true) {
                     dashboardViewModel.disconnect(true)
@@ -209,7 +237,36 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
                     .setNegativeButton(getString(R.string.permission_cancel)) { _, _ -> finish() }
                     .setCancelable(false)
                     .show()
+            }*/
+
+
+            binding.btnConnectScanner.setOnClickListener {
+                if (isLocationEnabled()) {
+                    checkAndRequestPermissions { granted ->
+                        if (granted) {
+                            if (dashboardViewModel.isConnected.value == true) {
+                                dashboardViewModel.disconnect(true)
+                            } else {
+                                showBluetoothDevice()
+                            }
+                        } else {
+                            showToast(this, "Bluetooth permissions are required to connect")
+                        }
+                    }
+                } else {
+                    AlertDialog.Builder(this)
+                        .setTitle(getString(R.string.permission))
+                        .setMessage(getString(R.string.open_location_msg))
+                        .setPositiveButton(getString(R.string.open_location)) { _, _ ->
+                            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                            startActivityForResult(intent, REQUEST_ACTION_LOCATION_SETTINGS)
+                        }
+                        .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
+                        .setCancelable(false)
+                        .show()
+                }
             }
+
 
 
         }
@@ -227,31 +284,30 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
-    private fun checkPermission() {
-        if (!isLocationEnabled()) {
-            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            startActivityForResult(intent, REQUEST_ACTION_LOCATION_SETTINGS)
-            return
+    private fun checkAndRequestPermissions(callback: (Boolean) -> Unit) {
+        val permissions = mutableListOf<String>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+            }
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.BLUETOOTH_SCAN)
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.BLUETOOTH)
+            }
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-//            checkLocationPermission()
-        } else if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) ||
-            (Build.VERSION.SDK_INT < Build.VERSION_CODES.R &&
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED)
-        ) {
-//            checkReadWritePermission()
-        } else if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-//            checkBluetoothPermission()
+        if (permissions.isEmpty()) {
+            callback(true)
+        } else {
+            permissionLauncher.launch(permissions.toTypedArray())
         }
     }
-
-
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun showBluetoothDevice() {
         if (mBtAdapter == null) {
@@ -354,30 +410,48 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_REQUEST_CODE) {
-            for (i in permissions.indices) {
-                Log.e(TAG, "onRequestPermissionsResult: out if ")
-                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                    Log.e(TAG, "onRequestPermissionsResult: if ")
-                    showPermissionDialog()
-                    return
-                }
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                // All permissions granted, proceed
+                return
+            }
+            // Check if any permission is permanently denied
+            if (isAnyPermissionPermanentlyDenied(permissions.toList())) {
+                showPermissionDialog(true)
+            } else {
+                showPermissionDialog(false)
             }
         }
     }
 
-    private fun showPermissionDialog() {
-        Log.e(TAG, "showPermissionDialog:  ")
-        AlertDialog.Builder(this)
+    private fun isAnyPermissionPermanentlyDenied(permissions: List<String>): Boolean {
+        return permissions.any { permission ->
+            !ActivityCompat.shouldShowRequestPermissionRationale(this, permission) &&
+                    ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED
+        }
+    }
+    private fun showPermissionDialog(isPermanentlyDenied: Boolean) {
+        Log.e(TAG, "showPermissionDialog: permanentlyDenied=$isPermanentlyDenied")
+        val builder = AlertDialog.Builder(this)
             .setTitle("Permission Required")
             .setMessage("This app requires Bluetooth and Location permissions to function properly.")
-            .setPositiveButton("Grant") { _, _ ->
-                checkPermissions()
-            }
-            .setNegativeButton("Exit") { _, _ ->
-                finish()
+            .setNegativeButton("Cancel") { _, _ ->
+
             }
             .setCancelable(false)
-            .show()
+
+        if (isPermanentlyDenied) {
+            builder.setPositiveButton("Settings") { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                intent.data = android.net.Uri.fromParts("package", packageName, null)
+                startActivityForResult(intent, REQUEST_APP_SETTINGS)
+            }
+        } else {
+            builder.setPositiveButton("Grant") { _, _ ->
+                checkPermissions()
+            }
+        }
+
+        builder.show()
     }
 
 
@@ -547,7 +621,10 @@ class DashboardActivity : AppCompatActivity(), UHFReadFragment.UHFDeviceProvider
                 } else {
                 }
             }
-
+            REQUEST_APP_SETTINGS -> {
+                // Recheck permissions after returning from settings
+                checkPermissions()
+            }
         }
     }
 

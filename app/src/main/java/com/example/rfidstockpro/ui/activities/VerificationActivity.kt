@@ -111,7 +111,9 @@ class VerificationActivity : AppCompatActivity() {
             if (message == getString(R.string.otp_verified_successfully)) {
                 // Proceed to next screen on successful OTP verification
                 if (comesFrom == "Login") {
-                    startActivity(Intent(this, DashboardActivity::class.java))
+                    val intent = Intent(this, DashboardActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
                     finish()
                 } else {
                     Toast.makeText(
